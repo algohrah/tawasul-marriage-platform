@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="300" height="400">
+  <defs>
+    <linearGradient id="bgM" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e6f1ff"/>
+      <stop offset="55%" stop-color="#d4deea"/>
+      <stop offset="100%" stop-color="#acbdd1"/>
+    </linearGradient>
+    <linearGradient id="bodyM" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#30435f"/>
+      <stop offset="100%" stop-color="#1c2a40"/>
+    </linearGradient>
+    <linearGradient id="goldM" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8dc91"/>
+      <stop offset="100%" stop-color="#bf7e22"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="400" fill="url(#bgM)"/>
+  <circle cx="150" cy="60" r="110" fill="#ffffff" opacity="0.25"/>
+  <circle cx="40" cy="330" r="90" fill="#ffffff" opacity="0.18"/>
+  <!-- body / thobe -->
+  <path d="M150 205c-52 0-88 34-96 86-3 22-4 58-4 109h200c0-51-1-87-4-109-8-52-44-86-96-86z" fill="url(#bodyM)"/>
+  <path d="M150 205c-10 0-19 1-28 4l28 60 28-60c-9-3-18-4-28-4z" fill="#f6f8fb"/>
+  <!-- neck -->
+  <rect x="132" y="178" width="36" height="34" rx="14" fill="#c9976a"/>
+  <!-- head -->
+  <circle cx="150" cy="135" r="58" fill="#d8a878"/>
+  <!-- ghutra (headdress) -->
+  <path d="M150 62c-42 0-70 26-70 70 0 8 1 15 3 22 4-38 28-60 67-60s63 22 67 60c2-7 3-14 3-22 0-44-28-70-70-70z" fill="#fbf7ef"/>
+  <path d="M83 132c-4 34 2 66 12 88l14-10c-9-22-13-50-10-78-6-1-11-1-16 0z" fill="#fbf7ef"/>
+  <path d="M217 132c4 34-2 66-12 88l-14-10c9-22 13-50 10-78 6-1 11-1 16 0z" fill="#fbf7ef"/>
+  <!-- igal (black cord) -->
+  <path d="M92 108c0-10 26-18 58-18s58 8 58 18-26 16-58 16-58-6-58-16z" fill="#0b1828"/>
+  <!-- face features -->
+  <circle cx="130" cy="138" r="5" fill="#1c2a40"/>
+  <circle cx="170" cy="138" r="5" fill="#1c2a40"/>
+  <path d="M138 168c7 6 17 6 24 0" stroke="#1c2a40" stroke-width="4" stroke-linecap="round" fill="none"/>
+  <!-- gold accent ring -->
+  <circle cx="150" cy="150" r="142" stroke="url(#goldM)" stroke-width="3" fill="none" opacity="0.55"/>
+</svg>
