@@ -1,0 +1,63 @@
+name: Extract initial project
+
+on:
+  push:
+    branches:
+      - setup/initial-project
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: setup/initial-project
+      - name: Extract project safely
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f Marriage.zip
+          rm -rf .extract-tmp
+          mkdir .extract-tmp
+          unzip -q Marriage.zip -d .extract-tmp
+          rsync -a .extract-tmp/ ./ --exclude='.git' --exclude='.github'
+          rm -rf .extract-tmp Marriage.zip
+          cat > vercel.json <<'JSON'
+          {
+            "framework": "vite"
+          }
+          JSON
+          cat > .env.example <<'ENV'
+          # Local development
+          VITE_DATABASE_PROVIDER="local"
+          APP_URL="http://localhost:3000"
+
+          # Supabase — leave empty during local-only development
+          VITE_SUPABASE_URL=""
+          VITE_SUPABASE_ANON_KEY=""
+          NEXT_PUBLIC_SUPABASE_URL=""
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=""
+
+          # Server-only secret. Never commit a real value.
+          SUPABASE_SERVICE_ROLE_KEY=""
+
+          # Optional Google authentication
+          VITE_GOOGLE_CLIENT_ID=""
+          VITE_GOOGLE_AUTH_PROXY=""
+
+          # Optional AI integration
+          GEMINI_API_KEY=""
+          ENV
+      - name: Commit extracted project
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: extract sanitized project files"
+          git push origin HEAD:setup/initial-project
