@@ -23,6 +23,18 @@ jobs:
           node-version: 24
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Prepare GitHub Pages build
+        shell: bash
+        run: |
+          sed -i 's#<BrowserRouter>#<BrowserRouter basename={import.meta.env.BASE_URL}>#' src/App.tsx
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          path = Path('index.html')
+          html = path.read_text()
+          html = re.sub(r'\s*<script data-arena-(?:recording|views)="true">.*?</script>', '', html, flags=re.S)
+          path.write_text(html)
+          PY
       - name: Build static preview
         env:
           VITE_DATABASE_PROVIDER: local
