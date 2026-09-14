@@ -3,11 +3,15 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import './index.css';
 import { handleGoogleRedirect } from './lib/googleAuth';
+import { initializeIndexedDbPersistence } from './lib/indexedDbPersistence';
 
-handleGoogleRedirect();
+async function bootstrap() {
+  await initializeIndexedDbPersistence();
+  handleGoogleRedirect();
 
-const container = document.getElementById('root');
-if (container) {
+  const container = document.getElementById('root');
+  if (!container) return;
+
   const root = createRoot(container);
   root.render(
     <React.StrictMode>
@@ -15,3 +19,5 @@ if (container) {
     </React.StrictMode>
   );
 }
+
+bootstrap();
