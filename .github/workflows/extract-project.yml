@@ -1,63 +1,51 @@
-name: Extract initial project
+name: Deploy GitHub Pages preview
 
 on:
   push:
     branches:
       - setup/initial-project
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
-  extract:
-    if: github.actor != 'github-actions[bot]'
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          ref: setup/initial-project
-      - name: Extract project safely
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -f Marriage.zip
-          rm -rf .extract-tmp
-          mkdir .extract-tmp
-          unzip -q Marriage.zip -d .extract-tmp
-          rsync -a .extract-tmp/ ./ --exclude='.git' --exclude='.github'
-          rm -rf .extract-tmp Marriage.zip
-          cat > vercel.json <<'JSON'
-          {
-            "framework": "vite"
-          }
-          JSON
-          cat > .env.example <<'ENV'
-          # Local development
-          VITE_DATABASE_PROVIDER="local"
-          APP_URL="http://localhost:3000"
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build static preview
+        env:
+          VITE_DATABASE_PROVIDER: local
+        run: npx vite build --base=/tawasul-marriage-platform/
+      - name: Support SPA routes
+        run: cp dist/index.html dist/404.html
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
 
-          # Supabase — leave empty during local-only development
-          VITE_SUPABASE_URL=""
-          VITE_SUPABASE_ANON_KEY=""
-          NEXT_PUBLIC_SUPABASE_URL=""
-          NEXT_PUBLIC_SUPABASE_ANON_KEY=""
-
-          # Server-only secret. Never commit a real value.
-          SUPABASE_SERVICE_ROLE_KEY=""
-
-          # Optional Google authentication
-          VITE_GOOGLE_CLIENT_ID=""
-          VITE_GOOGLE_AUTH_PROXY=""
-
-          # Optional AI integration
-          GEMINI_API_KEY=""
-          ENV
-      - name: Commit extracted project
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "chore: extract sanitized project files"
-          git push origin HEAD:setup/initial-project
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
