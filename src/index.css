@@ -1,0 +1,502 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy-50: #f6f8fb;
+  --color-navy-100: #e8edf4;
+  --color-navy-200: #d4deea;
+  --color-navy-300: #acbdd1;
+  --color-navy-400: #7e95b1;
+  --color-navy-500: #58708f;
+  --color-navy-600: #405878;
+  --color-navy-700: #30435f;
+  --color-navy-800: #1c2a40;
+  --color-navy-900: #0b1828;
+  --color-navy-950: #050b14;
+
+  --color-gold-50: #fffaf0;
+  --color-gold-100: #fdf0cf;
+  --color-gold-200: #f8dc91;
+  --color-gold-300: #efc25b;
+  --color-gold-400: #dda33a;
+  --color-gold-500: #bf7e22;
+  --color-gold-600: #965b17;
+  --color-gold-700: #754112;
+  --color-gold-800: #522c0d;
+  --color-gold-900: #331905;
+  --color-gold-950: #1c0b02;
+
+  --color-cream-50: #fbf7ef;
+  --color-cream-100: #f5eddd;
+  --color-cream-200: #ead9bb;
+  --color-cream-300: #dcc098;
+  --color-cream-400: #ca9f68;
+  --color-cream-500: #b47e45;
+  --color-cream-600: #936033;
+  --color-cream-700: #704624;
+  --color-cream-800: #4c2e18;
+  --color-cream-900: #301b0d;
+
+  --color-rose-deep: #b6424d;
+  --color-rose-soft: #f9e7e7;
+  --color-mint-soft: #dff7ec;
+  --color-sky-soft: #e6f1ff;
+
+  --font-cairo: "Cairo", "Tajawal", "Noto Kufi Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
+  --font-tajawal: "Tajawal", "Cairo", "Noto Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
+
+  --background-image-gold-gradient: linear-gradient(135deg, #f8dc91 0%, #d9a947 45%, #bf7e22 100%);
+  --background-image-navy-gradient: radial-gradient(circle at top left, rgba(239, 194, 91, 0.18), transparent 34%), linear-gradient(135deg, #081320 0%, #0f2b46 48%, #050b14 100%);
+  --background-image-navy-gradient-light: linear-gradient(135deg, #193653 0%, #405878 100%);
+  --background-image-navy-gradient-dark: linear-gradient(135deg, #050b14 0%, #0b1828 100%);
+
+  --shadow-gold: 0 18px 38px -18px rgba(191, 126, 34, 0.55);
+  --shadow-soft: 0 16px 45px -30px rgba(5, 11, 20, 0.28);
+  --shadow-luxe: 0 26px 80px -42px rgba(5, 11, 20, 0.45);
+}
+
+@variant dark (&:where(.dark, .dark *));
+
+@utility glass {
+  background-color: rgba(251, 247, 239, 0.82);
+  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+}
+
+.dark .glass {
+  background-color: rgba(5, 11, 20, 0.78);
+}
+
+@utility surface-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,251,245,0.92));
+  border: 1px solid rgba(234, 217, 187, 0.82);
+  box-shadow: var(--shadow-soft);
+}
+
+@utility luxe-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(251,247,239,0.92));
+  border: 1px solid rgba(234, 217, 187, 0.9);
+  box-shadow: var(--shadow-luxe);
+}
+
+@utility text-gradient-gold {
+  background: linear-gradient(135deg, #fff4c7 0%, #efc25b 46%, #bf7e22 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility ring-luxe {
+  box-shadow: 0 0 0 1px rgba(239, 194, 91, 0.22), 0 24px 70px -38px rgba(5, 11, 20, 0.42);
+}
+
+@utility pattern-islamic {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cpath d='M36 2l34 34-34 34L2 36z' fill='none' stroke='%23efc25b' stroke-width='0.55' stroke-opacity='0.13'/%3E%3Cpath d='M36 14l22 22-22 22-22-22z' fill='none' stroke='%23efc25b' stroke-width='0.55' stroke-opacity='0.09'/%3E%3Ccircle cx='36' cy='36' r='4' fill='%23efc25b' fill-opacity='0.06'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+@utility pattern-arabesque {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Cpath d='M48 0 C58 20,38 28,48 48 C58 68,38 76,48 96' fill='none' stroke='%23efc25b' stroke-width='0.55' stroke-opacity='0.13'/%3E%3Cpath d='M0 48 C20 58,28 38,48 48 C68 58,76 38,96 48' fill='none' stroke='%23efc25b' stroke-width='0.55' stroke-opacity='0.13'/%3E%3Ccircle cx='48' cy='48' r='10' fill='none' stroke='%23efc25b' stroke-width='0.55' stroke-opacity='0.08'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+@utility badge-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.badge-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(125%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.34), transparent);
+  animation: shimmer 3.5s infinite;
+}
+
+@keyframes shimmer {
+  0%, 42% { transform: translateX(125%); }
+  70%, 100% { transform: translateX(-125%); }
+}
+
+@keyframes floatUp {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@utility animate-float-up {
+  animation: floatUp 180ms ease-out both;
+}
+
+@utility no-tap-highlight {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  font-family: var(--font-cairo), var(--font-tajawal), system-ui, -apple-system, sans-serif;
+  background:
+    radial-gradient(circle at top right, rgba(239, 194, 91, 0.08), transparent 32rem),
+    linear-gradient(180deg, #fbf7ef 0%, #f7efe1 100%);
+  color: var(--color-navy-950);
+  transition-property: background-color, color;
+  transition-duration: 300ms;
+  text-rendering: optimizeLegibility;
+}
+
+body.dark, .dark body {
+  background:
+    radial-gradient(circle at top right, rgba(239, 194, 91, 0.08), transparent 32rem),
+    linear-gradient(180deg, #050b14 0%, #0b1828 100%);
+  color: var(--color-cream-50);
+  color-scheme: dark;
+}
+
+button, input, textarea, select {
+  font: inherit;
+}
+
+/* طبقة تصميم لوحة الإدارة: هرمية هادئة، بطاقات واضحة، وتركيز مرئي للوصول بلوحة المفاتيح. */
+.admin-shell {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(245, 158, 11, 0.12), transparent 28rem),
+    radial-gradient(circle at 92% 16%, rgba(14, 165, 233, 0.08), transparent 25rem),
+    #f8fafc;
+}
+
+.admin-surface {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(226, 232, 240, 0.92);
+  box-shadow: 0 14px 34px -28px rgba(15, 23, 42, 0.45);
+}
+
+.admin-shell :is(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid rgba(245, 158, 11, 0.35);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgba(239, 194, 91, 0.35);
+  color: var(--color-navy-950);
+}
+
+/* ============================================================
+   Contrast & dark-mode harmonization layer
+   الهدف: إصلاح حالات النصوص غير الواضحة في الصفحات القديمة والجديدة
+   بدون إعادة كتابة كل صفحة على حدة.
+============================================================ */
+.text-slate-300 { color: #58708f; }
+.text-slate-400 { color: #475569; } /* تباين ممتاز بدلاً من الرمادي الباهت */
+.text-slate-500 { color: #334155; }
+.text-navy-300 { color: #58708f; }
+.text-navy-400 { color: #30435f; } /* أزرق داكن مقروء بوضوح */
+.text-navy-500 { color: #1c2a40; }
+.text-gray-400 { color: #4b5563; }
+.text-gray-500 { color: #262626; }
+.text-cream-200\/60 { color: rgba(245, 237, 221, 0.78); }
+.text-cream-200\/70 { color: rgba(245, 237, 221, 0.84); }
+.text-cream-200\/80 { color: rgba(245, 237, 221, 0.9); }
+
+/* تحسين تباين نصوص الألوان المخصصة في الوضع الفاتح */
+.text-blue-600 { color: #1d4ed8; }
+.text-blue-700 { color: #1e40af; }
+.text-rose-600 { color: #be185d; }
+.text-rose-700 { color: #9d174d; }
+.text-indigo-600 { color: #4338ca; }
+.text-indigo-700 { color: #3730a3; }
+.text-emerald-600 { color: #047857; }
+.text-emerald-700 { color: #065f46; }
+.text-amber-600 { color: #b45309; }
+.text-amber-700 { color: #92400e; }
+
+.dark .bg-white,
+.dark .bg-cream-50,
+.dark .bg-cream-100,
+.dark .bg-cream-200,
+.dark .bg-slate-50,
+.dark .bg-slate-100,
+.dark .bg-gray-50,
+.dark .bg-gray-100 {
+  background-color: #0f1f33;
+}
+
+.dark .bg-white\/50,
+.dark .bg-white\/60,
+.dark .bg-white\/65,
+.dark .bg-white\/70,
+.dark .bg-white\/75,
+.dark .bg-white\/80,
+.dark .bg-white\/85,
+.dark .bg-white\/88,
+.dark .bg-white\/90,
+.dark .bg-white\/92,
+.dark .bg-white\/95,
+.dark .bg-white\/98,
+.dark .bg-cream-50\/50,
+.dark .bg-cream-50\/60,
+.dark .bg-cream-50\/70,
+.dark .bg-cream-50\/80,
+.dark .bg-cream-50\/90,
+.dark .bg-slate-50\/50,
+.dark .bg-slate-50\/60,
+.dark .bg-slate-50\/70,
+.dark .bg-slate-50\/80,
+.dark .bg-slate-50\/90 {
+  background-color: rgba(15, 31, 51, 0.9);
+}
+
+.dark [class*="bg-gradient-to-b"][class*="from-slate-50"],
+.dark [class*="bg-gradient-to-b"][class*="from-cream-50"],
+.dark [class*="bg-gradient-to-b"][class*="from-white"],
+.dark [class*="bg-gradient-to-br"][class*="from-slate-50"],
+.dark [class*="bg-gradient-to-br"][class*="from-cream-50"],
+.dark [class*="bg-gradient-to-br"][class*="from-white"],
+.dark [class*="bg-gradient-to-bl"][class*="from-slate-50"],
+.dark [class*="bg-gradient-to-bl"][class*="from-cream-50"],
+.dark [class*="bg-gradient-to-bl"][class*="from-white"] {
+  background-image:
+    radial-gradient(circle at top right, rgba(239, 194, 91, 0.08), transparent 28rem),
+    linear-gradient(180deg, #050b14 0%, #0b1828 100%);
+}
+
+.dark .surface-card,
+.dark .luxe-card {
+  background: linear-gradient(180deg, rgba(15, 31, 51, 0.98), rgba(8, 19, 32, 0.94));
+  border-color: rgba(248, 220, 145, 0.18);
+}
+
+/* تحسين الألوان الجنسية والثيمات الملونة في الوضع الداكن لتجنب تداخل الخلفية مع النص */
+.dark .bg-blue-50,
+.dark .bg-blue-50\/30,
+.dark .bg-blue-50\/50 {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+}
+.dark .bg-rose-50,
+.dark .bg-rose-50\/30,
+.dark .bg-rose-50\/50 {
+  background-color: rgba(244, 63, 94, 0.15) !important;
+}
+.dark .bg-indigo-50,
+.dark .bg-indigo-50\/30,
+.dark .bg-indigo-50\/50 {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+}
+.dark .bg-emerald-50,
+.dark .bg-emerald-50\/30,
+.dark .bg-emerald-50\/50 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+}
+.dark .bg-amber-50,
+.dark .bg-gold-50,
+.dark .bg-gold-100 {
+  background-color: rgba(120, 83, 20, 0.26) !important;
+}
+
+/* الألوان الناعمة للعلامات (Badges) في الوضع الداكن */
+.dark .bg-sky-soft {
+  background-color: rgba(56, 189, 248, 0.15) !important;
+}
+.dark .bg-mint-soft {
+  background-color: rgba(52, 211, 153, 0.15) !important;
+}
+.dark .bg-rose-soft {
+  background-color: rgba(251, 113, 133, 0.15) !important;
+}
+
+.dark .text-navy-950,
+.dark .text-navy-900,
+.dark .text-navy-800,
+.dark .text-navy-700,
+.dark .text-gray-950,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700,
+.dark .text-slate-950,
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700 {
+  color: #fbf7ef;
+}
+
+.dark .text-navy-600,
+.dark .text-navy-500,
+.dark .text-navy-400,
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-gray-400,
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-slate-400 {
+  color: rgba(245, 237, 221, 0.78);
+}
+
+.dark .text-gold-800,
+.dark .text-gold-700,
+.dark .text-gold-600 {
+  color: #f8dc91;
+}
+
+/* تحسين ألوان النصوص الملونة لتكون زاهية ومقروءة على الخلفيات الداكنة */
+.dark .text-blue-600,
+.dark .text-blue-700 {
+  color: #93c5fd !important;
+}
+.dark .text-rose-600,
+.dark .text-rose-700,
+.dark .text-rose-deep {
+  color: #fca5a5 !important;
+}
+.dark .text-indigo-600,
+.dark .text-indigo-700 {
+  color: #c7d2fe !important;
+}
+.dark .text-emerald-600,
+.dark .text-emerald-700 {
+  color: #86efac !important;
+}
+.dark .text-amber-600,
+.dark .text-amber-700 {
+  color: #fde047 !important;
+}
+.dark .text-sky-700 {
+  color: #38bdf8 !important;
+}
+
+.dark .border-cream-200,
+.dark .border-cream-200\/60,
+.dark .border-cream-200\/70,
+.dark .border-cream-200\/80,
+.dark .border-slate-200,
+.dark .border-slate-200\/60,
+.dark .border-slate-200\/70,
+.dark .border-slate-100,
+.dark .border-gray-200,
+.dark .border-gray-100,
+.dark .border-gold-500\/20,
+.dark .border-gold-300\/25,
+.dark .border-blue-200,
+.dark .border-rose-200,
+.dark .border-indigo-100 {
+  border-color: rgba(248, 220, 145, 0.16) !important;
+}
+
+.dark .shadow-soft,
+.dark .shadow-luxe,
+.dark .shadow-lg,
+.dark .shadow-2xl {
+  box-shadow: 0 22px 70px -42px rgba(0, 0, 0, 0.82);
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #0b1828;
+  color: #fbf7ef;
+  border-color: rgba(248, 220, 145, 0.22);
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: rgba(245, 237, 221, 0.48);
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: #efc25b;
+  box-shadow: 0 0 0 4px rgba(239, 194, 91, 0.13);
+}
+
+.dark .bg-red-50 { background-color: rgba(127, 29, 29, 0.28); }
+.dark .bg-emerald-50 { background-color: rgba(6, 78, 59, 0.28); }
+.dark .bg-amber-50,
+.dark .bg-gold-50,
+.dark .bg-gold-100 { background-color: rgba(120, 83, 20, 0.26); }
+
+.dark .bg-gold-gradient,
+.dark .bg-gold-gradient *:not(svg):not(path) {
+  color: #050b14;
+}
+
+/* خلفية التباين العالي للخلفية الداكنة المخصصة للـ CTA والتسجيل والترحيب */
+@utility wave-bg {
+  background: var(--background-image-gold-gradient);
+}
+
+/* الحفاظ على قراءة النصوص بتباين عالٍ وثابت فوق الخلفيات الذهبية المميزة في كلا الوضعين */
+.wave-bg,
+.wave-bg *:not(svg):not(path) {
+  color: #050b14 !important;
+}
+.dark .wave-bg,
+.dark .wave-bg *:not(svg):not(path) {
+  color: #050b14 !important;
+}
+
+/* تصميم الزجاج الداكن لـ glass-navy لضمان تباين فائق ونمذجة متميزة */
+@utility glass-navy {
+  background-color: rgba(11, 24, 40, 0.85);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+
+/* الأقسام ذات الخلفية الداكنة الافتراضية يجب أن تمتلك دائماً نصوصاً فاتحة في كلا الوضعين لضمان القراءة بوضوح */
+.bg-navy-gradient,
+.bg-navy-gradient-light,
+.bg-navy-gradient-dark {
+  color: #fbf7ef !important;
+}
+
+.bg-navy-gradient .text-white,
+.bg-navy-gradient-light .text-white,
+.bg-navy-gradient-dark .text-white {
+  color: #ffffff !important;
+}
+
+.bg-navy-gradient .text-cream-200\/60,
+.bg-navy-gradient-light .text-cream-200\/60,
+.bg-navy-gradient-dark .text-cream-200\/60,
+.bg-navy-gradient .text-cream-200\/70,
+.bg-navy-gradient-light .text-cream-200\/70,
+.bg-navy-gradient-dark .text-cream-200\/70,
+.bg-navy-gradient .text-cream-200\/80,
+.bg-navy-gradient-light .text-cream-200\/80,
+.bg-navy-gradient-dark .text-cream-200\/80,
+.bg-navy-gradient .text-white\/60,
+.bg-navy-gradient-light .text-white\/60,
+.bg-navy-gradient-dark .text-white\/60,
+.bg-navy-gradient .text-white\/70,
+.bg-navy-gradient-light .text-white\/70,
+.bg-navy-gradient-dark .text-white\/70,
+.bg-navy-gradient .text-white\/80,
+.bg-navy-gradient-light .text-white\/80,
+.bg-navy-gradient-dark .text-white\/80 {
+  color: rgba(245, 237, 221, 0.92) !important;
+}
+
+.dark table,
+.dark thead,
+.dark tbody,
+.dark tr {
+  color: #fbf7ef;
+}
+
+.dark th,
+.dark td {
+  border-color: rgba(248, 220, 145, 0.14);
+}
+
+.dark .divide-cream-200 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(248, 220, 145, 0.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .badge-shimmer::after { animation: none; }
+}

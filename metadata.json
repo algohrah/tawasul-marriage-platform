@@ -1,0 +1,6 @@
+{
+  "name": "تواصل للزواج",
+  "description": "منصة وساطة آمنة وموثوقة للباحثين عن الزواج الجاد، بإشراف إداري كامل واحترام تام للخصوصية.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
