@@ -45,8 +45,11 @@ jobs:
           cp dist/index.html dist/404.html
           MAIN_JS="$(find dist/assets -maxdepth 1 -type f -name 'index-*.js' -size +100k | head -1)"
           test -n "$MAIN_JS"
-          cp "$MAIN_JS" dist/assets/index-C4B9Z6iz.js
-          cp "$MAIN_JS" dist/assets/index-C1b21DCR.js
+          for LEGACY_JS in index-C4B9Z6iz.js index-C1b21DCR.js index-CLU0d74N.js; do
+            if [ "$(basename "$MAIN_JS")" != "$LEGACY_JS" ]; then
+              cp "$MAIN_JS" "dist/assets/$LEGACY_JS"
+            fi
+          done
       - name: Publish preview branch
         uses: peaceiris/actions-gh-pages@v4
         with:
