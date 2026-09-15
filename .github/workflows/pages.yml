@@ -23,8 +23,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - run: npm run build
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps --no-audit --no-fund
+      - name: Build local-data preview
+        run: npm run build
         env:
           VITE_DATABASE_PROVIDER: local
       - name: Prepare static preview
