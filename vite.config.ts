@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
       );
     },
     transformIndexHtml(html) {
-      return html.replace(/\s*<script data-arena-recording="true">[\s\S]*?<\/script>/, '');
+      return html.replace(/\s*<script data-arena-(?:recording|views)="true">[\s\S]*?<\/script>/g, '');
     },
   };
 
