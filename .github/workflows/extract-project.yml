@@ -39,12 +39,18 @@ jobs:
         env:
           VITE_DATABASE_PROVIDER: local
         run: npx vite build --base=/tawasul-marriage-platform/
-      - name: Support SPA routes
-        run: cp dist/index.html dist/404.html
+      - name: Support SPA and cached mobile pages
+        shell: bash
+        run: |
+          cp dist/index.html dist/404.html
+          MAIN_JS="$(find dist/assets -maxdepth 1 -type f -name 'index-*.js' -size +100k | head -1)"
+          test -n "$MAIN_JS"
+          cp "$MAIN_JS" dist/assets/index-C4B9Z6iz.js
+          cp "$MAIN_JS" dist/assets/index-C1b21DCR.js
       - name: Publish preview branch
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: ./dist
-          force_orphan: true
+          keep_files: true
