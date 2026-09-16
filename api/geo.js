@@ -73,7 +73,18 @@ export default async function handler(req, res) {
         const { data, error } = await supabase.from('pending_cities').update(update).eq('id', body.id).select().single();
         if (error) throw error;
         if (body.status === 'approved' && data?.name && data?.country) {
-          await supabase.from('geo_cities').insert({ country: data.country, name: body.editedName || data.name }).catch(() => undefined);
+          const officialName = body.editedName || data.name;
+          // تفادي التكرار: تحقق أولاً ثم أضف، وسجل أي خطأ بدلاً من إخفائه
+          const { data: existingCity } = await supabase
+            .from('geo_cities')
+            .select('id')
+            .eq('country', data.country)
+            .ilike('name', officialName)
+            .maybeSingle();
+          if (!existingCity) {
+            const { error: insertError } = await supabase.from('geo_cities').insert({ country: data.country, name: officialName });
+            if (insertError) console.error('Failed to add approved city:', insertError.message);
+          }
         }
         return res.status(200).json(data);
       }
