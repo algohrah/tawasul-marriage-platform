@@ -290,19 +290,19 @@ export default function Search() {
       <div className="bg-navy-gradient relative overflow-hidden">
         <div className="absolute inset-0 pattern-arabesque opacity-30" />
         <div className="absolute -top-20 -left-20 w-72 h-72 bg-gold-500/20 rounded-full blur-3xl" />
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-12 text-center">
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-12 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gold-300/15 mb-4">
-              <SlidersHorizontal className="w-7 h-7 text-gold-300" />
+            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gold-300/15 mb-4">
+              <SlidersHorizontal className="w-6 h-6 sm:w-7 sm:h-7 text-gold-300" />
             </div>
-            <h1 className="font-cairo font-extrabold text-3xl sm:text-4xl text-white">البحث المتقدم</h1>
-            <p className="mt-3 text-cream-200/80 font-tajawal">خصّص بحثك بدقة للعثور على شريك الحياة المناسب</p>
+            <h1 className="font-cairo font-extrabold text-2xl sm:text-4xl text-white">البحث المتقدم</h1>
+            <p className="mt-3 text-sm sm:text-base text-cream-200/80 font-tajawal">خصّص بحثك بدقة للعثور على شريك الحياة المناسب</p>
           </motion.div>
         </div>
       </div>
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 -mt-6 relative">
-        <div className="bg-white dark:bg-navy-900 rounded-3xl shadow-luxe border border-cream-200/60 dark:border-navy-800 p-5 sm:p-7 space-y-6">
+        <div className="bg-white dark:bg-navy-900 rounded-3xl shadow-luxe border border-cream-200/60 dark:border-navy-800 p-4 sm:p-7 space-y-6">
 
           {/* ===== البحث بالرمز أو الكلمة المفتاحية ===== */}
           <div>
@@ -323,7 +323,7 @@ export default function Search() {
 
           {/* ===== الخطوة 1: الجنس (أول خيار) ===== */}
           <FilterSection icon={Users} title="أبحث عن" step={1}>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               <GenderButton
                 active={gender === 'all'} onClick={() => handleGenderChange('all')}
                 label="الجميع" color="gold"
@@ -338,8 +338,8 @@ export default function Search() {
               />
             </div>
             {gender === 'all' && (
-              <p className="text-xs text-navy-400 font-tajawal mt-2.5 flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5" />
+              <p className="text-xs text-navy-400 font-tajawal mt-2.5 flex items-start gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                 عند اختيار «الجميع» تتوفر خيارات الدولة والمدينة والعمر فقط
               </p>
             )}
@@ -358,19 +358,19 @@ export default function Search() {
 
           {/* ===== الخطوة 3: العمر ===== */}
           <FilterSection icon={Calendar} title="الفئة العمرية" step={3}>
-            <div className="bg-cream-50 rounded-2xl p-4 border border-cream-200">
+            <div className="bg-cream-50 rounded-2xl p-3 sm:p-4 border border-cream-200">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm text-navy-500 font-tajawal">من</span>
-                <span className="font-cairo font-bold text-lg text-gold-700 bg-gold-300/15 px-3 py-1 rounded-lg">{ageRange[0]} سنة</span>
+                <span className="font-cairo font-bold text-base sm:text-lg text-gold-700 bg-gold-300/15 px-3 py-1 rounded-lg">{ageRange[0]} سنة</span>
               </div>
               <input type="range" min="16" max="80" value={ageRange[0]}
                 onChange={(e) => setAgeRange([Math.min(Number(e.target.value), ageRange[1]), ageRange[1]])}
                 className="w-full accent-gold-500" />
             </div>
-            <div className="bg-cream-50 rounded-2xl p-4 border border-cream-200 mt-3">
+            <div className="bg-cream-50 rounded-2xl p-3 sm:p-4 border border-cream-200 mt-3">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm text-navy-500 font-tajawal">إلى</span>
-                <span className="font-cairo font-bold text-lg text-gold-700 bg-gold-300/15 px-3 py-1 rounded-lg">{ageRange[1]} سنة</span>
+                <span className="font-cairo font-bold text-base sm:text-lg text-gold-700 bg-gold-300/15 px-3 py-1 rounded-lg">{ageRange[1]} سنة</span>
               </div>
               <input type="range" min="16" max="80" value={ageRange[1]}
                 onChange={(e) => setAgeRange([ageRange[0], Math.max(Number(e.target.value), ageRange[0])])}
@@ -382,11 +382,11 @@ export default function Search() {
           {gender !== 'all' && (
             <button
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className="w-full flex items-center justify-between p-4 rounded-2xl bg-navy-gradient text-white font-cairo font-bold transition-all hover:shadow-luxe relative overflow-hidden"
+              className="w-full flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-navy-gradient text-white font-cairo font-bold transition-all hover:shadow-luxe relative overflow-hidden"
             >
               <div className="absolute inset-0 pattern-arabesque opacity-20" />
-              <span className="relative flex items-center gap-2">
-                <SlidersHorizontal className="w-5 h-5 text-gold-300" />
+              <span className="relative flex items-center gap-2 text-sm sm:text-base">
+                <SlidersHorizontal className="w-5 h-5 text-gold-300 flex-shrink-0" />
                 {showAdvanced ? 'إخفاء الخيارات المتقدمة' : 'مزيد من الخيارات'}
               </span>
               <span className="relative">
@@ -420,7 +420,7 @@ export default function Search() {
                         <button
                           key={opt.value}
                           onClick={() => setMaritalStatus(maritalStatus === opt.value ? '' : opt.value)}
-                          className={`py-2.5 px-2 rounded-xl font-cairo font-semibold text-sm transition-all no-tap-highlight ${
+                          className={`py-2.5 px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all no-tap-highlight ${
                             maritalStatus === opt.value
                               ? 'bg-gold-gradient text-navy-900 shadow-soft'
                               : 'bg-cream-100 text-navy-600 hover:bg-cream-200'
@@ -446,7 +446,7 @@ export default function Search() {
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         <button
                           onClick={() => { setHasChildren('false'); setChildrenCount(''); }}
-                          className={`py-2.5 rounded-xl font-cairo font-semibold text-sm transition-all ${
+                          className={`py-2.5 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
                             hasChildren === 'false' ? 'bg-gold-gradient text-navy-900 shadow-soft' : 'bg-cream-100 text-navy-600 hover:bg-cream-200'
                           }`}
                         >
@@ -454,7 +454,7 @@ export default function Search() {
                         </button>
                         <button
                           onClick={() => setHasChildren('true')}
-                          className={`py-2.5 rounded-xl font-cairo font-semibold text-sm transition-all ${
+                          className={`py-2.5 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
                             hasChildren === 'true' ? 'bg-gold-gradient text-navy-900 shadow-soft' : 'bg-cream-100 text-navy-600 hover:bg-cream-200'
                           }`}
                         >
@@ -475,10 +475,10 @@ export default function Search() {
                     <label className="flex items-center gap-2 text-sm font-cairo font-bold text-navy-800 mb-2.5">
                       <Heart className="w-4 h-4 text-gold-600" /> نوع الزواج
                     </label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                       <button
                         onClick={() => setMarriageType('')}
-                        className={`py-2.5 px-2 rounded-xl font-cairo font-semibold text-sm transition-all ${
+                        className={`py-2.5 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
                           marriageType === ''
                             ? 'bg-gold-gradient text-navy-900 shadow-soft'
                             : 'bg-cream-100 text-navy-600 hover:bg-cream-200'
@@ -488,7 +488,7 @@ export default function Search() {
                       </button>
                       <button
                         onClick={() => setMarriageType('announced')}
-                        className={`py-2.5 px-2 rounded-xl font-cairo font-semibold text-sm transition-all ${
+                        className={`py-2.5 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
                           marriageType === 'announced'
                             ? 'bg-gold-gradient text-navy-900 shadow-soft'
                             : 'bg-cream-100 text-navy-600 hover:bg-cream-200'
@@ -498,7 +498,7 @@ export default function Search() {
                       </button>
                       <button
                         onClick={() => setMarriageType('misyar')}
-                        className={`py-2.5 px-2 rounded-xl font-cairo font-semibold text-sm transition-all ${
+                        className={`py-2.5 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
                           marriageType === 'misyar'
                             ? 'bg-gold-gradient text-navy-900 shadow-soft'
                             : 'bg-cream-100 text-navy-600 hover:bg-cream-200'
@@ -514,10 +514,10 @@ export default function Search() {
                     <label className="flex items-center gap-2 text-sm font-cairo font-bold text-navy-800 mb-2.5">
                       <Globe className="w-4 h-4 text-gold-600" /> قبول غير مواطن / أجنبي
                     </label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                       <button
                         onClick={() => setAcceptForeigner('')}
-                        className={`py-2.5 px-2 rounded-xl font-cairo font-semibold text-sm transition-all ${
+                        className={`py-2.5 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
                           acceptForeigner === ''
                             ? 'bg-gold-gradient text-navy-900 shadow-soft'
                             : 'bg-cream-100 text-navy-600 hover:bg-cream-200'
@@ -527,7 +527,7 @@ export default function Search() {
                       </button>
                       <button
                         onClick={() => setAcceptForeigner('yes')}
-                        className={`py-2.5 px-2 rounded-xl font-cairo font-semibold text-sm transition-all ${
+                        className={`py-2.5 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
                           acceptForeigner === 'yes'
                             ? 'bg-gold-gradient text-navy-900 shadow-soft'
                             : 'bg-cream-100 text-navy-600 hover:bg-cream-200'
@@ -537,7 +537,7 @@ export default function Search() {
                       </button>
                       <button
                         onClick={() => setAcceptForeigner('no')}
-                        className={`py-2.5 px-2 rounded-xl font-cairo font-semibold text-sm transition-all ${
+                        className={`py-2.5 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
                           acceptForeigner === 'no'
                             ? 'bg-gold-gradient text-navy-900 shadow-soft'
                             : 'bg-cream-100 text-navy-600 hover:bg-cream-200'
@@ -576,10 +576,10 @@ export default function Search() {
       </div>
 
       {/* عرض النتائج */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-12 border-t border-cream-200/60">
-        <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 mt-8 sm:mt-12 border-t border-cream-200/60">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h2 className="font-cairo font-extrabold text-2xl text-navy-900">
+            <h2 className="font-cairo font-extrabold text-xl sm:text-2xl text-navy-900">
               نتائج البحث ({filteredMembers.length})
             </h2>
             <p className="mt-1 text-sm text-navy-500 font-tajawal">
@@ -684,7 +684,7 @@ function GenderButton({ active, onClick, label, color }: { active: boolean; onCl
   return (
     <button
       onClick={onClick}
-      className={`py-3.5 rounded-xl font-cairo font-bold text-sm transition-all no-tap-highlight ${
+      className={`py-3 sm:py-3.5 rounded-xl font-cairo font-bold text-xs sm:text-sm transition-all no-tap-highlight ${
         active ? colors[color] : 'bg-cream-100 dark:bg-navy-950 text-navy-600 dark:text-cream-200 hover:bg-cream-200 dark:hover:bg-navy-800'
       }`}
     >
