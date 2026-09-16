@@ -1,6 +1,5 @@
 import { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
 import { AppProvider } from './lib/AppContext';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -273,85 +272,83 @@ function PageLoader() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <AppProvider>
-          <BrowserRouter>
-            <RoutePrefetcher />
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                {/* User facing layout */}
-                <Route path="/" element={<Layout />}>
-                  <Route index element={<Home />} />
-                  <Route path="search" element={<Search />} />
-                  <Route path="profile" element={<Profile />} />
-                  <Route path="edit-profile" element={<EditProfile />} />
-                  <Route path="complete-profile" element={<CompleteProfile />} />
-                  <Route path="member/:id" element={<MemberProfile />} />
-                  <Route path="u/:username" element={<MemberProfile />} />
-                  <Route path="register" element={<Register />} />
-                  <Route path="login" element={<Login />} />
-                  <Route path="forgot-password" element={<ForgotPassword />} />
-                  <Route path="reset-password" element={<ResetPassword />} />
-                  <Route path="about" element={<About />} />
-                  <Route path="contact" element={<Contact />} />
-                  <Route path="plans" element={<Plans />} />
-                  <Route path="checkout/:planId" element={<Checkout />} />
-                  <Route path="journey" element={<JourneyPage />} />
-                  <Route path="journey/:id" element={<JourneyPage />} />
-                  <Route path="notifications" element={<Notifications />} />
-                  <Route path="requests" element={<InterestRequests />} />
-                  <Route path="admin-chat" element={<AdminChat />} />
-                  {/* روابط مختصرة/قديمة — تحويلات لتفادي صفحة 404 */}
-                  <Route path="support" element={<Navigate to="/admin-chat" replace />} />
-                  <Route path="terms" element={<Navigate to="/legal/terms" replace />} />
-                  <Route path="privacy" element={<Navigate to="/legal/privacy" replace />} />
-                  <Route path="legal/privacy" element={<LegalPage type="privacy" />} />
-                  <Route path="legal/terms" element={<LegalPage type="terms" />} />
-                  <Route path="*" element={<NotFound />} />
-                </Route>
+      <AppProvider>
+        <BrowserRouter>
+          <RoutePrefetcher />
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* User facing layout */}
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Home />} />
+                <Route path="search" element={<Search />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="edit-profile" element={<EditProfile />} />
+                <Route path="complete-profile" element={<CompleteProfile />} />
+                <Route path="member/:id" element={<MemberProfile />} />
+                <Route path="u/:username" element={<MemberProfile />} />
+                <Route path="register" element={<Register />} />
+                <Route path="login" element={<Login />} />
+                <Route path="forgot-password" element={<ForgotPassword />} />
+                <Route path="reset-password" element={<ResetPassword />} />
+                <Route path="about" element={<About />} />
+                <Route path="contact" element={<Contact />} />
+                <Route path="plans" element={<Plans />} />
+                <Route path="checkout/:planId" element={<Checkout />} />
+                <Route path="journey" element={<JourneyPage />} />
+                <Route path="journey/:id" element={<JourneyPage />} />
+                <Route path="notifications" element={<Notifications />} />
+                <Route path="requests" element={<InterestRequests />} />
+                <Route path="admin-chat" element={<AdminChat />} />
+                {/* روابط مختصرة/قديمة — تحويلات لتفادي صفحة 404 */}
+                <Route path="support" element={<Navigate to="/admin-chat" replace />} />
+                <Route path="terms" element={<Navigate to="/legal/terms" replace />} />
+                <Route path="privacy" element={<Navigate to="/legal/privacy" replace />} />
+                <Route path="legal/privacy" element={<LegalPage type="privacy" />} />
+                <Route path="legal/terms" element={<LegalPage type="terms" />} />
+                <Route path="*" element={<NotFound />} />
+              </Route>
 
-                {/* Admin layout */}
-                <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<AdminOverviewHub />} />
-                  <Route path="overview" element={<AdminOverviewHub />} />
-                  <Route path="analytics" element={<Navigate to="/admin/overview?tab=analytics" replace />} />
-                  
-                  <Route path="members" element={<AdminMembersHub />} />
-                  <Route path="members-hub" element={<AdminMembersHub />} />
-                  <Route path="khataaba-directory" element={<Navigate to="/admin/members?tab=khataaba" replace />} />
-                  <Route path="import-members" element={<Navigate to="/admin/members?tab=import" replace />} />
-                  <Route path="verifications" element={<Navigate to="/admin/members?tab=verifications" replace />} />
-                  
-                  <Route path="journeys" element={<AdminJourneysHub />} />
-                  <Route path="requests" element={<Navigate to="/admin/journeys?tab=requests" replace />} />
-                  <Route path="imported-coordination" element={<Navigate to="/admin/journeys?tab=imported" replace />} />
-                  
-                  <Route path="finance" element={<AdminFinanceHub />} />
-                  <Route path="transactions" element={<Navigate to="/admin/finance?tab=transactions" replace />} />
-                  <Route path="plans" element={<Navigate to="/admin/finance?tab=plans" replace />} />
-                  <Route path="exemptions" element={<Navigate to="/admin/finance?tab=exemptions" replace />} />
-                  
-                  <Route path="trust" element={<AdminTrustHub />} />
-                  <Route path="support" element={<Navigate to="/admin/trust?tab=messages" replace />} />
-                  <Route path="messages" element={<Navigate to="/admin/trust?tab=messages" replace />} />
-                  <Route path="reports" element={<Navigate to="/admin/trust?tab=reports" replace />} />
-                  <Route path="audit-log" element={<Navigate to="/admin/trust?tab=audit" replace />} />
-                  
-                  <Route path="settings" element={<AdminSettingsHub />} />
-                  <Route path="backup" element={<Navigate to="/admin/settings?tab=backup" replace />} />
-                  <Route path="settings/backup" element={<Navigate to="/admin/settings?tab=backup" replace />} />
-                  <Route path="settings/platform" element={<Navigate to="/admin/settings?tab=platform" replace />} />
-                  <Route path="settings/payments" element={<Navigate to="/admin/settings?tab=payments" replace />} />
-                  <Route path="settings/features" element={<Navigate to="/admin/settings?tab=features" replace />} />
-                  <Route path="settings/security" element={<Navigate to="/admin/settings?tab=security" replace />} />
-                  <Route path="cities" element={<Navigate to="/admin/settings?tab=cities" replace />} />
-                  <Route path="notifications" element={<Navigate to="/admin/settings?tab=notifications" replace />} />
-                </Route>
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </AppProvider>
-      </AuthProvider>
+              {/* Admin layout */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminOverviewHub />} />
+                <Route path="overview" element={<AdminOverviewHub />} />
+                <Route path="analytics" element={<Navigate to="/admin/overview?tab=analytics" replace />} />
+                
+                <Route path="members" element={<AdminMembersHub />} />
+                <Route path="members-hub" element={<AdminMembersHub />} />
+                <Route path="khataaba-directory" element={<Navigate to="/admin/members?tab=khataaba" replace />} />
+                <Route path="import-members" element={<Navigate to="/admin/members?tab=import" replace />} />
+                <Route path="verifications" element={<Navigate to="/admin/members?tab=verifications" replace />} />
+                
+                <Route path="journeys" element={<AdminJourneysHub />} />
+                <Route path="requests" element={<Navigate to="/admin/journeys?tab=requests" replace />} />
+                <Route path="imported-coordination" element={<Navigate to="/admin/journeys?tab=imported" replace />} />
+                
+                <Route path="finance" element={<AdminFinanceHub />} />
+                <Route path="transactions" element={<Navigate to="/admin/finance?tab=transactions" replace />} />
+                <Route path="plans" element={<Navigate to="/admin/finance?tab=plans" replace />} />
+                <Route path="exemptions" element={<Navigate to="/admin/finance?tab=exemptions" replace />} />
+                
+                <Route path="trust" element={<AdminTrustHub />} />
+                <Route path="support" element={<Navigate to="/admin/trust?tab=messages" replace />} />
+                <Route path="messages" element={<Navigate to="/admin/trust?tab=messages" replace />} />
+                <Route path="reports" element={<Navigate to="/admin/trust?tab=reports" replace />} />
+                <Route path="audit-log" element={<Navigate to="/admin/trust?tab=audit" replace />} />
+                
+                <Route path="settings" element={<AdminSettingsHub />} />
+                <Route path="backup" element={<Navigate to="/admin/settings?tab=backup" replace />} />
+                <Route path="settings/backup" element={<Navigate to="/admin/settings?tab=backup" replace />} />
+                <Route path="settings/platform" element={<Navigate to="/admin/settings?tab=platform" replace />} />
+                <Route path="settings/payments" element={<Navigate to="/admin/settings?tab=payments" replace />} />
+                <Route path="settings/features" element={<Navigate to="/admin/settings?tab=features" replace />} />
+                <Route path="settings/security" element={<Navigate to="/admin/settings?tab=security" replace />} />
+                <Route path="cities" element={<Navigate to="/admin/settings?tab=cities" replace />} />
+                <Route path="notifications" element={<Navigate to="/admin/settings?tab=notifications" replace />} />
+              </Route>
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </AppProvider>
     </ErrorBoundary>
   );
 }
