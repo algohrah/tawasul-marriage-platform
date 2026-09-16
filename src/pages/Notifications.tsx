@@ -53,21 +53,21 @@ export default function Notifications() {
     return () => { if (channel && typeof supabase?.removeChannel === 'function') supabase.removeChannel(channel); };
   }, [activeId, loadNotifications]);
 
-  const markAll = () => {
-    markAllUnifiedNotificationsRead(activeId);
-    loadNotifications();
+  const markAll = async () => {
+    await markAllUnifiedNotificationsRead(activeId);
+    await loadNotifications();
     showToast('تم تعليم جميع الإشعارات كمقروءة', 'success');
   };
 
-  const removeNotif = (id: number) => {
-    deleteUnifiedNotification(id);
-    loadNotifications();
+  const removeNotif = async (id: number) => {
+    await deleteUnifiedNotification(id);
+    await loadNotifications();
     showToast('تم حذف الإشعار', 'info');
   };
 
-  const clearAll = () => {
-    notifs.forEach((n) => deleteUnifiedNotification(n.id));
-    loadNotifications();
+  const clearAll = async () => {
+    await Promise.all(notifs.map((n) => deleteUnifiedNotification(n.id)));
+    await loadNotifications();
     showToast('تم حذف جميع الإشعارات', 'info');
   };
 
