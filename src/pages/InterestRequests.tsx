@@ -259,22 +259,22 @@ export default function InterestRequests() {
   return (
     <div className="min-h-screen bg-[#FAF9F5] dark:bg-navy-950 text-navy-950 font-sans selection:bg-amber-100 selection:text-amber-900" dir="rtl">
       {/* ===== رأس الصفحة الفاخر بتصميم منحني وأشكال زخرفية ===== */}
-      <div className="relative bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] text-white overflow-hidden pb-12 pt-8 border-b border-amber-500/10 shadow-lg">
+      <div className="relative bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] text-white overflow-hidden pb-10 sm:pb-12 pt-6 sm:pt-8 border-b border-amber-500/10 shadow-lg">
         {/* تأثيرات شبكية هندسية وإضاءة خلفية خافتة */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:24px_24px]" />
         <div className="absolute -top-40 -left-40 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
         
         <div className="max-w-3xl mx-auto px-4 relative z-10">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-3xl bg-gradient-to-tr from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center text-slate-950 shadow-[0_4px_20px_rgba(245,158,11,0.3)] border border-amber-300/30">
-                <Heart className="w-7 h-7 text-navy-900 stroke-[2.2]" />
+          <div className="flex items-center justify-between gap-3 sm:gap-4 flex-wrap">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl sm:rounded-3xl bg-gradient-to-tr from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center text-slate-950 shadow-[0_4px_20px_rgba(245,158,11,0.3)] border border-amber-300/30 flex-shrink-0">
+                <Heart className="w-5.5 h-5.5 sm:w-7 sm:h-7 text-navy-900 stroke-[2.2]" />
               </div>
-              <div>
-                <span className="text-amber-400 text-xs font-semibold tracking-wider font-cairo block mb-1">منصة توافق الوطنية</span>
-                <h1 className="font-cairo font-extrabold text-2xl sm:text-3xl text-white tracking-tight drop-shadow-sm">طلبات التوافق للزواج</h1>
-                <p className="text-slate-300 text-xs sm:text-sm font-cairo mt-1">
+              <div className="min-w-0">
+                <span className="text-amber-400 text-[10px] sm:text-xs font-semibold tracking-wider font-cairo block mb-1">منصة توافق الوطنية</span>
+                <h1 className="font-cairo font-extrabold text-xl sm:text-3xl text-white tracking-tight drop-shadow-sm">طلبات التوافق للزواج</h1>
+                <p className="text-slate-300 text-[11px] sm:text-sm font-cairo mt-1">
                   {(() => {
                     const me = getMember(activeId);
                     return me
@@ -294,7 +294,7 @@ export default function InterestRequests() {
 
           {/* ===== لوحة الإحصائيات التفاعلية الراقية (Glassmorphism Stats Bar) ===== */}
           {!loading && (
-            <div className="grid grid-cols-3 gap-2.5 mt-8">
+            <div className="grid grid-cols-3 gap-2 sm:gap-2.5 mt-6 sm:mt-8">
               <StatChip
                 active={stats.respond > 0}
                 value={stats.respond} label="تحتاج ردّك الفوري"
@@ -323,7 +323,7 @@ export default function InterestRequests() {
         <JourneyLegend />
 
         {/* أزرار التبويبات الفاخرة */}
-        <div className="flex gap-2 bg-white dark:bg-navy-900 rounded-2xl p-1.5 shadow-[0_8px_30px_rgb(15,23,42,0.03)] border border-slate-100 dark:border-navy-800 mt-5">
+        <div className="flex gap-1.5 sm:gap-2 bg-white dark:bg-navy-900 rounded-2xl p-1.5 shadow-[0_8px_30px_rgb(15,23,42,0.03)] border border-slate-100 dark:border-navy-800 mt-5">
           {tabs.map((t) => {
             const Icon = t.icon;
             const active = tab === t.key;
@@ -331,15 +331,15 @@ export default function InterestRequests() {
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-cairo font-bold text-xs sm:text-sm transition-all duration-300 cursor-pointer
+                className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 rounded-xl font-cairo font-bold text-[11px] sm:text-sm transition-all duration-300 cursor-pointer
                   ${active 
                     ? 'bg-slate-900 dark:bg-amber-500 text-white dark:text-navy-950 shadow-[0_4px_12px_rgba(15,23,42,0.12)]' 
                     : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-cream-50 dark:hover:bg-navy-800'}`}
               >
-                <Icon className={`w-4 h-4 ${active ? 'text-amber-400 dark:text-navy-950' : 'text-slate-400'}`} />
-                <span>{t.label}</span>
+                <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 ${active ? 'text-amber-400 dark:text-navy-950' : 'text-slate-400'}`} />
+                <span className="truncate">{t.label}</span>
                 {t.count > 0 && (
-                  <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-colors ${active ? 'bg-amber-400 dark:bg-navy-950 text-slate-950 dark:text-navy-950 font-black' : 'bg-slate-100 dark:bg-navy-800 text-slate-700 dark:text-cream-200'}`}>
+                  <span className={`px-1.5 sm:px-2 py-0.5 rounded-lg text-[10px] font-bold transition-colors flex-shrink-0 ${active ? 'bg-amber-400 dark:bg-navy-950 text-slate-950 dark:text-navy-950 font-black' : 'bg-slate-100 dark:bg-navy-800 text-slate-700 dark:text-cream-200'}`}>
                     {t.count}
                   </span>
                 )}
@@ -352,7 +352,7 @@ export default function InterestRequests() {
         <div className="flex flex-col sm:flex-row gap-3 mt-4 items-stretch sm:items-center justify-between">
           {/* الفلترة الفرعية (chips) — تبويب النشطة فقط */}
           {tab === 'active' && buckets.active.length > 0 ? (
-            <div className="flex gap-1.5 bg-slate-100/60 dark:bg-navy-900/60 p-1 rounded-xl border border-slate-200/50 dark:border-navy-800 self-start">
+            <div className="flex gap-1.5 bg-slate-100/60 dark:bg-navy-900/60 p-1 rounded-xl border border-slate-200/50 dark:border-navy-800 self-start overflow-x-auto max-w-full">
               {([
                 { key: 'all', label: 'الكل' },
                 { key: 'sent', label: 'طلبات أرسلتها' },
@@ -361,7 +361,7 @@ export default function InterestRequests() {
                 <button
                   key={chip.key}
                   onClick={() => setSubFilter(chip.key)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-cairo font-extrabold transition-all duration-200 cursor-pointer
+                  className={`px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-cairo font-extrabold transition-all duration-200 cursor-pointer whitespace-nowrap
                     ${subFilter === chip.key 
                       ? 'bg-white dark:bg-navy-950 text-slate-950 dark:text-cream-50 shadow-sm' 
                       : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-cream-200'}`}
@@ -394,14 +394,14 @@ export default function InterestRequests() {
 
         {/* ===== شريط أدوات التحديد المتعدد وتحديد الجميع ===== */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-4 bg-white dark:bg-navy-900 p-3 rounded-2xl border border-slate-200/80 dark:border-navy-800 shadow-sm">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => {
                 const nextMode = !isSelectionMode;
                 setIsSelectionMode(nextMode);
                 if (!nextMode) setSelectedIds([]);
               }}
-              className={`px-4 py-2 rounded-xl text-xs font-cairo font-bold flex items-center gap-2 transition-all cursor-pointer ${
+              className={`px-3.5 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-cairo font-bold flex items-center gap-2 transition-all cursor-pointer ${
                 isSelectionMode
                   ? 'bg-amber-500 text-navy-950 font-black shadow-md'
                   : 'bg-slate-100 dark:bg-navy-800 text-slate-700 dark:text-cream-100 hover:bg-slate-200 dark:hover:bg-navy-700'
@@ -414,7 +414,7 @@ export default function InterestRequests() {
             {isSelectionMode && list.length > 0 && (
               <button
                 onClick={toggleSelectAll}
-                className="px-3.5 py-2 rounded-xl text-xs font-cairo font-bold bg-slate-100 dark:bg-navy-800 text-slate-700 dark:text-cream-100 hover:bg-slate-200 dark:hover:bg-navy-700 flex items-center gap-1.5 cursor-pointer border border-slate-200 dark:border-navy-700"
+                className="px-3 sm:px-3.5 py-2 rounded-xl text-[11px] sm:text-xs font-cairo font-bold bg-slate-100 dark:bg-navy-800 text-slate-700 dark:text-cream-100 hover:bg-slate-200 dark:hover:bg-navy-700 flex items-center gap-1.5 cursor-pointer border border-slate-200 dark:border-navy-700"
               >
                 <ListChecks className="w-4 h-4 text-amber-500" />
                 <span>
@@ -428,7 +428,7 @@ export default function InterestRequests() {
 
           {isSelectionMode && (
             <div className="flex items-center gap-2 self-end sm:self-center">
-              <span className="text-xs font-cairo font-extrabold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-3 py-1.5 rounded-xl border border-amber-200/60 dark:border-amber-800/40">
+              <span className="text-[11px] sm:text-xs font-cairo font-extrabold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-3 py-1.5 rounded-xl border border-amber-200/60 dark:border-amber-800/40">
                 تم تحديد ({selectedIds.length}) من أصل ({list.length}) رحلة
               </span>
             </div>
@@ -728,7 +728,7 @@ export default function InterestRequests() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
             <button
               onClick={handleBulkDelete}
               className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-cairo font-extrabold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
@@ -738,7 +738,7 @@ export default function InterestRequests() {
             </button>
             <button
               onClick={() => setConfirmBulkDelete(false)}
-              className="px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-cairo font-bold py-3 rounded-xl transition-all cursor-pointer"
+              className="sm:px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-cairo font-bold py-3 rounded-xl transition-all cursor-pointer"
             >
               إلغاء
             </button>
@@ -758,7 +758,7 @@ export default function InterestRequests() {
             placeholder="سبب الإلغاء الجماعي (مثال: عدم الرغبة بالمتابعة حالياً...)"
             className="w-full bg-slate-50 dark:bg-navy-900 border border-slate-200 dark:border-navy-700 rounded-xl p-3 text-xs sm:text-sm font-cairo focus:outline-none focus:border-amber-500 focus:bg-white dark:focus:bg-navy-950 text-slate-900 dark:text-cream-50"
           />
-          <div className="flex items-center gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
             <button
               onClick={handleBulkCancel}
               className="flex-1 bg-amber-500 hover:bg-amber-600 text-navy-950 font-cairo font-extrabold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
@@ -768,7 +768,7 @@ export default function InterestRequests() {
             </button>
             <button
               onClick={() => setConfirmBulkCancel(false)}
-              className="px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-cairo font-bold py-3 rounded-xl transition-all cursor-pointer"
+              className="sm:px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-cairo font-bold py-3 rounded-xl transition-all cursor-pointer"
             >
               تراجع
             </button>
@@ -864,7 +864,7 @@ function RequestCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.98 }}
       onClick={isSelectionMode ? onToggleSelect : undefined}
-      className={`relative bg-white rounded-[2rem] border overflow-hidden transition-all duration-300 shadow-[0_4px_20px_rgba(15,23,42,0.02)] hover:shadow-[0_16px_36px_rgba(15,23,42,0.06)] hover:-translate-y-0.5
+      className={`relative bg-white rounded-[1.75rem] sm:rounded-[2rem] border overflow-hidden transition-all duration-300 shadow-[0_4px_20px_rgba(15,23,42,0.02)] hover:shadow-[0_16px_36px_rgba(15,23,42,0.06)] hover:-translate-y-0.5
         ${isSelectionMode ? 'cursor-pointer select-none' : ''}
         ${isSelected ? 'ring-2 ring-amber-500 border-amber-400 bg-amber-50/20' : urgent ? 'border-amber-300 ring-2 ring-amber-400/10' : 'border-slate-100'}`}
     >
@@ -891,27 +891,27 @@ function RequestCard({
 
       {/* شارة "يتطلب إجراءً" النابضة بالتصميم الجديد */}
       {urgent && !isSelectionMode && (
-        <div className="absolute top-4 left-4 z-10">
+        <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10">
           <motion.span
             animate={{ scale: [1, 1.04, 1], opacity: [0.95, 1, 0.95] }}
             transition={{ duration: 2, repeat: Infinity }}
-            className={`inline-flex items-center gap-1.5 text-[10px] font-cairo font-black px-3.5 py-1.5 rounded-full text-white shadow-md
+            className={`inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-cairo font-black px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-white shadow-md
               ${urgency === 'pay' ? 'bg-gradient-to-r from-rose-500 to-rose-600' : 'bg-gradient-to-r from-amber-500 to-amber-600'}`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-            <Zap className="w-3 h-3" /> إجراء عاجل مطلوب
+            <Zap className="w-3 h-3" /> <span className="hidden xs:inline">إجراء عاجل مطلوب</span>
           </motion.span>
         </div>
       )}
 
       {/* الرأس: تقسيم bento أنيق يحتوي على الصورة، الاسم، وحلقة التوافق الموزون */}
-      <div className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
+      <div className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <Link to={`/member/${other.id}`} className="flex-shrink-0 relative group block cursor-pointer">
             <img 
               src={getAvatar(other.gender)} 
               alt={other.nickname}
-              className={`w-16 h-16 rounded-[1.25rem] object-cover ring-4 ${colors.ring} ring-offset-2 transition-all duration-300 group-hover:scale-105`} 
+              className={`w-14 h-14 sm:w-16 sm:h-16 rounded-[1.1rem] sm:rounded-[1.25rem] object-cover ring-4 ${colors.ring} ring-offset-2 transition-all duration-300 group-hover:scale-105`} 
             />
             {unseen && (
               <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 border-2 border-white animate-pulse" />
@@ -920,7 +920,7 @@ function RequestCard({
           
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <Link to={`/member/${other.id}`} className="font-cairo font-black text-lg text-slate-900 dark:text-cream-50 hover:text-amber-600 dark:hover:text-amber-400 transition-colors cursor-pointer leading-tight">
+              <Link to={`/member/${other.id}`} className="font-cairo font-black text-base sm:text-lg text-slate-900 dark:text-cream-50 hover:text-amber-600 dark:hover:text-amber-400 transition-colors cursor-pointer leading-tight">
                 {other.nickname}
               </Link>
               {isOtherDeleted && (
@@ -971,7 +971,7 @@ function RequestCard({
 
       {/* رسالة الاهتمام (إذا وُجدت) */}
       {req.message && (
-        <div className="px-5 sm:px-6 pb-4">
+        <div className="px-4 sm:px-6 pb-4">
           <div className="relative bg-amber-50/40 dark:bg-amber-950/10 border border-amber-200/40 dark:border-amber-900/20 rounded-2xl p-4 shadow-inner">
             <div className="absolute right-3.5 -top-2.5 bg-white dark:bg-navy-950 px-2.5 py-0.5 rounded-full border border-amber-200/50 dark:border-amber-900/40 text-[9px] font-bold text-amber-800 dark:text-amber-400 font-cairo flex items-center gap-1">
               <Sparkles className="w-2.5 h-2.5 text-amber-500" />
@@ -985,12 +985,12 @@ function RequestCard({
       )}
 
       {/* لوحة حالة الطلب المحدثة */}
-      <div className="px-5 sm:px-6 pb-4">
+      <div className="px-4 sm:px-6 pb-4">
         <RequestStatusPanel summary={summary} compact />
       </div>
 
       {/* خط التوقيت الزمني الأنيق للرحلة */}
-      <div className="px-5 sm:px-6 pb-4">
+      <div className="px-4 sm:px-6 pb-4">
         <JourneyTimeline
           stage={stage}
           isSender={isSender}
@@ -999,7 +999,7 @@ function RequestCard({
 
       {/* تفاصيل وحالات مخصصة حسب المرحلة */}
       {stage === 'declined' && req.decline_reason && (
-        <div className="mx-5 sm:mx-6 mb-4 text-xs font-cairo text-rose-700 bg-rose-50/50 border border-rose-100 rounded-xl p-3 flex items-start gap-1.5">
+        <div className="mx-4 sm:mx-6 mb-4 text-xs font-cairo text-rose-700 bg-rose-50/50 border border-rose-100 rounded-xl p-3 flex items-start gap-1.5">
           <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
           <div>
             <span className="font-bold">ملاحظة الاعتذار:</span> {req.decline_reason}
@@ -1007,25 +1007,25 @@ function RequestCard({
         </div>
       )}
       {stage === 'completed' && req.evaluation_note && (
-        <div className="mx-5 sm:mx-6 mb-4 text-xs font-cairo text-emerald-700 bg-emerald-50/50 border border-emerald-100 rounded-xl p-3 flex items-center gap-1.5">
+        <div className="mx-4 sm:mx-6 mb-4 text-xs font-cairo text-emerald-700 bg-emerald-50/50 border border-emerald-100 rounded-xl p-3 flex items-center gap-1.5">
           <span>{req.evaluation_result === 'failed' ? '🤝 ' : '💚 '}</span>
           <span>{req.evaluation_note}</span>
         </div>
       )}
       {(stage === 'coordination' || stage === 'sharia_viewing' || stage === 'engagement') && req.meeting_date && (
-        <div className="mx-5 sm:mx-6 mb-4 text-xs font-cairo text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-xl p-3 flex items-center gap-2">
+        <div className="mx-4 sm:mx-6 mb-4 text-xs font-cairo text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-xl p-3 flex items-center gap-2">
           <CalendarClock className="w-4 h-4 text-indigo-500 animate-pulse" /> 
           <span className="font-bold">موعد اللقاء الشرعي المنسق:</span> {req.meeting_date}
         </div>
       )}
       
       {stage === 'seriousness' && (
-        <div className="mx-5 sm:mx-6 mb-4 grid grid-cols-2 gap-2.5">
-          <div className={`rounded-xl p-3 text-center border transition-all ${selfPaid ? 'bg-emerald-50/40 border-emerald-200' : 'bg-amber-50/40 border-amber-200/50'}`}>
+        <div className="mx-4 sm:mx-6 mb-4 grid grid-cols-2 gap-2 sm:gap-2.5">
+          <div className={`rounded-xl p-2.5 sm:p-3 text-center border transition-all ${selfPaid ? 'bg-emerald-50/40 border-emerald-200' : 'bg-amber-50/40 border-amber-200/50'}`}>
             <p className="text-[10px] font-cairo font-bold text-slate-500">سدادك لتأكيد الجدية</p>
             <p className={`text-xs font-cairo font-black mt-0.5 ${selfPaid ? 'text-emerald-600' : 'text-amber-700'}`}>{selfPaid ? 'تم السداد ✓' : 'بانتظار سدادك'}</p>
           </div>
-          <div className={`rounded-xl p-3 text-center border transition-all ${otherPaid ? 'bg-emerald-50/40 border-emerald-200' : 'bg-indigo-50 border-indigo-200/50'}`}>
+          <div className={`rounded-xl p-2.5 sm:p-3 text-center border transition-all ${otherPaid ? 'bg-emerald-50/40 border-emerald-200' : 'bg-indigo-50 border-indigo-200/50'}`}>
             <p className="text-[10px] font-cairo font-bold text-slate-500">سداد الشريك لتأكيد الجدية</p>
             <p className={`text-xs font-cairo font-black mt-0.5 ${otherPaid ? 'text-emerald-600' : 'text-indigo-700'}`}>{otherPaid ? 'تم السداد ✓' : 'بانتظار سداده'}</p>
           </div>
@@ -1034,7 +1034,7 @@ function RequestCard({
 
       {/* تنبيه حالة العضو الحصري */}
       {isOtherUnavailable && (
-        <div className="mx-5 sm:mx-6 mb-4 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-rose-900 dark:text-rose-200 rounded-2xl p-4 shadow-sm flex items-start gap-3">
+        <div className="mx-4 sm:mx-6 mb-4 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-rose-900 dark:text-rose-200 rounded-2xl p-4 shadow-sm flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <h4 className="font-cairo font-extrabold text-xs text-rose-900 dark:text-rose-200 leading-tight">
@@ -1048,328 +1048,10 @@ function RequestCard({
       )}
 
       {/* قسم الإجراءات والخدمات المساعدة */}
-      <div className="px-5 sm:px-6 pb-5 pt-3.5 border-t border-slate-100 dark:border-navy-800 bg-slate-50/30 dark:bg-navy-950/30">
+      <div className="px-4 sm:px-6 pb-5 pt-3.5 border-t border-slate-100 dark:border-navy-800 bg-slate-50/30 dark:bg-navy-950/30">
         {isOtherUnavailable ? (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-rose-50/70 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 p-3.5 rounded-2xl">
             <span className="text-xs font-cairo font-bold text-rose-800 dark:text-rose-300">توقفت الرحلة بسبب عدم توفر حساب الطرف الآخر</span>
             <button
               onClick={onCancel}
-              disabled={busy}
-              className="w-full sm:w-auto px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-cairo font-bold text-xs rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Ban className="w-4 h-4" />
-              إلغاء وإزالة الطلب
-            </button>
-          </div>
-        ) : (
-          <PrimaryActionBar
-            stage={stage} action={action} busy={busy} requestId={req.id}
-            onAccept={onAccept} onDecline={onDecline} onPay={onPay} onCoord={onCoord} onResult={onResult}
-          />
-        )}
-
-        {/* إرشادات ووسائل طمأنينة تفاعلية بناءً على نوع القرار المطلوب */}
-        {action.type === 'accept_decline' && (
-          <p className="text-[10px] text-slate-500 font-cairo text-center mt-2.5 leading-relaxed flex items-center justify-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-            <span>لن تتم مشاركة أي أرقام تواصل أو بيانات حساسة؛ فقط سيتم فتح مسار التعارف المبدئي بأسئلة محددة.</span>
-          </p>
-        )}
-        {action.type === 'pay_deposit' && (
-          <p className="text-[10px] text-rose-700 font-cairo text-center mt-2.5 leading-relaxed font-bold bg-rose-50 border border-rose-200/40 rounded-xl py-1.5 px-3 flex items-center justify-center gap-1.5">
-            <Info className="w-3.5 h-3.5 text-rose-500 flex-shrink-0" />
-            <span>تنبيه هام: رسوم تأكيد الجدية وجميع الرسوم المدفوعة غير مستردة نهائياً تحت أي ظرف.</span>
-          </p>
-        )}
-        {stage === 'sharia_viewing' && (
-          <p className="text-[10px] text-indigo-700 font-cairo text-center mt-2.5 leading-relaxed bg-indigo-50 border border-indigo-100/50 rounded-xl py-1.5 px-3 flex items-center justify-center gap-1.5">
-            <CalendarClock className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
-            <span>بعد اللقاء الشرعي، حدد "توافق مبارك" لتوثيق الملكة أو "لم يكتمل" للاعتذار وإغلاق الطلب بلطف.</span>
-          </p>
-        )}
-
-        <div className="grid grid-cols-2 gap-2.5 mt-3.5">
-          {/* فتح الرحلة الكاملة بنمط راقٍ */}
-          {!isTerminal(stage) && (
-            <Link to={`/journey/${req.id}`}
-              className="flex-1 flex items-center justify-center gap-2 font-cairo font-bold text-[11px] sm:text-xs text-amber-800 bg-amber-500/10 hover:bg-amber-500/15 rounded-xl py-3 transition-all cursor-pointer border border-amber-300/20 shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" /> عرض الرحلة والتفاصيل
-            </Link>
-          )}
-          
-          {/* إلغاء الطلب — متاح للمراحل النشطة */}
-          {!isTerminal(stage) && action.type !== 'accept_decline' && (
-            <button onClick={onCancel} disabled={busy}
-              className="flex-1 flex items-center justify-center gap-1.5 text-[11px] sm:text-xs font-cairo font-bold text-rose-500 hover:text-rose-600 hover:bg-rose-50/50 rounded-xl py-3 transition-all disabled:opacity-60 cursor-pointer border border-rose-100/40 shadow-sm">
-              <Ban className="w-3.5 h-3.5" /> إلغاء الطلب والاعتذار
-            </button>
-          )}
-        </div>
-
-        {/* سجل الأحداث الزمني التفصيلي القابل للتوسيع */}
-        <button onClick={loadTimeline}
-          className="mt-3 w-full flex items-center justify-center gap-1.5 text-[10px] font-cairo font-bold text-slate-400 hover:text-slate-600 transition-colors py-1 cursor-pointer">
-          {showTimeline ? 'إخفاء السجل الزمني للرحلة' : 'عرض السجل الزمني للتواصل والأحداث'}
-          <ChevronLeft className={`w-3.5 h-3.5 transition-transform duration-300 ${showTimeline ? '-rotate-90' : ''}`} />
-        </button>
-        
-        <AnimatePresence>
-          {showTimeline && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }} 
-              animate={{ height: 'auto', opacity: 1 }} 
-              exit={{ height: 0, opacity: 0 }} 
-              className="overflow-hidden"
-            >
-              <div className="pt-3 space-y-2 border-t border-slate-200/40 mt-2">
-                {events.length === 0 && (
-                  <p className="text-[10px] text-slate-400 font-cairo text-center py-2">لم يتم تسجيل أي أحداث للرحلة حتى الآن</p>
-                )}
-                {events.map((ev, idx) => (
-                  <div key={(ev?.id !== undefined && ev?.id !== null && !Number.isNaN(Number(ev.id))) ? `ev-${ev.id}-${idx}` : `ev-idx-${idx}`} className="flex items-start gap-2 text-xs font-cairo bg-white p-2.5 rounded-xl border border-slate-100">
-                    <span className="w-2 h-2 rounded-full bg-amber-400 mt-1.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-slate-700 font-medium">{ev.note}</p>
-                      <p className="text-[9px] text-slate-400 mt-0.5">{new Date(ev.created_at).toLocaleString('ar-SA')}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.div>
-  );
-}
-
-// ============================================================
-//  شريط الإجراء الأساسي — أزرار فاخرة متناسقة مفعمة بالحيوية
-// ============================================================
-function PrimaryActionBar({
-  stage, action, busy, requestId, onAccept, onDecline, onPay, onCoord, onResult,
-}: {
-  stage: JourneyState; action: ReturnType<typeof getPrimaryAction>; busy: boolean; requestId: number;
-  onAccept: () => void; onDecline: () => void; onPay: () => void; onCoord: () => void; onResult: () => void;
-}) {
-  if (action.type === 'open_journey') {
-    return (
-      <Link to={`/journey/${requestId}`}
-        className="w-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-slate-950 font-cairo font-black py-4 rounded-2xl shadow-[0_4px_15px_rgba(245,158,11,0.2)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer text-sm">
-        <Sparkles className="w-5 h-5 text-slate-950" /> {action.label}
-      </Link>
-    );
-  }
-
-  if (action.type === 'accept_decline') {
-    return (
-      <div className="flex gap-3">
-        <button onClick={onAccept} disabled={busy}
-          className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-cairo font-black py-3.5 rounded-2xl shadow-[0_4px_12px_rgba(16,185,129,0.15)] hover:-translate-y-0.5 transition-all disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer text-sm">
-          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Heart className="w-4 h-4 text-white" />} قبول طلب التوافق
-        </button>
-        <button onClick={onDecline} disabled={busy}
-          className="flex-1 bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900 font-cairo font-black py-3.5 rounded-2xl transition-all disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer text-sm">
-          <X className="w-4 h-4 text-slate-500" /> اعتذار بلطف
-        </button>
-      </div>
-    );
-  }
-
-  if (action.type === 'none') {
-    return (
-      <div className="text-center py-4 bg-[#FAF9F5] dark:bg-navy-900/40 rounded-2xl border border-slate-200/50">
-        <p className="text-xs sm:text-sm font-cairo font-black text-slate-800">{action.label}</p>
-        <p className="text-[10px] sm:text-xs font-cairo text-slate-500 mt-1">{action.hint}</p>
-      </div>
-    );
-  }
-
-  const handler = action.type === 'pay_deposit' ? onPay
-    : action.type === 'view_coordination' ? onCoord
-    : action.type === 'record_result' ? onResult : () => {};
-
-  const accent = stage === 'seriousness' || stage === 'accepted' || stage === 'engagement' 
-    ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 shadow-[0_4px_15px_rgba(245,158,11,0.2)]'
-    : stage === 'sharia_viewing' 
-      ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-[0_4px_12px_rgba(99,102,241,0.15)]' 
-      : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-[0_4px_12px_rgba(59,130,246,0.15)]';
-
-  const Icon = action.type === 'pay_deposit' ? ShieldCheck : action.type === 'record_result' ? Heart : CalendarClock;
-
-  return (
-    <button onClick={handler} disabled={busy}
-      className={`w-full ${accent} font-cairo font-black py-4 rounded-2xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:translate-y-0 flex items-center justify-center gap-2 cursor-pointer text-sm`}>
-      {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Icon className="w-5 h-5" />}
-      {action.label}
-    </button>
-  );
-}
-
-// ============================================================
-//  تقدّم السداد الثنائي داخل مودال الدفع
-// ============================================================
-function PayProgress({ req, activeId }: { req: ApiRequest; activeId: string }) {
-  const items = [
-    { label: 'سدادك أنت لتأكيد الجدية', paid: req.sender_id === activeId ? req.sender_paid : req.receiver_paid },
-    { label: 'سداد الطرف الآخر لتأكيد الجدية', paid: req.sender_id === activeId ? req.receiver_paid : req.sender_paid },
-  ];
-  return (
-    <div className="flex gap-3">
-      {items.map((it) => (
-        <div key={it.label} className={`flex-1 rounded-2xl p-3.5 text-center border transition-all ${it.paid ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
-          <p className="text-[11px] font-cairo font-bold text-slate-500">{it.label}</p>
-          <p className={`text-sm font-cairo font-black mt-1 ${it.paid ? 'text-emerald-600' : 'text-slate-400'}`}>
-            {it.paid ? '✓ تم السداد بنجاح' : 'بانتظار السداد'}
-          </p>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ============================================================
-//  خريطة الرحلة المرجعية (Legend) — قابلة للطي وغاية في الجاذبية
-// ============================================================
-function JourneyLegend() {
-  const [open, setOpen] = useState(false);
-  const stages: JourneyState[] = ['sent', 'accepted', 'seriousness', 'coordination', 'sharia_viewing', 'engagement', 'completed'];
-  return (
-    <div className="bg-white rounded-[2rem] border border-slate-100 shadow-[0_8px_30px_rgb(15,23,42,0.02)] overflow-hidden transition-all duration-300">
-      <button onClick={() => setOpen((v) => !v)} className="w-full flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-slate-50/50 transition-colors">
-        <span className="flex items-center gap-2.5 font-cairo font-black text-xs sm:text-sm text-slate-800">
-          <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" /> 
-          <span>كيف تعمل رحلة التوافق للزواج الشرعي الميسر؟ (٧ خطوات واضحة)</span>
-        </span>
-        <ChevronLeft className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${open ? '-rotate-90' : ''}`} />
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-            <div className="px-5 pb-5 pt-1 space-y-3.5 border-t border-slate-100/50">
-              {stages.map((s, i) => {
-                const m = STAGE_META[s];
-                const c = ACCENT_CLASSES[m.accent];
-                const Icon = m.icon;
-                return (
-                  <div key={`journey-stage-item-${s}-${i}`} className="flex items-start gap-4 p-3 rounded-2xl hover:bg-slate-50/70 transition-colors">
-                    <div className={`w-10 h-10 rounded-2xl ${c.bg} flex items-center justify-center text-white flex-shrink-0 shadow-sm`}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-black text-amber-600 font-cairo">الخطوة {i + 1}</span>
-                        <p className="font-cairo font-black text-sm text-slate-900">{m.title}</p>
-                      </div>
-                      <p className="text-xs text-slate-500 font-cairo leading-relaxed mt-1">{m.whereYouAre}</p>
-                      <p className="text-[10px] text-indigo-600 font-cairo font-black mt-1">
-                        تلقائياً التالي: <span className="underline">{m.whatsNext}</span>
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-// ============================================================
-//  شريحة إحصائية في اللوحة العلوية (Stats Bar)
-// ============================================================
-function StatChip({
-  value, label, icon: Icon, tone, active, onClick,
-}: {
-  value: number; label: string; icon: typeof Heart; tone: 'gold' | 'rose' | 'emerald'; active: boolean; onClick: () => void;
-}) {
-  const tones = {
-    gold: { 
-      ring: 'ring-amber-400/40 border-amber-400/40', 
-      icon: 'text-amber-300', 
-      val: 'text-amber-300',
-      bg: 'bg-amber-500/10'
-    },
-    rose: { 
-      ring: 'ring-rose-400/40 border-rose-400/40', 
-      icon: 'text-rose-300', 
-      val: 'text-rose-300',
-      bg: 'bg-rose-500/10'
-    },
-    emerald: { 
-      ring: 'ring-emerald-400/40 border-emerald-400/40', 
-      icon: 'text-emerald-300', 
-      val: 'text-emerald-300',
-      bg: 'bg-emerald-500/10'
-    },
-  }[tone];
-  
-  return (
-    <button
-      onClick={onClick}
-      className={`flex-1 bg-white/5 hover:bg-white/10 backdrop-blur-md rounded-2xl px-3.5 py-3 text-center transition-all duration-300 cursor-pointer border border-white/10
-        ${active ? `ring-2 ${tones.ring} ${tones.bg}` : ''}`}
-    >
-      <div className="flex items-center justify-center gap-2">
-        <Icon className={`w-4 h-4 ${tones.icon}`} />
-        <span className={`font-cairo font-black text-lg sm:text-2xl tracking-tight ${active ? tones.val : 'text-white'}`}>{value}</span>
-      </div>
-      <p className="text-[10px] font-cairo text-slate-300 mt-1 leading-none font-medium">{label}</p>
-    </button>
-  );
-}
-
-// ============================================================
-//  حالة فارغة محسّنة ومذهلة — نصوص مصاغة بعناية
-// ============================================================
-function EmptyState({ tab }: { tab: Tab }) {
-  const config = {
-    active: {
-      icon: Compass,
-      title: 'رحلتك المباركة بانتظار خطوتك الأولى',
-      desc: 'سجل التواصل الآمن لا يحتوي على طلبات نشطة حالياً. تصفّح الأعضاء الموثقين الآن، وأرسل طلب اهتمام جاد لبدء المسار.',
-      cta: '🔍 تصفّح الأعضاء وابحث عن نصفك الآخر', link: '/search',
-    },
-    incoming: {
-      icon: Mail,
-      title: 'صندوق الوارد آمن وبانتظار الفرص',
-      desc: 'لم تتلقَ أي طلبات اهتمام جديدة حتى الآن. نوصيك بإكمال ملفك الشخصي بنسبة ١٠٠٪ ورفع مستوى الجدية لزيادة فرص التواصل.',
-      cta: '✨ تحسين وإكمال ملفي الشخصي الموحد', link: '/profile',
-    },
-    archive: {
-      icon: Archive,
-      title: 'السجل نظيف ولا توجد رحلات منتهية',
-      desc: 'الرحلات السابقة (المنتهية بالزواج أو المعتذر عنها) ستظهر هنا للرجوع إليها لاحقاً بكل سرية وموثوقية.',
-      cta: '🔍 ابدأ تصفّح الأعضاء الآن', link: '/search',
-    },
-  }[tab];
-  const Icon = config.icon;
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }} 
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center justify-center py-20 text-center px-6 bg-white border border-slate-100 rounded-[2.5rem] shadow-[0_8px_30px_rgb(15,23,42,0.015)]"
-    >
-      <div className="relative mb-6">
-        <div className="w-24 h-24 rounded-[2.2rem] bg-gradient-to-br from-amber-50 to-amber-100/50 flex items-center justify-center border border-amber-200/20">
-          <Icon className="w-10 h-10 text-amber-500 stroke-[1.8]" />
-        </div>
-        <motion.span
-          animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 3, repeat: Infinity }}
-          className="absolute -inset-2.5 rounded-[2.8rem] border-2 border-amber-300/30"
-        />
-      </div>
-      <h3 className="font-cairo font-black text-lg text-slate-900">{config.title}</h3>
-      <p className="font-cairo text-xs sm:text-sm text-slate-500 mt-2 max-w-sm leading-relaxed">{config.desc}</p>
-      <Link
-        to={config.link}
-        className="mt-6 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-slate-950 font-cairo font-black px-7 py-3.5 rounded-2xl shadow-[0_4px_15px_rgba(245,158,11,0.2)] hover:-translate-y-0.5 transition-all text-xs sm:text-sm"
-      >
-        {config.cta}
-      </Link>
-    </motion.div>
-  );
-}
+              disabled={busy
