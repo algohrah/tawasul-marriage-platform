@@ -30,7 +30,7 @@ export default function ResetPassword() {
     e.preventDefault();
     setError('');
     if (password.length < 6) { setError('كلمة المرور يجب أن تكون 6 أحرف على الأقل'); return; }
-    if (password !== confirmPassword) { setError('كلمتا المرور غير متطابقتين'); return; }
+    if (password !== confirmPassword) { setError('كلمتا المرور فير متطابقتين'); return; }
 
     setLoading(true);
     try {
@@ -42,43 +42,43 @@ export default function ResetPassword() {
         setTimeout(() => navigate('/login'), 2500);
       }
     } catch (err: any) {
-      setError(err?.message || 'حدث خطأ غير متوقع، حاول مرة أخرى');
+      setError(err?.message || 'حدث خطأ متوقع، حاول مرة أخرى');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center bg-cream-50 p-6">
+    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center bg-cream-50 p-4 sm:p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-white rounded-3xl shadow-luxe border border-cream-200/60 p-8"
+        className="w-full max-w-md bg-white rounded-3xl shadow-luxe border border-cream-200/60 p-6 sm:p-8"
       >
         {done ? (
           <div className="text-center py-4">
-            <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="w-9 h-9 text-emerald-600" />
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="w-8 h-8 sm:w-9 sm:h-9 text-emerald-600" />
             </div>
-            <h1 className="font-cairo font-extrabold text-2xl text-navy-900">تم تحديث كلمة المرور!</h1>
-            <p className="mt-2 text-navy-600 font-tajawal">جارٍ تحويلك لصفحة تسجيل الدخول...</p>
+            <h1 className="font-cairo font-extrabold text-xl sm:text-2xl text-navy-900">تم تحديث كلمة المرور!</h1>
+            <p className="mt-2 text-navy-600 font-tajawal text-sm sm:text-base">جارِ تحويلك لصفحة تسجيل الدخول...</p>
           </div>
         ) : !ready ? (
           <div className="text-center py-4">
-            <div className="w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center mx-auto mb-4">
-              <ShieldCheck className="w-9 h-9 text-rose-500" />
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-rose-50 flex items-center justify-center mx-auto mb-4">
+              <ShieldCheck className="w-8 h-8 sm:w-9 sm:h-9 text-rose-500" />
             </div>
-            <h1 className="font-cairo font-extrabold text-xl text-navy-900">الرابط غير صالح أو منتهي</h1>
-            <p className="mt-2 text-navy-600 font-tajawal">يرجى طلب رابط إعادة تعيين جديد.</p>
+            <h1 className="font-cairo font-extrabold text-lg sm:text-xl text-navy-900">الرابط فير صالح أو منتهي</h1>
+            <p className="mt-2 text-navy-600 font-tajawal text-sm sm:text-base">يرجى طلب رابط إعادة تعيين جديد.</p>
             <Link to="/forgot-password" className="inline-block mt-5 font-cairo font-bold text-gold-700 hover:underline">طلب رابط جديد</Link>
           </div>
         ) : (
           <>
-            <div className="w-14 h-14 rounded-2xl bg-gold-300/15 flex items-center justify-center mb-5">
-              <ShieldCheck className="w-7 h-7 text-gold-700" />
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gold-300/15 flex items-center justify-center mb-5">
+              <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7 text-gold-700" />
             </div>
-            <h1 className="font-cairo font-extrabold text-2xl text-navy-900">تعيين كلمة مرور جديدة</h1>
-            <p className="mt-2 text-navy-600 font-tajawal">اختر كلمة مرور قوية وآمنة لحسابك.</p>
+            <h1 className="font-cairo font-extrabold text-xl sm:text-2xl text-navy-900">تعيين كلمة مرور جديدة</h1>
+            <p className="mt-2 text-navy-600 font-tajawal text-sm sm:text-base">اختر كلمة مرور قوية وآمنة لحسابك.</p>
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-5">
               {error && (
@@ -116,7 +116,7 @@ export default function ResetPassword() {
                   dir="ltr"
                 />
               </div>
-              <Button type="submit" fullWidth size="lg" disabled={loading}>{loading ? 'جارٍ الحفظ...' : 'حفظ كلمة المرور الجديدة'}</Button>
+              <Button type="submit" fullWidth size="lg" disabled={loading}>{loading ? 'جارِ الحفظ...' : 'حفظ كلمة المرور الجديدة'}</Button>
             </form>
           </>
         )}
