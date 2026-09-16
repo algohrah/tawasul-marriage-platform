@@ -414,7 +414,7 @@ function AccountTab({ name, onLogout, onRequestVerification }: { name: string; o
             className="flex items-center justify-between gap-3 bg-gold-gradient rounded-2xl p-4 shadow-gold hover:-translate-y-0.5 transition-all group no-tap-highlight"
           >
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-navy-900/10 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-navy-900/10 flex items-center justify-center flex-shrink-0">
                 <Edit3 className="w-5 h-5 text-navy-900" />
               </div>
               <div>
@@ -422,7 +422,7 @@ function AccountTab({ name, onLogout, onRequestVerification }: { name: string; o
                 <p className="text-xs text-navy-800/70 font-tajawal">حدّث معلوماتك ونبذتك</p>
               </div>
             </div>
-            <ChevronLeft className="w-5 h-5 text-navy-900 group-hover:-translate-x-1 transition-transform" />
+            <ChevronLeft className="w-5 h-5 text-navy-900 group-hover:-translate-x-1 transition-transform flex-shrink-0" />
           </Link>
 
           {/* زر أكمل ملفك الشخصي */}
@@ -431,7 +431,7 @@ function AccountTab({ name, onLogout, onRequestVerification }: { name: string; o
             className="flex items-center justify-between gap-3 bg-white rounded-2xl p-4 shadow-soft border border-cream-200/60 hover:shadow-luxe hover:border-gold-300 transition-all group no-tap-highlight"
           >
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
@@ -445,7 +445,7 @@ function AccountTab({ name, onLogout, onRequestVerification }: { name: string; o
                 </p>
               </div>
             </div>
-            <ChevronLeft className="w-5 h-5 text-navy-300 group-hover:text-gold-600 transition-colors" />
+            <ChevronLeft className="w-5 h-5 text-navy-300 group-hover:text-gold-600 transition-colors flex-shrink-0" />
           </Link>
 
           {/* باقي الإجراءات */}
@@ -460,7 +460,7 @@ function AccountTab({ name, onLogout, onRequestVerification }: { name: string; o
 
       {/* === القسم 2: معلومات الحساب === */}
       <div>
-        <div className="flex items-center justify-between mb-3 px-1">
+        <div className="flex items-center justify-between mb-3 px-1 flex-wrap gap-2">
           <h3 className="font-cairo font-bold text-navy-900">معلومات الحساب</h3>
           <button
             onClick={() => setShowAccountModal(true)}
@@ -469,7 +469,7 @@ function AccountTab({ name, onLogout, onRequestVerification }: { name: string; o
             تعديل المعلومات
           </button>
         </div>
-        <div className="bg-white rounded-2xl p-5 shadow-soft border border-cream-200/60">
+        <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-soft border border-cream-200/60">
           <div className="space-y-1">
             {/* الاسم الرباعي */}
             <div className="flex items-center justify-between gap-3 py-3 border-b border-cream-100">
@@ -502,7 +502,7 @@ function AccountTab({ name, onLogout, onRequestVerification }: { name: string; o
               <span className="text-sm font-cairo font-semibold text-navy-900 truncate">{accProfile.phone || 'غير محدد'}</span>
             </div>
             {/* كلمة المرور */}
-            <div className="flex items-center justify-between gap-3 py-3 border-b border-cream-100">
+            <div className="flex items-center justify-between gap-3 py-3 border-b border-cream-100 flex-wrap">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-cream-100 flex items-center justify-center flex-shrink-0">
                   <KeyRound className="w-4 h-4 text-navy-500" />
@@ -541,7 +541,7 @@ function AccountTab({ name, onLogout, onRequestVerification }: { name: string; o
             </div>
 
             {/* نوع الزواج المطلوب */}
-            <div className="flex items-center justify-between gap-3 py-3 border-b border-cream-100">
+            <div className="flex items-center justify-between gap-3 py-3 border-b border-cream-100 flex-wrap">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
                   <Heart className="w-4 h-4 text-amber-600" />
@@ -559,7 +559,7 @@ function AccountTab({ name, onLogout, onRequestVerification }: { name: string; o
             </div>
 
             {/* القبيلة / النسب */}
-            <div className="flex items-center justify-between gap-3 py-3">
+            <div className="flex items-center justify-between gap-3 py-3 flex-wrap">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-cream-100 flex items-center justify-center flex-shrink-0">
                   <ShieldCheck className="w-4 h-4 text-navy-500" />
@@ -578,7 +578,7 @@ function AccountTab({ name, onLogout, onRequestVerification }: { name: string; o
 
             {/* إخفاء الحساب مؤقتاً (يظهر فقط إذا سمح المشرف من الإعدادات) */}
             {allowProfileHiding && (
-              <div className="flex items-center justify-between gap-3 py-3 border-t border-cream-100 mt-2 pt-3" id="profile-hiding-toggle-wrapper">
+              <div className="flex items-center justify-between gap-3 py-3 border-t border-cream-100 mt-2 pt-3 flex-wrap" id="profile-hiding-toggle-wrapper">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
                     <EyeOff className="w-4 h-4 text-amber-600" />
@@ -598,7 +598,7 @@ function AccountTab({ name, onLogout, onRequestVerification }: { name: string; o
       {/* === القسم 3: إعدادات الإشعارات === */}
       <div>
         <h3 className="font-cairo font-bold text-navy-900 mb-3 px-1">إعدادات الإشعارات</h3>
-        <div className="bg-white rounded-2xl p-5 shadow-soft border border-cream-200/60">
+        <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-soft border border-cream-200/60">
           <div className="space-y-1">
             {[
               { key: 'likes' as const, label: 'المحفوظات والاهتمامات', desc: 'عندما يحفظ شخص ملفك أو يبدي اهتماماً بك' },
@@ -657,14 +657,14 @@ function AccountTab({ name, onLogout, onRequestVerification }: { name: string; o
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-3xl shadow-luxe border border-cream-200/60 p-6 w-full max-w-md"
+            className="bg-white rounded-3xl shadow-luxe border border-cream-200/60 p-5 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-cairo font-bold text-lg text-navy-900 flex items-center gap-2">
+              <h3 className="font-cairo font-bold text-base sm:text-lg text-navy-900 flex items-center gap-2">
                 <KeyRound className="w-5 h-5 text-gold-600" /> تغيير كلمة المرور
               </h3>
-              <button onClick={() => setShowPassModal(false)} className="w-8 h-8 rounded-full bg-cream-100 hover:bg-cream-200 flex items-center justify-center text-navy-400">
+              <button onClick={() => setShowPassModal(false)} className="w-8 h-8 rounded-full bg-cream-100 hover:bg-cream-200 flex items-center justify-center text-navy-400 flex-shrink-0">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -706,7 +706,7 @@ function AccountTab({ name, onLogout, onRequestVerification }: { name: string; o
               </div>
               {passError && (
                 <div className="flex items-center gap-2 text-sm text-rose-deep font-tajawal">
-                  <AlertCircle className="w-4 h-4" /> {passError}
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" /> {passError}
                 </div>
               )}
               <button
@@ -726,14 +726,14 @@ function AccountTab({ name, onLogout, onRequestVerification }: { name: string; o
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-3xl shadow-luxe border border-cream-200/60 p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-3xl shadow-luxe border border-cream-200/60 p-5 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-cairo font-bold text-lg text-navy-900 flex items-center gap-2">
+              <h3 className="font-cairo font-bold text-base sm:text-lg text-navy-900 flex items-center gap-2">
                 <Edit3 className="w-5 h-5 text-gold-600" /> تعديل معلومات الحساب
               </h3>
-              <button onClick={() => setShowAccountModal(false)} className="w-8 h-8 rounded-full bg-cream-100 hover:bg-cream-200 flex items-center justify-center text-navy-400">
+              <button onClick={() => setShowAccountModal(false)} className="w-8 h-8 rounded-full bg-cream-100 hover:bg-cream-200 flex items-center justify-center text-navy-400 flex-shrink-0">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -802,7 +802,7 @@ function QuickActionItem({ item }: { key?: any; item: QuickActionItem }) {
         <h4 className="font-cairo font-bold text-navy-900">{item.label}</h4>
         <p className="text-xs text-navy-500 font-tajawal">{item.desc}</p>
       </div>
-      <ChevronLeft className="w-5 h-5 text-navy-300 group-hover:text-gold-600 transition-colors" />
+      <ChevronLeft className="w-5 h-5 text-navy-300 group-hover:text-gold-600 transition-colors flex-shrink-0" />
     </div>
   );
 
@@ -829,14 +829,14 @@ function SubscriptionTab({ currentPlan, plans }: { currentPlan: string; plans: P
   return (
     <div className="space-y-4">
       {/* Current plan card */}
-      <div className="bg-navy-gradient rounded-3xl p-6 relative overflow-hidden">
+      <div className="bg-navy-gradient rounded-3xl p-4 sm:p-6 relative overflow-hidden">
         <div className="absolute inset-0 pattern-arabesque opacity-30" />
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-gold-500/20 rounded-full blur-3xl" />
         <div className="relative">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <Crown className="w-6 h-6 text-gold-300" />
-              <span className="font-cairo font-bold text-white text-lg">باقتك الحالية</span>
+              <span className="font-cairo font-bold text-white text-base sm:text-lg">باقتك الحالية</span>
             </div>
             <span className="px-3 py-1 rounded-full bg-gold-gradient text-navy-900 text-xs font-cairo font-bold">
               {plan.name}
@@ -849,10 +849,10 @@ function SubscriptionTab({ currentPlan, plans }: { currentPlan: string; plans: P
             </div>
             <div className="flex items-center justify-between">
               <span>السعر</span>
-              <span className="text-white font-semibold">{plan.price} ر.س / شهريًا</span>
+              <span className="text-white font-semibold">{plan.price} ر.س / شهرياً</span>
             </div>
           </div>
-          <div className="mt-5 flex gap-2">
+          <div className="mt-5 flex flex-col sm:flex-row gap-2">
             <Link to="/checkout/gold" className="flex-1 text-center py-2.5 rounded-xl bg-gold-gradient text-navy-900 font-cairo font-bold text-sm no-tap-highlight">
               تجديد الباقة
             </Link>
@@ -864,7 +864,7 @@ function SubscriptionTab({ currentPlan, plans }: { currentPlan: string; plans: P
       </div>
 
       {/* Payment history */}
-      <div className="bg-white rounded-2xl p-5 shadow-soft border border-cream-200/60">
+      <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-soft border border-cream-200/60">
         <h3 className="font-cairo font-bold text-navy-900 mb-4 flex items-center gap-2">
           <CreditCard className="w-5 h-5 text-gold-600" /> سجل المدفوعات
         </h3>
@@ -895,7 +895,7 @@ function SubscriptionTab({ currentPlan, plans }: { currentPlan: string; plans: P
 
       {/* Profile boosting (show only if enabled by admin) */}
       {enableProfileBoosting && (
-        <div className="bg-gradient-to-r from-amber-500/10 to-gold-500/10 border border-amber-500/20 rounded-2xl p-5 shadow-soft mt-4 text-right" id="profile-boosting-card">
+        <div className="bg-gradient-to-r from-amber-500/10 to-gold-500/10 border border-amber-500/20 rounded-2xl p-4 sm:p-5 shadow-soft mt-4 text-right" id="profile-boosting-card">
           <div className="flex items-center gap-3 justify-between mb-4 flex-wrap">
             <div className="flex items-center gap-2.5">
               <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-600 flex-shrink-0">
@@ -966,14 +966,14 @@ function RequestsTab() {
 
       {/* Link to full page */}
       <Link to="/requests" className="flex items-center justify-between gap-3 bg-navy-900 rounded-2xl p-4 text-white hover:bg-navy-800 transition-colors group no-tap-highlight">
-        <div className="flex items-center gap-3">
-          <Inbox className="w-5 h-5 text-gold-400" />
-          <div>
+        <div className="flex items-center gap-3 min-w-0">
+          <Inbox className="w-5 h-5 text-gold-400 flex-shrink-0" />
+          <div className="min-w-0">
             <h4 className="font-cairo font-bold text-sm">عرض جميع الطلبات والتتبع التفصيلي</h4>
             <p className="text-xs text-cream-200/60 font-tajawal">صفحة الطلبات الكاملة مع الفلاتر والمتابعة</p>
           </div>
         </div>
-        <ChevronLeft className="w-5 h-5 text-gold-400 group-hover:-translate-x-1 transition-transform" />
+        <ChevronLeft className="w-5 h-5 text-gold-400 group-hover:-translate-x-1 transition-transform flex-shrink-0" />
       </Link>
 
       {/* Filter tabs */}
@@ -1020,7 +1020,7 @@ function RequestsTab() {
                     <img src={getAvatar(member.gender)} alt="" className="w-14 h-14 rounded-2xl object-contain bg-cream-100 p-1.5" />
                   </Link>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-1">
+                    <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
                       <Link to={`/member/${member.id}`} className="font-cairo font-bold text-navy-900 hover:text-gold-700 transition-colors">
                         {member.nickname}
                       </Link>
@@ -1032,7 +1032,7 @@ function RequestsTab() {
                     <p className="text-xs text-navy-400 font-tajawal mb-2">{req.time}</p>
 
                     {isReceivedType && req.status === 'pending' && (
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <button onClick={() => handleAction(req.id, 'accepted_pending_admin')} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-cairo font-bold hover:bg-emerald-700 transition-colors no-tap-highlight">
                           <Check className="w-3.5 h-3.5" /> قبول
                         </button>
@@ -1089,7 +1089,7 @@ function SavedTab() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           {savedList.map((member) => (
             <MemberCard key={member.id} member={member} />
           ))}
