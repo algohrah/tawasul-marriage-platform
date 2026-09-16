@@ -138,7 +138,7 @@ export default function AdminChat() {
     setTimeout(() => {
       sendSupportMessage(
         activeTicketId,
-        'شكرًا لتواصلك معنا الدائم في توافق. تم استلام تدوينك، وسلَّم وسيط العلاقات الطلب لمراجعته وسيتم إفادتك فور الاتصال المباشر مع الأطراف. 🌸',
+        'شكرًا لتواصلك معنا الدائم في توافق. تم استلام تدوينك، وسلَّم وسيط العلاقات الطلب لمراجعته وسيتم إفادتك فور الاتصال المباشر مع الأطراف. 🌸',
         'admin'
       );
     }, 2500);
@@ -161,7 +161,7 @@ export default function AdminChat() {
     const sc = statusConfig[activeTicket.status] || statusConfig.open;
     return (
       <div className="bg-cream-50 dark:bg-navy-950 min-h-[calc(100vh-5rem)] lg:min-h-screen" dir="rtl">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <button
             onClick={() => setActiveTicketId(null)}
             className="flex items-center gap-2 text-navy-600 dark:text-cream-200 hover:text-gold-700 font-cairo font-semibold text-sm mb-4 transition-colors"
@@ -171,13 +171,13 @@ export default function AdminChat() {
 
           <div className="bg-white dark:bg-navy-900 rounded-3xl shadow-soft border border-cream-200/60 dark:border-navy-800 overflow-hidden flex flex-col h-[70vh]">
             {/* Header */}
-            <div className="flex items-center gap-3 p-4 border-b border-cream-200 dark:border-navy-800 bg-cream-50/40 dark:bg-navy-950/40">
-              <div className="w-11 h-11 rounded-xl bg-navy-gradient flex items-center justify-center flex-shrink-0">
-                <Headphones className="w-6 h-6 text-gold-300" />
+            <div className="flex items-center gap-3 p-3 sm:p-4 border-b border-cream-200 dark:border-navy-800 bg-cream-50/40 dark:bg-navy-950/40">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-navy-gradient flex items-center justify-center flex-shrink-0">
+                <Headphones className="w-5 h-5 sm:w-6 sm:h-6 text-gold-300" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-cairo font-bold text-navy-900 dark:text-cream-50 truncate">{activeTicket.subject}</h3>
-                <div className="flex items-center gap-2 mt-0.5">
+                <h3 className="font-cairo font-bold text-navy-900 dark:text-cream-50 truncate text-sm sm:text-base">{activeTicket.subject}</h3>
+                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${sc.color} flex items-center gap-1`}>
                     <sc.icon className="w-3 h-3" /> {sc.label}
                   </span>
@@ -187,7 +187,7 @@ export default function AdminChat() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-cream-50/20 dark:bg-navy-950/20">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 bg-cream-50/20 dark:bg-navy-950/20">
               {activeTicket.messages.map((msg) => (
                 <motion.div
                   key={msg.id}
@@ -195,14 +195,14 @@ export default function AdminChat() {
                   animate={{ opacity: 1, y: 0 }}
                   className={`flex ${msg.sender === 'user' ? 'justify-start' : 'justify-end'}`}
                 >
-                  <div className="flex gap-2 max-w-[85%]">
+                  <div className="flex gap-2 max-w-[90%] sm:max-w-[85%]">
                     {msg.sender === 'admin' && (
                       <div className="w-8 h-8 rounded-full bg-navy-gradient flex items-center justify-center flex-shrink-0 mt-1">
                         <Headphones className="w-4 h-4 text-gold-300" />
                       </div>
                     )}
                     <div>
-                      <div className={`px-4 py-2.5 rounded-2xl whitespace-pre-line ${
+                      <div className={`px-3.5 sm:px-4 py-2.5 rounded-2xl whitespace-pre-line ${
                         msg.sender === 'user'
                           ? 'bg-navy-900 text-white rounded-bl-md dark:bg-navy-700'
                           : 'bg-white dark:bg-navy-800 text-navy-900 dark:text-cream-50 rounded-br-md shadow-soft border border-cream-200/80 dark:border-navy-700 font-semibold'
@@ -219,17 +219,17 @@ export default function AdminChat() {
             </div>
 
             {/* Input */}
-            <div className="p-4 border-t border-cream-200 dark:border-navy-800 flex items-center gap-2">
+            <div className="p-3 sm:p-4 border-t border-cream-200 dark:border-navy-800 flex items-center gap-2">
               <input
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                 placeholder="اكتب رسالتك للإدارة والوسيط الشرعي..."
-                className="flex-1 px-4 py-3 rounded-xl bg-cream-50 dark:bg-navy-950 border border-cream-200 dark:border-navy-800 focus:border-gold-400 focus:outline-none font-tajawal text-navy-950 dark:text-cream-50"
+                className="flex-1 min-w-0 px-3.5 sm:px-4 py-3 rounded-xl bg-cream-50 dark:bg-navy-950 border border-cream-200 dark:border-navy-800 focus:border-gold-400 focus:outline-none font-tajawal text-navy-950 dark:text-cream-50 text-sm sm:text-base"
               />
               <button
                 onClick={sendMessage}
-                className="w-12 h-12 rounded-xl bg-gold-gradient flex items-center justify-center text-navy-900 flex-shrink-0 shadow-soft cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-transform"
+                className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gold-gradient flex items-center justify-center text-navy-900 flex-shrink-0 shadow-soft cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-transform"
               >
                 <Send className="w-5 h-5 -scale-x-100" />
               </button>
@@ -242,22 +242,22 @@ export default function AdminChat() {
 
   return (
     <div className="bg-cream-50 dark:bg-navy-950 min-h-screen pb-28 lg:pb-8" dir="rtl">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 font-cairo">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-5 sm:py-6 font-cairo">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-navy-gradient flex items-center justify-center shadow-md">
-              <Headphones className="w-6 h-6 text-gold-300" />
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-navy-gradient flex items-center justify-center shadow-md flex-shrink-0">
+              <Headphones className="w-5 h-5 sm:w-6 sm:h-6 text-gold-300" />
             </div>
             <div>
-              <h1 className="font-cairo font-extrabold text-2xl text-navy-900 dark:text-cream-50">إدارة التواصل وتنسيق التوافق</h1>
-              <p className="text-navy-600 dark:text-slate-300 font-tajawal text-sm text-right">نتابع طلباتك ونوجهك خطوة بخطوة حتى التوفيق المبارك</p>
+              <h1 className="font-cairo font-extrabold text-xl sm:text-2xl text-navy-900 dark:text-cream-50">إدارة التواصل وتنسيق التوافق</h1>
+              <p className="text-navy-600 dark:text-slate-300 font-tajawal text-xs sm:text-sm text-right">نتابع طلباتك ونوجهك خطوة بخطوة حتى التوفيق المبارك</p>
             </div>
           </div>
           {activeMainTab === 'tickets' && (
             <button
               onClick={() => setNewTicketOpen(true)}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gold-gradient text-navy-900 font-cairo font-bold text-sm shadow-soft hover:shadow-gold transition-all cursor-pointer self-start sm:self-auto"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gold-gradient text-navy-900 font-cairo font-bold text-sm shadow-soft hover:shadow-gold transition-all cursor-pointer self-start sm:self-auto w-full sm:w-auto"
             >
               <Plus className="w-4 h-4" /> تذكرة جديدة
             </button>
@@ -265,10 +265,10 @@ export default function AdminChat() {
         </div>
 
         {/* Info banner */}
-        <div className="bg-navy-gradient rounded-2xl p-4 mb-5 relative overflow-hidden shadow-sm">
+        <div className="bg-navy-gradient rounded-2xl p-3.5 sm:p-4 mb-5 relative overflow-hidden shadow-sm">
           <div className="absolute inset-0 pattern-arabesque opacity-30" />
           <div className="relative flex items-center gap-3">
-            <ShieldCheck className="w-6 h-6 text-gold-300 flex-shrink-0" />
+            <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-gold-300 flex-shrink-0" />
             <p className="text-cream-200/90 font-tajawal text-xs sm:text-sm text-right leading-relaxed">
               التواصل في توافق <span className="text-gold-300 font-bold">بإشراف إداري ووساطة شرعية رسمية</span>. نضمن خصوصية العائلات وسرية المراسلات والتنسيق المباشر.
             </p>
@@ -276,19 +276,22 @@ export default function AdminChat() {
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center gap-2 p-1.5 bg-white dark:bg-navy-900 border border-cream-200/80 dark:border-navy-800 rounded-2xl mb-6 shadow-xs">
+        <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 bg-white dark:bg-navy-900 border border-cream-200/80 dark:border-navy-800 rounded-2xl mb-6 shadow-xs">
           <button
             onClick={() => setActiveMainTab('requests')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-cairo font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-4 rounded-xl font-cairo font-bold text-xs sm:text-sm transition-all cursor-pointer min-w-0 ${
               activeMainTab === 'requests'
                 ? 'bg-navy-900 text-white dark:bg-gold-gradient dark:text-navy-950 shadow-sm'
                 : 'text-slate-600 dark:text-slate-300 hover:bg-cream-100 dark:hover:bg-navy-800'
             }`}
           >
-            <HeartHandshake className="w-4 h-4" />
-            <span>طلبات التوافق وتوجيهات الإدارة</span>
+            <HeartHandshake className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">
+              <span className="hidden sm:inline">طلبات التوافق وتوجيهات الإدارة</span>
+              <span className="sm:hidden">طلبات التوافق</span>
+            </span>
             {requests.length > 0 && (
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold flex-shrink-0 ${
                 activeMainTab === 'requests'
                   ? 'bg-white/20 text-white dark:bg-navy-900 dark:text-gold-300'
                   : 'bg-cream-200 dark:bg-navy-800 text-slate-700 dark:text-slate-300'
@@ -299,16 +302,19 @@ export default function AdminChat() {
           </button>
           <button
             onClick={() => setActiveMainTab('tickets')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-cairo font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-4 rounded-xl font-cairo font-bold text-xs sm:text-sm transition-all cursor-pointer min-w-0 ${
               activeMainTab === 'tickets'
                 ? 'bg-navy-900 text-white dark:bg-gold-gradient dark:text-navy-950 shadow-sm'
                 : 'text-slate-600 dark:text-slate-300 hover:bg-cream-100 dark:hover:bg-navy-800'
             }`}
           >
-            <Support className="w-4 h-4" />
-            <span>تذاكر الدعم والاستفسارات</span>
+            <Support className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">
+              <span className="hidden sm:inline">تذاكر الدعم والاستفسارات</span>
+              <span className="sm:hidden">تذاكر الدعم</span>
+            </span>
             {userTickets.length > 0 && (
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold flex-shrink-0 ${
                 activeMainTab === 'tickets'
                   ? 'bg-white/20 text-white dark:bg-navy-900 dark:text-gold-300'
                   : 'bg-cream-200 dark:bg-navy-800 text-slate-700 dark:text-slate-300'
@@ -361,17 +367,17 @@ export default function AdminChat() {
                     className="bg-white dark:bg-navy-900 rounded-3xl border border-cream-200/90 dark:border-navy-800 p-4 sm:p-5 shadow-soft hover:border-gold-300/80 transition-all group"
                   >
                     {/* Header */}
-                    <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
                       <div className="flex items-center gap-3">
                         <Link to={`/member/${otherPartyId}`} className="relative flex-shrink-0 group-hover:scale-105 transition-transform">
                           <img
                             src={getAvatar(other?.gender || 'male')}
                             alt={other?.nickname || 'العضو'}
-                            className={`w-12 h-12 rounded-2xl object-cover ring-2 ${colors.ring} ring-offset-1`}
+                            className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl object-cover ring-2 ${colors.ring} ring-offset-1`}
                           />
                         </Link>
                         <div>
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="font-cairo font-black text-sm sm:text-base text-navy-950 dark:text-cream-50">
                               {other?.nickname || 'طرف التوافق'}
                             </span>
@@ -380,7 +386,7 @@ export default function AdminChat() {
                               #{req.id}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-400 mt-0.5">
+                          <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-400 mt-0.5 flex-wrap">
                             <span>{other?.age ? `${other.age} سنة` : ''}</span>
                             {other?.city && (
                               <span className="flex items-center gap-0.5">
@@ -400,8 +406,8 @@ export default function AdminChat() {
 
                     {/* Admin Guidance Box if present */}
                     {latestAdminMsg && (
-                      <div className="mb-3.5 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-indigo-500/10 border border-emerald-500/30 dark:border-emerald-500/40 rounded-2xl p-3.5 shadow-xs">
-                        <div className="flex items-center justify-between gap-2 mb-1.5 text-xs text-emerald-800 dark:text-emerald-300 font-cairo font-black">
+                      <div className="mb-3.5 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-indigo-500/10 border border-emerald-500/30 dark:border-emerald-500/40 rounded-2xl p-3 sm:p-3.5 shadow-xs">
+                        <div className="flex items-center justify-between gap-2 mb-1.5 text-xs text-emerald-800 dark:text-emerald-300 font-cairo font-black flex-wrap">
                           <span className="flex items-center gap-1.5">
                             <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                             توجيه وإشعار من إدارة المنصة
@@ -419,7 +425,7 @@ export default function AdminChat() {
                     {/* Latest inquiry message if exists and not admin */}
                     {latestInqMsg && latestInqMsg.sender_id !== 'admin' && (
                       <div className="mb-3 bg-cream-50/70 dark:bg-navy-950/60 border border-cream-200/60 dark:border-navy-800 rounded-2xl p-3">
-                        <div className="flex items-center justify-between gap-2 mb-1 text-[11px] text-slate-400">
+                        <div className="flex items-center justify-between gap-2 mb-1 text-[11px] text-slate-400 flex-wrap">
                           <span className="font-bold text-navy-800 dark:text-cream-100 flex items-center gap-1">
                             <MessageCircle className="w-3.5 h-3.5 text-gold-500" />
                             آخر رسالة في استفسار التوافق
@@ -443,16 +449,16 @@ export default function AdminChat() {
                     <div className="flex items-center gap-2 pt-1 border-t border-cream-100 dark:border-navy-800">
                       <button
                         onClick={() => navigate(`/journey/${req.id}`)}
-                        className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-navy-900 hover:bg-navy-800 text-white dark:bg-gold-gradient dark:text-navy-950 font-cairo font-bold text-xs transition-all shadow-xs cursor-pointer"
+                        className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 px-2 sm:px-4 rounded-xl bg-navy-900 hover:bg-navy-800 text-white dark:bg-gold-gradient dark:text-navy-950 font-cairo font-bold text-xs transition-all shadow-xs cursor-pointer min-w-0"
                       >
-                        <Sparkles className="w-3.5 h-3.5 text-gold-300 dark:text-navy-950" />
-                        <span>الانتقال إلى رحلة التوافق</span>
-                        <ArrowLeft className="w-3.5 h-3.5 rotate-180" />
+                        <Sparkles className="w-3.5 h-3.5 text-gold-300 dark:text-navy-950 flex-shrink-0" />
+                        <span className="truncate">الانتقال إلى رحلة التوافق</span>
+                        <ArrowLeft className="w-3.5 h-3.5 rotate-180 flex-shrink-0" />
                       </button>
 
                       <button
                         onClick={() => navigate(`/journey/${req.id}?tab=inquiry`)}
-                        className="flex items-center justify-center gap-1.5 py-2.5 px-3.5 rounded-xl bg-cream-100 dark:bg-navy-800 hover:bg-cream-200 dark:hover:bg-navy-700 text-navy-800 dark:text-cream-100 font-cairo font-bold text-xs transition-colors cursor-pointer border border-cream-200/80 dark:border-navy-700"
+                        className="flex items-center justify-center gap-1.5 py-2.5 px-3 sm:px-3.5 rounded-xl bg-cream-100 dark:bg-navy-800 hover:bg-cream-200 dark:hover:bg-navy-700 text-navy-800 dark:text-cream-100 font-cairo font-bold text-xs transition-colors cursor-pointer border border-cream-200/80 dark:border-navy-700 flex-shrink-0"
                         title="غرفة الاستفسار والرسائل المباشرة"
                       >
                         <MessageSquare className="w-3.5 h-3.5 text-gold-600 dark:text-gold-400" />
@@ -482,13 +488,13 @@ export default function AdminChat() {
                   <button
                     key={ticket.id}
                     onClick={() => setActiveTicketId(ticket.id)}
-                    className="w-full flex items-start gap-3 p-4 bg-white dark:bg-navy-900 rounded-2xl shadow-soft border border-cream-200/60 dark:border-navy-800 text-right hover:shadow-luxe hover:border-gold-300 transition-all cursor-pointer"
+                    className="w-full flex items-start gap-3 p-3.5 sm:p-4 bg-white dark:bg-navy-900 rounded-2xl shadow-soft border border-cream-200/60 dark:border-navy-800 text-right hover:shadow-luxe hover:border-gold-300 transition-all cursor-pointer"
                   >
-                    <div className="w-11 h-11 rounded-xl bg-cream-100 dark:bg-navy-800 flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-cream-100 dark:bg-navy-800 flex items-center justify-center flex-shrink-0">
                       <Support className="w-5 h-5 text-navy-600 dark:text-cream-200" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2 mb-1">
+                      <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
                         <h3 className="font-cairo font-bold text-navy-900 dark:text-cream-50 truncate">{ticket.subject}</h3>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${sc.color} flex items-center gap-1 flex-shrink-0`}>
                           <sc.icon className="w-3 h-3" /> {sc.label}
