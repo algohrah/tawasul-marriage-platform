@@ -1054,4 +1054,113 @@ function RequestCard({
             <span className="text-xs font-cairo font-bold text-rose-800 dark:text-rose-300">توقفت الرحلة بسبب عدم توفر حساب الطرف الآخر</span>
             <button
               onClick={onCancel}
-              disabled={busy
+              disabled={busy}
+              className="w-full sm:w-auto px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-cairo font-bold text-xs rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Ban className="w-4 h-4" />
+              إلغاء وإزالة الطلب
+            </button>
+          </div>
+        ) : (
+          <PrimaryActionBar
+            stage={stage} action={action} busy={busy} requestId={req.id}
+            onAccept={onAccept} onDecline={onDecline} onPay={onPay} onCoord={onCoord} onResult={onResult}
+          />
+        )}
+
+        {/* إرشادات ووسائل طمأنينة تفاعلية بناءً على نوع القرار المطلوب */}
+        {action.type === 'accept_decline' && (
+          <p className="text-[10px] text-slate-500 font-cairo text-center mt-2.5 leading-relaxed flex items-center justify-center gap-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+            <span>لن تتم مشاركة أي أرقام تواصل أو بيانات حساسة؛ فقط سيتم فتح مسار التعارف المبدئي بأسئلة محددة.</span>
+          </p>
+        )}
+        {action.type === 'pay_deposit' && (
+          <p className="text-[10px] text-rose-700 font-cairo text-center mt-2.5 leading-relaxed font-bold bg-rose-50 border border-rose-200/40 rounded-xl py-1.5 px-3 flex items-center justify-center gap-1.5">
+            <Info className="w-3.5 h-3.5 text-rose-500 flex-shrink-0" />
+            <span>تنبيه هام: رسوم تأكيد الجدية وجميع الرسوم المدفوعة غير مستردة نهائياً تحت أي ظرف.</span>
+          </p>
+        )}
+        {stage === 'sharia_viewing' && (
+          <p className="text-[10px] text-indigo-700 font-cairo text-center mt-2.5 leading-relaxed bg-indigo-50 border border-indigo-100/50 rounded-xl py-1.5 px-3 flex items-center justify-center gap-1.5">
+            <CalendarClock className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
+            <span>بعد اللقاء الشرعي، حدد "توافق مبارك" لتوثيق الملكة أو "لم يكتمل" للاعتذار وإغلاق الطلب بلطف.</span>
+          </p>
+        )}
+
+        <div className="grid grid-cols-2 gap-2.5 mt-3.5">
+          {/* فتح الرحلة الكاملة بنمط راقٍ */}
+          {!isTerminal(stage) && (
+            <Link to={`/journey/${req.id}`}
+              className="flex-1 flex items-center justify-center gap-2 font-cairo font-bold text-[11px] sm:text-xs text-amber-800 bg-amber-500/10 hover:bg-amber-500/15 rounded-xl py-3 transition-all cursor-pointer border border-amber-300/20 shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" /> عرض الرحلة والتفاصيل
+            </Link>
+          )}
+          
+          {/* إلغاء الطلب — متاح للمراحل النشطة */}
+          {!isTerminal(stage) && action.type !== 'accept_decline' && (
+            <button onClick={onCancel} disabled={busy}
+              className="flex-1 flex items-center justify-center gap-1.5 text-[11px] sm:text-xs font-cairo font-bold text-rose-500 hover:text-rose-600 hover:bg-rose-50/50 rounded-xl py-3 transition-all disabled:opacity-60 cursor-pointer border border-rose-100/40 shadow-sm">
+              <Ban className="w-3.5 h-3.5" /> إلغاء الطلب والاعتذار
+            </button>
+          )}
+        </div>
+
+        {/* سجل الأحداث الزمني التفصيلي القابل للتوسيع */}
+        <button onClick={loadTimeline}
+          className="mt-3 w-full flex items-center justify-center gap-1.5 text-[10px] font-cairo font-bold text-slate-400 hover:text-slate-600 transition-colors py-1 cursor-pointer">
+          {showTimeline ? 'إخفاء السجل الزمني للرحلة' : 'عرض السجل الزمني للتواصل والأحداث'}
+          <ChevronLeft className={`w-3.5 h-3.5 transition-transform duration-300 ${showTimeline ? '-rotate-90' : ''}`} />
+        </button>
+        
+        <AnimatePresence>
+          {showTimeline && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }} 
+              animate={{ height: 'auto', opacity: 1 }} 
+              exit={{ height: 0, opacity: 0 }} 
+              className="overflow-hidden"
+            >
+              <div className="pt-3 space-y-2 border-t border-slate-200/40 mt-2">
+                {events.length === 0 && (
+                  <p className="text-[10px] text-slate-400 font-cairo text-center py-2">لم يتم تسجيل أي أحداث للرحلة حتى الآن</p>
+                )}
+                {events.map((ev, idx) => (
+                  <div key={(ev?.id !== undefined && ev?.id !== null && !Number.isNaN(Number(ev.id))) ? `ev-${ev.id}-${idx}` : `ev-idx-${idx}`} className="flex items-start gap-2 text-xs font-cairo bg-white p-2.5 rounded-xl border border-slate-100">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 mt-1.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-slate-700 font-medium">{ev.note}</p>
+                      <p className="text-[9px] text-slate-400 mt-0.5">{new Date(ev.created_at).toLocaleString('ar-SA')}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+}
+
+// ============================================================
+//  شريط الإجراء الأساسي — أزرار فاخرة متناسقة مفعمة بالحيوية
+// ============================================================
+function PrimaryActionBar({
+  stage, action, busy, requestId, onAccept, onDecline, onPay, onCoord, onResult,
+}: {
+  stage: JourneyState; action: ReturnType<typeof getPrimaryAction>; busy: boolean; requestId: number;
+  onAccept: () => void; onDecline: () => void; onPay: () => void; onCoord: () => void; onResult: () => void;
+}) {
+  if (action.type === 'open_journey') {
+    return (
+      <Link to={`/journey/${requestId}`}
+        className="w-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-slate-950 font-cairo font-black py-4 rounded-2xl shadow-[0_4px_15px_rgba(245,158,11,0.2)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer text-sm">
+        <Sparkles className="w-5 h-5 text-slate-950" /> {action.label}
+      </Link>
+    );
+  }
+
+  if (action.type === 'accept_decline') {
+    return (
+      <div className=
