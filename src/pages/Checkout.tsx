@@ -141,7 +141,7 @@ export default function Checkout() {
     const script = document.createElement('script');
     script.id = 'paypal-sdk-script';
     // Use user-defined Client ID dynamically
-    script.src = `https://www.paypal.com/sdk/js?client-id=${paypalSettings.clientId || 'sb'}&currency=USD&intent=capture`;
+    script.src = `{{https://www.paypal.com/sdk/js?client-id=${paypalSettings.clientId}} || 'sb'}&currency=USD&intent=capture`;
     script.async = true;
     script.onload = () => {
       setSdkLoaded(true);
@@ -198,18 +198,18 @@ export default function Checkout() {
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-white rounded-3xl shadow-luxe border border-cream-200/60 p-8 sm:p-12 text-center max-w-md w-full"
+          className="bg-white rounded-3xl shadow-luxe border border-cream-200/60 p-6 sm:p-12 text-center max-w-md w-full"
         >
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: 'spring' }}
-            className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-5"
+            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-5"
           >
-            <CheckCircle2 className="w-11 h-11 text-emerald-600" />
+            <CheckCircle2 className="w-9 h-9 sm:w-11 sm:h-11 text-emerald-600" />
           </motion.div>
-          <h1 className="font-cairo font-extrabold text-2xl text-navy-900">{pendingReview ? 'تم استلام طلبك! ⏳' : 'تم الدفع بنجاح!'}</h1>
-          <p className="text-navy-600 font-tajawal mt-2">
+          <h1 className="font-cairo font-extrabold text-xl sm:text-2xl text-navy-900">{pendingReview ? 'تم استلام طلبك! ⏳' : 'تم الدفع بنجاح!'}</h1>
+          <p className="text-navy-600 font-tajawal mt-2 text-sm sm:text-base">
             {pendingReview
               ? `سيقوم فريق الإدارة بمراجعة إثبات التحويل وتفعيل باقة ${plan.name} خلال دقائق. ستصلك رسالة تأكيد فور التفعيل.`
               : `تم تفعيل ${plan.name} بنجاح. استمتع بكل المزايا وصلاحيات البحث الآن.`}
@@ -280,7 +280,7 @@ export default function Checkout() {
 
   return (
     <div className="bg-cream-50 min-h-screen pb-12 font-tajawal text-right" dir="rtl">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-5 sm:py-6">
         <Link to="/plans" className="inline-flex items-center gap-2 text-navy-600 hover:text-gold-700 font-cairo font-semibold text-sm mb-6 transition-colors">
           <ArrowLeft className="w-4 h-4 ml-1 transform rotate-180" /> العودة لقائمة الباقات والعروض
         </Link>
@@ -289,14 +289,14 @@ export default function Checkout() {
           {/* Payment form */}
           <div className="lg:col-span-3 space-y-5">
             <div>
-              <h1 className="font-cairo font-extrabold text-2xl text-navy-900">ترقية الحساب والاشتراك</h1>
-              <p className="text-navy-600 font-tajawal mt-1">اختر بوابة الدفع المفضلة لديك وأكمل عملية الترقية بأمان 100%.</p>
+              <h1 className="font-cairo font-extrabold text-xl sm:text-2xl text-navy-900">ترقية الحساب والاشتراك</h1>
+              <p className="text-navy-600 font-tajawal mt-1 text-sm sm:text-base">اختر بوابة الدفع المفضلة لديك وأكمل عملية الترقية بأمان 100%.</p>
             </div>
 
             {/* Payment methods */}
-            <div className="bg-white rounded-2xl p-5 shadow-soft border border-cream-200/60">
+            <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-soft border border-cream-200/60">
               <h3 className="font-cairo font-bold text-navy-900 mb-4 text-sm">طرق الدفع المتوفرة</h3>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {paymentMethods.map((m) => (
                   <button
                     key={m.id}
@@ -320,8 +320,8 @@ export default function Checkout() {
             {/* PAYPAL ADVANCED CHANNEL EXPERIENCES */}
             {paymentMethod === 'paypal' && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                <div className="bg-white rounded-2xl p-5 shadow-soft border border-cream-200/60">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-soft border border-cream-200/60">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 flex-wrap gap-2">
                     <h3 className="font-cairo font-bold text-navy-900 text-sm">الدفع الذكي عبر PayPal</h3>
                     <span className="text-[10px] bg-amber-50 text-amber-800 px-2 py-0.5 rounded-md font-mono">
                       Client ID: {paypalSettings.clientId.slice(0, 10)}... ({paypalSettings.mode})
@@ -333,7 +333,7 @@ export default function Checkout() {
                     <button
                       type="button"
                       onClick={() => setPaypalOption('paypal_acc')}
-                      className={`py-2 rounded-lg font-cairo text-xs font-bold transition-all ${
+                      className={`py-2 rounded-lg font-cairo text-[11px] sm:text-xs font-bold transition-all ${
                         paypalOption === 'paypal_acc' ? 'bg-white text-navy-900 shadow-sm' : 'text-slate-500'
                       }`}
                     >
@@ -343,7 +343,7 @@ export default function Checkout() {
                       <button
                         type="button"
                         onClick={() => setPaypalOption('guest_card')}
-                        className={`py-2 rounded-lg font-cairo text-xs font-bold transition-all ${
+                        className={`py-2 rounded-lg font-cairo text-[11px] sm:text-xs font-bold transition-all ${
                           paypalOption === 'guest_card' ? 'bg-white text-navy-900 shadow-sm' : 'text-slate-500'
                         }`}
                       >
@@ -368,7 +368,7 @@ export default function Checkout() {
                       <button
                         type="button"
                         onClick={() => handlePay('paypal')}
-                        className="w-full py-4 px-6 rounded-2xl bg-yellow-400 hover:bg-yellow-500 text-navy-900 font-cairo font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
+                        className="w-full py-4 px-4 sm:px-6 rounded-2xl bg-yellow-400 hover:bg-yellow-500 text-navy-900 font-cairo font-bold text-xs sm:text-sm shadow-md flex flex-wrap items-center justify-center gap-2 transition-all active:scale-[0.99]"
                       >
                         <span className="font-extrabold italic text-sky-800">Pay<span className="text-blue-500">Pal</span></span>
                         <span>تأكيد الاشتراك السريع فوري (بديل تجريبي)</span>
@@ -381,7 +381,7 @@ export default function Checkout() {
                   {paypalOption === 'guest_card' && (
                     <div className="space-y-4">
                       <div className="bg-emerald-50 rounded-xl p-3 text-xs text-emerald-800 leading-relaxed">
-                        ✓ <strong>ميزة الدفع للزوار (PayPal Guest Checkout):</strong> يمكنك ملء بيانات بطاقتك أدناه مباشرة ويتم إرسالها ومعالجتها فورياً كزائر عبر بوابتنا المحمية بـ PayPal دون الحاجة لوجود حساب أو تسجيل.
+                        ✓ <strong>ميزة الدفع للزوار (PayPal Guest Checkout):</strong> يمكنك ملء بيانات بطاقتك أدناه مباشرة ويتم إرسالها ومعالجتها فوراً كزائر عبر بوابتنا المحمية بـ PayPal دون الحاجة لوجود حساب أو تسجيل.
                       </div>
 
                       <div>
@@ -397,7 +397,7 @@ export default function Checkout() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-3 sm:gap-4">
                         <div>
                           <label className="block text-xs font-cairo font-semibold text-slate-700 mb-1.5">تاريخ انتهاء الصلاحية</label>
                           <input 
@@ -457,7 +457,7 @@ export default function Checkout() {
 
             {/* CRYPTO WALLET FORM */}
             {paymentMethod === 'crypto' && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-5 shadow-soft border border-cream-200/60 space-y-4 text-slate-800">
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-4 sm:p-5 shadow-soft border border-cream-200/60 space-y-4 text-slate-800">
                 <div className="flex items-center gap-2 pb-2 border-b border-cream-100">
                   <Coins className="w-5.5 h-5.5 text-amber-500" />
                   <h3 className="font-cairo font-bold text-navy-900 text-sm">الدفع بالعملات الرقمية (USDT)</h3>
@@ -473,7 +473,7 @@ export default function Checkout() {
 
                 <div>
                   <label className="block text-xs font-cairo font-semibold text-navy-800 mb-1.5">عنوان محفظة الاستلاف الخاص بالإدارة (ERC20 / TRC20)</label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <input 
                       readOnly
                       value={paymentSettings.cryptoWalletAddress || "0x71C7656EC7ab88b098defB751B7401B5f6d8976F (USDT-TRC20)"}
@@ -485,7 +485,7 @@ export default function Checkout() {
                         navigator.clipboard.writeText(paymentSettings.cryptoWalletAddress || "0x71C7656EC7ab88b098defB751B7401B5f6d8976F");
                         showToast('تم نسخ عنوان المحفظة بنجاح!', 'success');
                       }}
-                      className="px-3 py-2.5 rounded-xl bg-slate-900 text-white font-cairo font-bold text-xs hover:bg-slate-800 transition-colors cursor-pointer"
+                      className="px-3 py-2.5 rounded-xl bg-slate-900 text-white font-cairo font-bold text-xs hover:bg-slate-800 transition-colors cursor-pointer flex-shrink-0"
                     >
                       نسخ
                     </button>
@@ -532,7 +532,7 @@ export default function Checkout() {
 
             {/* LOCAL BANK TRANSFER FORM */}
             {paymentMethod === 'bank' && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-5 shadow-soft border border-cream-200/60 space-y-4 text-slate-800">
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-4 sm:p-5 shadow-soft border border-cream-200/60 space-y-4 text-slate-800">
                 <div className="flex items-center gap-2 pb-2 border-b border-cream-100">
                   <Wallet className="w-5.5 h-5.5 text-amber-500" />
                   <h3 className="font-cairo font-bold text-navy-900 text-sm">تحويل بنكي محلّي (الراجحي / الأهلي)</h3>
@@ -600,7 +600,7 @@ export default function Checkout() {
             )}
 
             {/* Security badges */}
-            <div className="flex items-center justify-center gap-4 flex-wrap">
+            <div className="flex items-center justify-center gap-3 sm:gap-4 flex-wrap">
               {[
                 { icon: Lock, label: 'تشفير آمن SSL 256-bit' },
                 { icon: ShieldCheck, label: 'معالجة مشفرة بالكامل' },
@@ -615,7 +615,7 @@ export default function Checkout() {
 
           {/* Order summary */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl p-5 shadow-soft border border-cream-200/60 sticky top-24">
+            <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-soft border border-cream-200/60 lg:sticky lg:top-24">
               <h3 className="font-cairo font-bold text-navy-900 mb-4 text-sm">ملخص الفاتورة والحدود</h3>
 
               {/* Plan card */}
@@ -692,7 +692,7 @@ export default function Checkout() {
               className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-300 flex flex-col justify-between"
             >
               {/* Header */}
-              <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between rounded-t-2xl">
+              <div className="bg-slate-50 px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between rounded-t-2xl flex-wrap gap-2">
                 <div className="flex items-center gap-1.5">
                   <span className="text-lg font-black italic text-sky-800">Pay<span className="text-blue-500">Pal</span></span>
                   <span className="bg-amber-100 text-amber-800 font-mono text-[9px] font-bold px-1.5 py-0.5 rounded uppercase">
@@ -703,7 +703,7 @@ export default function Checkout() {
               </div>
 
               {/* Body */}
-              <div className="p-6 space-y-4">
+              <div className="p-4 sm:p-6 space-y-4">
                 <div className="text-center">
                   <p className="text-xs text-slate-500">PAYING TO MERCHANT ID</p>
                   <p className="font-mono text-xs font-bold text-slate-800 bg-slate-100 p-2 rounded tracking-wide border border-slate-200 mt-1 truncate">
@@ -749,7 +749,7 @@ export default function Checkout() {
               </div>
 
               {/* Actions Footer */}
-              <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex items-center justify-between rounded-b-2xl">
+              <div className="bg-slate-50 px-4 sm:px-6 py-4 border-t border-slate-200 flex items-center justify-between gap-3 rounded-b-2xl">
                 <button
                   type="button"
                   onClick={() => setShowPaypalModal(false)}
@@ -761,7 +761,7 @@ export default function Checkout() {
                   type="button"
                   onClick={() => handlePay('paypal_acc')}
                   disabled={processing}
-                  className="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold font-sans flex items-center gap-1.5 transition-all shadow-md active:scale-95"
+                  className="px-4 sm:px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold font-sans flex items-center gap-1.5 transition-all shadow-md active:scale-95"
                 >
                   {processing ? 'Processing Secure API...' : 'Complete Integration Payment'}
                 </button>
