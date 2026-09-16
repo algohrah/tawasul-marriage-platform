@@ -117,7 +117,7 @@ export default function About() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               {socialSettings.showWhatsapp && socialSettings.whatsappNumber && (
                 <a
-                  href={`https://wa.me/${socialSettings.whatsappNumber}`}
+                  href={`{{https://wa.me/${socialSettings.whatsappNumber}}}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-cairo font-extrabold text-base shadow-lg transition-transform hover:-translate-y-0.5"
