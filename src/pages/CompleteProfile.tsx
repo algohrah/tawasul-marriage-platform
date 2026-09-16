@@ -107,8 +107,8 @@ export default function CompleteProfile() {
                 <ArrowRight className="w-5 h-5" />
               </Link>
               <div>
-                <h1 className="font-cairo font-extrabold text-2xl text-white">أكمل ملفك الشخصي</h1>
-                <p className="text-cream-200/70 font-tajawal text-sm">املأ الحقول الناقصة لزيادة فرص التوافق</p>
+                <h1 className="font-cairo font-extrabold text-xl sm:text-2xl text-white">أكمل ملفك الشخصي</h1>
+                <p className="text-cream-200/70 font-tajawal text-xs sm:text-sm">املأ الحقول الناقصة لزيادة فرص التوافق</p>
               </div>
             </div>
           </div>
@@ -142,13 +142,13 @@ export default function CompleteProfile() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-3xl shadow-luxe border border-cream-200/60 p-8 text-center"
+            className="bg-white rounded-3xl shadow-luxe border border-cream-200/60 p-6 sm:p-8 text-center"
           >
-            <div className="w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10 text-emerald-600" />
             </div>
-            <h2 className="font-cairo font-extrabold text-2xl text-navy-900 mb-2">ملفك مكتمل! 🎉</h2>
-            <p className="text-navy-500 font-tajawal mb-6">لقد عبأت جميع الحقول المطلوبة. ملفك الآن جاهز لزيادة فرص التوافق.</p>
+            <h2 className="font-cairo font-extrabold text-xl sm:text-2xl text-navy-900 mb-2">ملفك مكتمل! 🎉</h2>
+            <p className="text-navy-500 font-tajawal mb-6 text-sm sm:text-base">لقد عبأت جميع الحقول المطلوبة. ملفك الآن جاهز لزيادة فرص التوافق.</p>
             <Link to="/profile" className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-navy-900 text-white font-cairo font-bold hover:bg-navy-800 transition-colors no-tap-highlight">
               <ArrowRight className="w-5 h-5" /> العودة للملف
             </Link>
@@ -161,7 +161,7 @@ export default function CompleteProfile() {
               <div>
                 <p className="font-cairo font-semibold text-navy-900 text-sm">حقول ناقصة</p>
                 <p className="text-xs text-navy-600 font-tajawal mt-0.5">
-                  هذه الحقول فقط هي التي لم تُعبأها بعد. أكملها لتحسين ملفك الشخصي وزيادة فرص التوافق.
+                  هذه الحقول فقط هي التي لم تُعبئها بعد. أكملها لتحسين ملفك الشخصي وزيادة فرص التوافق.
                 </p>
               </div>
             </div>
@@ -173,14 +173,14 @@ export default function CompleteProfile() {
                   key={section.title}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white rounded-3xl shadow-soft border border-cream-200/60 p-5 sm:p-6 mb-4"
+                  className="bg-white rounded-3xl shadow-soft border border-cream-200/60 p-4 sm:p-6 mb-4"
                 >
                   <div className="flex items-center gap-3 mb-5">
                     <div className="w-10 h-10 rounded-xl bg-gold-300/15 flex items-center justify-center">
                       <section.icon className="w-5 h-5 text-gold-600" />
                     </div>
                     <div>
-                      <h2 className="font-cairo font-bold text-lg text-navy-900">{section.title}</h2>
+                      <h2 className="font-cairo font-bold text-base sm:text-lg text-navy-900">{section.title}</h2>
                       <p className="text-xs text-navy-400 font-tajawal">{section.fields.length} حقل غير مُعبأ</p>
                     </div>
                   </div>
@@ -200,7 +200,7 @@ export default function CompleteProfile() {
             </AnimatePresence>
 
             {/* أزرار الحفظ */}
-            <div className="flex gap-3 sticky bottom-20 lg:bottom-4 z-20">
+            <div className="flex flex-col sm:flex-row gap-3 sticky bottom-20 lg:bottom-4 z-20">
               <Button onClick={handleSave} size="lg" fullWidth className="shadow-gold">
                 {saving ? (
                   <span className="flex items-center gap-2">
@@ -211,7 +211,7 @@ export default function CompleteProfile() {
                   <span className="flex items-center gap-2"><Save className="w-5 h-5" /> حفظ التغييرات</span>
                 )}
               </Button>
-              <Link to="/profile" className="flex items-center justify-center px-6 py-4 rounded-2xl bg-white border-2 border-cream-200 text-navy-600 font-cairo font-bold hover:bg-cream-100 transition-colors no-tap-highlight">
+              <Link to="/profile" className="w-full sm:w-auto flex items-center justify-center px-6 py-4 rounded-2xl bg-white border-2 border-cream-200 text-navy-600 font-cairo font-bold hover:bg-cream-100 transition-colors no-tap-highlight">
                 إلغاء
               </Link>
             </div>
