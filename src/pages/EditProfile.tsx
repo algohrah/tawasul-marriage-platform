@@ -278,7 +278,7 @@ export default function EditProfile() {
       fields: (
         <>
           <Field label="الجنس" hint="لا يمكن تغييره إلا عبر الإدارة">
-            <div className="px-4 py-2.5 rounded-xl bg-slate-100/90 dark:bg-navy-800/80 border border-slate-200 dark:border-navy-700 flex items-center justify-between">
+            <div className="px-4 py-2.5 rounded-xl bg-slate-100/90 dark:bg-navy-800/80 border border-slate-200 dark:border-navy-700 flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <span className={`w-2.5 h-2.5 rounded-full ${isMale ? 'bg-blue-500' : 'bg-rose-500'}`} />
                 <span className="font-cairo font-bold text-sm text-navy-900 dark:text-cream-100">
@@ -537,7 +537,7 @@ export default function EditProfile() {
       fields: (
         <div className="space-y-5">
           {/* 1. دولة الشريك المطلوبة */}
-          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3">
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 space-y-3">
             <label className="block text-xs font-cairo font-bold text-slate-800">
               1. {partnerTerms.countryLabel}
             </label>
@@ -613,7 +613,7 @@ export default function EditProfile() {
           </div>
 
           {/* 2. مدينة الشريك المطلوبة */}
-          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3">
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 space-y-3">
             <label className="block text-xs font-cairo font-bold text-slate-800">
               2. {partnerTerms.cityLabel}
             </label>
@@ -694,7 +694,7 @@ export default function EditProfile() {
           </div>
 
           {/* 3. الجنسية المطلوبة للشريك */}
-          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3">
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 space-y-3">
             <label className="block text-xs font-cairo font-bold text-slate-800">
               3. {partnerTerms.nationalityLabel}
             </label>
@@ -811,7 +811,7 @@ export default function EditProfile() {
           </div>
 
           {/* 4. العمر */}
-          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3">
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 space-y-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <label className="block text-xs font-cairo font-bold text-slate-800">
                 4. {partnerTerms.ageLabel}
@@ -872,7 +872,7 @@ export default function EditProfile() {
           </div>
 
           {/* 5. الحالة الاجتماعية (خيارات متعددة) */}
-          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3">
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 space-y-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <label className="block text-xs font-cairo font-bold text-slate-800">
                 5. {partnerTerms.maritalLabel} (يمكنك اختيار أكثر من خيار)
@@ -934,7 +934,7 @@ export default function EditProfile() {
 
           {/* 6. قبول الأطفال (يظهر عند اختيار الجميع أو مطلق أو أرمل أو متزوج للنساء) */}
           {shouldShowChildrenAccept && (
-            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3">
+            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 space-y-3">
               <label className="block text-xs font-cairo font-bold text-slate-800">
                 6. {partnerTerms.childrenLabel}
               </label>
@@ -956,7 +956,7 @@ export default function EditProfile() {
           )}
 
           {/* 7. ملاحظات وصفات إضافية */}
-          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2">
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 space-y-2">
             <label className="block text-xs font-cairo font-bold text-slate-800">
               7. ملاحظات وصفات إضافية مرغوبة
             </label>
@@ -977,15 +977,15 @@ export default function EditProfile() {
       {/* Header */}
       <div className="bg-navy-gradient relative overflow-hidden">
         <div className="absolute inset-0 pattern-arabesque opacity-30" />
-        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 py-6">
-          <div className="flex items-center justify-between">
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 py-5 sm:py-6">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-3">
-              <Link to="/profile" className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors no-tap-highlight">
+              <Link to="/profile" className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors no-tap-highlight flex-shrink-0">
                 <ArrowRight className="w-5 h-5" />
               </Link>
               <div>
-                <h1 className="font-cairo font-extrabold text-2xl text-white">تعديل الملف الشخصي</h1>
-                <p className="text-cream-200/70 font-tajawal text-sm">حدّث جميع معلوماتك الشخصية</p>
+                <h1 className="font-cairo font-extrabold text-xl sm:text-2xl text-white">تعديل الملف الشخصي</h1>
+                <p className="text-cream-200/70 font-tajawal text-xs sm:text-sm">حدّث جميع معلوماتك الشخصية</p>
               </div>
             </div>
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-cream-200/80 text-xs font-tajawal">
@@ -1011,13 +1011,13 @@ export default function EditProfile() {
             key={section.title}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-3xl shadow-soft border border-cream-200/60 p-5 sm:p-6"
+            className="bg-white rounded-3xl shadow-soft border border-cream-200/60 p-4 sm:p-6"
           >
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-xl bg-gold-300/15 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-gold-300/15 flex items-center justify-center flex-shrink-0">
                 <section.icon className="w-5 h-5 text-gold-600" />
               </div>
-              <h2 className="font-cairo font-bold text-lg text-navy-900">{section.title}</h2>
+              <h2 className="font-cairo font-bold text-base sm:text-lg text-navy-900">{section.title}</h2>
             </div>
             <div className="space-y-4">{section.fields}</div>
           </motion.div>
@@ -1037,7 +1037,7 @@ export default function EditProfile() {
               <span className="flex items-center gap-2"><Save className="w-5 h-5" /> حفظ التغييرات</span>
             )}
           </Button>
-          <Link to="/profile" className="flex items-center justify-center px-6 py-4 rounded-2xl bg-white border-2 border-cream-200 text-navy-600 font-cairo font-bold hover:bg-cream-100 transition-colors no-tap-highlight">
+          <Link to="/profile" className="flex-shrink-0 flex items-center justify-center px-4 sm:px-6 py-3.5 sm:py-4 rounded-2xl bg-white border-2 border-cream-200 text-navy-600 font-cairo font-bold text-sm sm:text-base hover:bg-cream-100 transition-colors no-tap-highlight whitespace-nowrap">
             إلغاء
           </Link>
         </div>
