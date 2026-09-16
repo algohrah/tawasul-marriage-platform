@@ -35,7 +35,7 @@ export default function Contact() {
       }, 4000);
     } catch (err) {
       console.error('Failed to send message:', err);
-      setError('تعذّر إرسال الرسالة حالياً. يرجى المحاولة مرة أخرى لاحقاً.');
+      setError('تعذّر إرسال الرسالة حالياً. يرجى المحاولة مرة أخرى لاحقًا.');
     } finally {
       setLoading(false);
     }
@@ -45,14 +45,14 @@ export default function Contact() {
     <div className="bg-cream-50 min-h-screen">
       <div className="bg-navy-gradient relative overflow-hidden">
         <div className="absolute inset-0 pattern-arabesque opacity-30" />
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-14 text-center">
-          <h1 className="font-cairo font-extrabold text-3xl sm:text-4xl text-white">اتصل بنا</h1>
-          <p className="mt-3 text-cream-200/80 font-tajawal max-w-xl mx-auto">نحن هنا لمساعدتك. تواصل معنا في أي وقت وسنرد عليك بأسرع ما يمكن.</p>
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14 text-center">
+          <h1 className="font-cairo font-extrabold text-2xl sm:text-3xl md:text-4xl text-white">اتصل بنا</h1>
+          <p className="mt-3 text-cream-200/80 font-tajawal max-w-xl mx-auto text-sm sm:text-base">نحن هنا لمساعدتك. تواصل معنا في أي وقت وسنرد عليك بأسرع ما يمكن.</p>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12">
-        <div className="grid lg:grid-cols-3 gap-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-10 sm:pb-12">
+        <div className="grid lg:grid-cols-3 gap-5 sm:gap-6">
           {/* Info cards */}
           <div className="space-y-4">
             {[
@@ -61,12 +61,12 @@ export default function Contact() {
               { icon: MapPin, title: 'العنوان', value: 'الرياض، المملكة العربية السعودية', sub: 'حي العليا' },
               { icon: Clock, title: 'ساعات العمل', value: '24/7 دعم عبر المنصة', sub: 'دعم على مدار الساعة' },
             ].map((item) => (
-              <div key={item.title} className="bg-white rounded-2xl p-5 shadow-soft border border-cream-200/60 flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gold-300/15 flex items-center justify-center flex-shrink-0">
-                  <item.icon className="w-6 h-6 text-gold-600" />
+              <div key={item.title} className="bg-white rounded-2xl p-4 sm:p-5 shadow-soft border border-cream-200/60 flex items-start gap-3 sm:gap-4">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gold-300/15 flex items-center justify-center flex-shrink-0">
+                  <item.icon className="w-5 h-5 sm:w-6 sm:h-6 text-gold-600" />
                 </div>
                 <div>
-                  <h3 className="font-cairo font-bold text-navy-900">{item.title}</h3>
+                  <h3 className="font-cairo font-bold text-navy-900 text-sm sm:text-base">{item.title}</h3>
                   <p className="text-navy-700 font-tajawal text-sm mt-0.5">{item.value}</p>
                   <p className="text-xs text-navy-400 font-tajawal mt-0.5">{item.sub}</p>
                 </div>
@@ -75,17 +75,17 @@ export default function Contact() {
           </div>
 
           {/* Form */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-2 bg-white rounded-3xl shadow-luxe border border-cream-200/60 p-6 sm:p-8">
-            <h2 className="font-cairo font-extrabold text-2xl text-navy-900 mb-2">أرسل لنا رسالة</h2>
-            <p className="text-navy-600 font-tajawal mb-6">سنرد عليك في أقرب وقت ممكن.</p>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-2 bg-white rounded-3xl shadow-luxe border border-cream-200/60 p-5 sm:p-8">
+            <h2 className="font-cairo font-extrabold text-xl sm:text-2xl text-navy-900 mb-2">أرسل لنا رسالة</h2>
+            <p className="text-navy-600 font-tajawal mb-6 text-sm sm:text-base">سنرد عليك في أقرب وقت ممكن.</p>
             {error && <div role="alert" className="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-tajawal text-rose-700">{error}</div>}
             {sent ? (
-              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-8 text-center">
-                <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-                  <MessageCircle className="w-8 h-8 text-emerald-600" />
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 sm:p-8 text-center">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                  <MessageCircle className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600" />
                 </div>
-                <h3 className="font-cairo font-bold text-xl text-navy-900">تم إرسال رسالتك!</h3>
-                <p className="text-navy-600 font-tajawal mt-2">شكراً لتواصلك معنا. سنرد عليك قريبًا.</p>
+                <h3 className="font-cairo font-bold text-lg sm:text-xl text-navy-900">تم إرسال رسالتك!</h3>
+                <p className="text-navy-600 font-tajawal mt-2 text-sm sm:text-base">شكراً لتواصلك معنا. سنرد عليك قريبًا.</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
