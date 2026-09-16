@@ -43,18 +43,18 @@ function CollapsibleSection({
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200/70 overflow-hidden transition-all duration-300">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-4 hover:bg-slate-50/50 transition-colors"
+        className="w-full flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50/50 transition-colors"
       >
-        <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-sm`}>
-            <Icon className="w-4.5 h-4.5 text-white" />
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-sm flex-shrink-0`}>
+            <Icon className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-white" />
           </div>
-          <h3 className="font-cairo font-bold text-navy-900 text-sm">{title}</h3>
+          <h3 className="font-cairo font-bold text-navy-900 text-xs sm:text-sm truncate">{title}</h3>
           {badge && (
-            <span className="text-[10px] font-cairo font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{badge}</span>
+            <span className="text-[10px] font-cairo font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full flex-shrink-0">{badge}</span>
           )}
         </div>
-        <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+        <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }} className="flex-shrink-0">
           <ChevronDown className="w-5 h-5 text-slate-400" />
         </motion.div>
       </button>
@@ -67,7 +67,7 @@ function CollapsibleSection({
             transition={{ duration: 0.25, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 border-t border-slate-100">
+            <div className="px-3.5 sm:px-4 pb-4 border-t border-slate-100">
               {children}
             </div>
           </motion.div>
@@ -175,7 +175,7 @@ export default function MemberProfile() {
         <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
           <User className="w-10 h-10 text-slate-300" />
         </div>
-        <h2 className="font-cairo font-bold text-2xl text-navy-900 mb-2">العضو غير موجود</h2>
+        <h2 className="font-cairo font-bold text-xl sm:text-2xl text-navy-900 mb-2">العضو غير موجود</h2>
         <p className="text-slate-500 font-tajawal mb-4">قد يكون الحساب محذوفاً أو غير متاح</p>
         <Button onClick={() => navigate('/search')} className="mt-2">العودة للبحث</Button>
       </div>
@@ -302,7 +302,7 @@ export default function MemberProfile() {
 
         {/* Main hero content */}
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 pt-4 pb-6">
-          <div className="flex items-center justify-between gap-4 w-full">
+          <div className="flex items-center justify-between gap-3 sm:gap-4 w-full">
             {/* Right side: Avatar */}
             <div className="relative flex-shrink-0">
               <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white p-0.5 border-2 ${isMale ? 'border-sky-500/60' : 'border-rose-500/60'} shadow-sm`}>
@@ -386,7 +386,7 @@ export default function MemberProfile() {
           className="bg-white rounded-3xl shadow-lg border border-slate-200/80 p-3.5 sm:p-4"
         >
           {!isSelf ? (
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-3">
               {/* 1. الزر الأساسي: طلب التوافق أو إنشاء حساب أو متابعة الطلب */}
               <div className="flex-1 min-w-0">
                 {!user.isLoggedIn ? (
@@ -395,9 +395,9 @@ export default function MemberProfile() {
                       showToast('أهلاً بك! يرجى إنشاء حسابك أو تسجيل الدخول لإرسال طلب التوافق', 'info');
                       navigate('/register');
                     }}
-                    className="w-full py-3 sm:py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-cairo font-black text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3 sm:py-3.5 px-2.5 sm:px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-cairo font-black text-[11px] sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer"
                   >
-                    <Send className="w-4 h-4 -scale-x-100 text-slate-900" />
+                    <Send className="w-4 h-4 -scale-x-100 text-slate-900 flex-shrink-0" />
                     <span className="truncate">
                       إنشاء حساب لطلب التوافق 💌
                     </span>
@@ -405,9 +405,9 @@ export default function MemberProfile() {
                 ) : latestRequest && latestRequest.journey_stage !== 'declined' && latestRequest.journey_stage !== 'cancelled' ? (
                   <button
                     onClick={() => navigate('/requests')}
-                    className="w-full py-3 sm:py-3.5 px-4 rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-cairo font-black text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3 sm:py-3.5 px-2.5 sm:px-4 rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-cairo font-black text-[11px] sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer"
                   >
-                    <CheckCircle2 className="w-4 h-4" />
+                    <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
                     <span className="truncate">
                       {latestRequest.journey_stage === 'sent' 
                         ? (isImported ? 'طلب الوساطة قيد المتابعة والتنسيق' : 'طلب التوافق قيد الانتظار (متابعة)')
@@ -417,17 +417,17 @@ export default function MemberProfile() {
                 ) : isImported ? (
                   <button
                     onClick={() => setContactOpen(true)}
-                    className="w-full py-3 sm:py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-105 text-white font-cairo font-black text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3 sm:py-3.5 px-2.5 sm:px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-105 text-white font-cairo font-black text-[11px] sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer"
                   >
-                    <Building2 className="w-4.5 h-4.5 text-white" />
+                    <Building2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-white flex-shrink-0" />
                     <span className="truncate">طلب التوفيق والوساطة لهذا الملف 💍</span>
                   </button>
                 ) : (
                   <button
                     onClick={() => setContactOpen(true)}
-                    className="w-full py-3 sm:py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-cairo font-black text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3 sm:py-3.5 px-2.5 sm:px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-cairo font-black text-[11px] sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer"
                   >
-                    <Send className="w-4 h-4 -scale-x-100 text-slate-900" />
+                    <Send className="w-4 h-4 -scale-x-100 text-slate-900 flex-shrink-0" />
                     <span className="truncate">
                       إرسال طلب توافق للزواج 💌
                     </span>
@@ -438,11 +438,11 @@ export default function MemberProfile() {
               {/* 2. زر الواتساب للمشاركة والاستفسار */}
               <button
                 onClick={handleShareWhatsApp}
-                className="py-3 sm:py-3.5 px-3.5 sm:px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-cairo font-bold text-xs sm:text-sm transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs flex-shrink-0"
+                className="py-3 sm:py-3.5 px-2.5 sm:px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-cairo font-bold text-[11px] sm:text-sm transition-colors flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer shadow-xs flex-shrink-0"
                 title="تواصل واتساب للتوفيق مع هذا الملف"
               >
-                <MessageCircle className="w-4 h-4 fill-white" />
-                <span className="inline">{!user.isLoggedIn ? 'تواصل واتساب للتوفيق 💬' : 'واتساب للتوفيق 💬'}</span>
+                <MessageCircle className="w-4 h-4 fill-white flex-shrink-0" />
+                <span className="hidden sm:inline">{!user.isLoggedIn ? 'تواصل واتساب للتوفيق 💬' : 'واتساب للتوفيق 💬'}</span>
               </button>
 
               {/* 3. زر المفضلة التفاعلي */}
@@ -455,14 +455,14 @@ export default function MemberProfile() {
                   }
                   toggleLike(member.id);
                 }}
-                className={`py-3 sm:py-3.5 px-3.5 sm:px-4 rounded-2xl font-cairo font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 border cursor-pointer flex-shrink-0 shadow-xs ${
+                className={`py-3 sm:py-3.5 px-2.5 sm:px-4 rounded-2xl font-cairo font-bold text-[11px] sm:text-sm transition-all flex items-center justify-center gap-1 sm:gap-1.5 border cursor-pointer flex-shrink-0 shadow-xs ${
                   liked
                     ? 'bg-amber-500 text-white border-amber-500 shadow-md shadow-amber-500/20'
                     : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                 }`}
                 title={liked ? 'إزالة من المحفوظات' : 'حفظ بالمفضلة'}
               >
-                <Bookmark className={`w-4 h-4 ${liked ? 'fill-white' : ''}`} />
+                <Bookmark className={`w-4 h-4 flex-shrink-0 ${liked ? 'fill-white' : ''}`} />
                 <span className="hidden sm:inline">{liked ? 'محفوظ' : 'حفظ'}</span>
               </button>
 
@@ -470,7 +470,7 @@ export default function MemberProfile() {
               <div className="relative flex-shrink-0">
                 <button
                   onClick={() => setMoreMenuOpen(!moreMenuOpen)}
-                  className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 transition-colors flex items-center justify-center cursor-pointer shadow-xs"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 transition-colors flex items-center justify-center cursor-pointer shadow-xs"
                   title="خيارات إضافية"
                 >
                   <MoreVertical className="w-4 h-4" />
@@ -484,7 +484,7 @@ export default function MemberProfile() {
                       initial={{ opacity: 0, scale: 0.95, y: 10 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                      className="absolute left-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 p-1.5 z-50 space-y-1 text-right"
+                      className="absolute left-0 top-full mt-2 w-56 max-w-[85vw] bg-white rounded-2xl shadow-xl border border-slate-200 p-1.5 z-50 space-y-1 text-right"
                     >
                       {/* نسخ بيانات العضو */}
                       <button
@@ -548,7 +548,7 @@ export default function MemberProfile() {
             </div>
           ) : (
             <div className="flex-1 text-center py-2">
-              <p className="font-cairo font-bold text-slate-700 text-sm flex items-center justify-center gap-2">
+              <p className="font-cairo font-bold text-slate-700 text-sm flex items-center justify-center gap-2 flex-wrap">
                 <User className="w-4 h-4" /> هذا حسابك — يمكنك <button onClick={() => navigate('/edit-profile')} className="text-blue-600 underline cursor-pointer">تعديل ملفك</button>
               </p>
             </div>
@@ -790,25 +790,25 @@ export default function MemberProfile() {
             className="fixed bottom-0 left-0 right-0 z-50"
           >
             <div className="bg-white/95 backdrop-blur-xl border-t border-slate-200 shadow-[0_-4px_30px_rgba(0,0,0,0.12)]">
-              <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3 w-full" dir="rtl">
+              <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 sm:gap-3 w-full" dir="rtl">
                 {/* معلومات مصغرة عن العضو */}
-                <div className="flex items-center gap-2.5 flex-shrink-0 text-right">
-                  <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${accentGradient} p-[1.5px] hidden xs:block`}>
+                <div className="flex items-center gap-2.5 flex-shrink-0 text-right min-w-0">
+                  <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${accentGradient} p-[1.5px] hidden xs:block flex-shrink-0`}>
                     <div className="w-full h-full rounded-[9px] bg-white flex items-center justify-center">
                       <img src={avatar} alt="" className="w-full h-full object-contain p-1" />
                     </div>
                   </div>
-                  <div>
-                    <p className="font-cairo font-bold text-slate-900 text-xs sm:text-sm leading-tight flex items-center gap-1">
-                      <span>{member.nickname}</span>
-                      {member.verified && <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 inline" />}
+                  <div className="min-w-0 hidden xs:block">
+                    <p className="font-cairo font-bold text-slate-900 text-xs sm:text-sm leading-tight flex items-center gap-1 truncate">
+                      <span className="truncate">{member.nickname}</span>
+                      {member.verified && <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 inline flex-shrink-0" />}
                     </p>
                     <p className="text-[10px] text-slate-400 font-tajawal">{member.age ? `${member.age} سنة` : ''} · {member.city || ''}</p>
                   </div>
                 </div>
 
                 {/* أزرار الإجراءات المتسقة */}
-                <div className="flex items-center gap-2 flex-1 sm:flex-initial justify-end">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-1 justify-end min-w-0">
                   {/* 1. الزر الأساسي (طلب توافق / إنشاء حساب / طلب وساطة / متابعة) */}
                   <div className="flex-1 sm:flex-initial min-w-0">
                     {!user.isLoggedIn ? (
@@ -817,34 +817,34 @@ export default function MemberProfile() {
                           showToast('أهلاً بك! يرجى إنشاء حسابك أو تسجيل الدخول لإرسال طلب التوافق', 'info');
                           navigate('/register');
                         }}
-                        className="w-full sm:w-auto py-2 px-3.5 sm:px-5 rounded-xl bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-cairo font-extrabold text-xs sm:text-sm shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="w-full sm:w-auto py-2 px-2.5 sm:px-5 rounded-xl bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-cairo font-extrabold text-[10px] sm:text-sm shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        <Send className="w-3.5 h-3.5 -scale-x-100 text-slate-900" />
+                        <Send className="w-3.5 h-3.5 -scale-x-100 text-slate-900 flex-shrink-0" />
                         <span className="truncate">إنشاء حساب لطلب التوافق 💌</span>
                       </button>
                     ) : isImported ? (
                       <button
                         onClick={handleShareWhatsApp}
-                        className="w-full sm:w-auto py-2 px-3.5 sm:px-5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-cairo font-extrabold text-xs sm:text-sm shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="w-full sm:w-auto py-2 px-2.5 sm:px-5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-cairo font-extrabold text-[10px] sm:text-sm shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        <MessageCircle className="w-3.5 h-3.5 fill-white" />
+                        <MessageCircle className="w-3.5 h-3.5 fill-white flex-shrink-0" />
                         <span className="truncate">طلب التوفيق والوساطة 💬</span>
                       </button>
                     ) : latestRequest ? (
                       latestRequest.journey_stage === 'declined' || latestRequest.journey_stage === 'cancelled' ? (
                         <button
                           onClick={() => setContactOpen(true)}
-                          className="w-full sm:w-auto py-2 px-3.5 sm:px-5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-cairo font-extrabold text-xs sm:text-sm shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                          className="w-full sm:w-auto py-2 px-2.5 sm:px-5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-cairo font-extrabold text-[10px] sm:text-sm shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                         >
-                          <Send className="w-3.5 h-3.5 -scale-x-100" />
+                          <Send className="w-3.5 h-3.5 -scale-x-100 flex-shrink-0" />
                           <span className="truncate">طلب جديد 💌</span>
                         </button>
                       ) : (
                         <button
                           onClick={() => navigate('/requests')}
-                          className="w-full sm:w-auto py-2 px-3.5 sm:px-5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-cairo font-extrabold text-xs sm:text-sm shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                          className="w-full sm:w-auto py-2 px-2.5 sm:px-5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-cairo font-extrabold text-[10px] sm:text-sm shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                         >
-                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
                           <span className="truncate">
                             {latestRequest.journey_stage === 'sent' 
                               ? 'قيد الانتظار' 
@@ -855,9 +855,9 @@ export default function MemberProfile() {
                     ) : (
                       <button
                         onClick={() => setContactOpen(true)}
-                        className="w-full sm:w-auto py-2 px-3.5 sm:px-5 rounded-xl bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-cairo font-extrabold text-xs sm:text-sm shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="w-full sm:w-auto py-2 px-2.5 sm:px-5 rounded-xl bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-cairo font-extrabold text-[10px] sm:text-sm shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        <Send className="w-3.5 h-3.5 -scale-x-100 text-slate-900" />
+                        <Send className="w-3.5 h-3.5 -scale-x-100 text-slate-900 flex-shrink-0" />
                         <span className="truncate">طلب توافق 💌</span>
                       </button>
                     )}
@@ -866,11 +866,10 @@ export default function MemberProfile() {
                   {/* 2. زر الواتساب للتوافق */}
                   <button
                     onClick={handleShareWhatsApp}
-                    className="h-9 sm:h-10 rounded-xl px-2.5 sm:px-3 bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-1 transition-all font-cairo font-bold text-xs cursor-pointer shadow-xs flex-shrink-0"
+                    className="h-9 sm:h-10 rounded-xl px-2 sm:px-3 bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-1 transition-all font-cairo font-bold text-xs cursor-pointer shadow-xs flex-shrink-0"
                     title="تواصل واتساب للتوفيق مع هذا الملف"
                   >
                     <MessageCircle className="w-3.5 h-3.5 fill-white" />
-                    <span className="inline">{!user.isLoggedIn ? 'واتساب' : 'واتساب'}</span>
                   </button>
 
                   {/* 3. زر المفضلة */}
@@ -883,13 +882,12 @@ export default function MemberProfile() {
                       }
                       toggleLike(member.id);
                     }}
-                    className={`h-9 sm:h-10 rounded-xl px-2.5 sm:px-3 flex items-center justify-center gap-1 transition-all font-cairo font-bold text-xs flex-shrink-0 cursor-pointer ${
+                    className={`h-9 sm:h-10 rounded-xl px-2 sm:px-3 flex items-center justify-center gap-1 transition-all font-cairo font-bold text-xs flex-shrink-0 cursor-pointer ${
                       liked ? 'bg-amber-500 text-white shadow-sm hover:bg-amber-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
                     }`}
                     title={liked ? 'إزالة من المحفوظات' : 'حفظ'}
                   >
                     <Bookmark className={`w-3.5 h-3.5 ${liked ? 'fill-white' : ''}`} />
-                    <span className="hidden sm:inline">{liked ? 'محفوظ' : 'حفظ'}</span>
                   </button>
 
                   {/* 4. زر القائمة الإضافية والأمان (...) */}
@@ -910,7 +908,7 @@ export default function MemberProfile() {
                           initial={{ opacity: 0, scale: 0.95, y: 10 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                          className="absolute left-0 bottom-full mb-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-200 p-1.5 z-50 space-y-1 text-right"
+                          className="absolute left-0 bottom-full mb-2 w-56 max-w-[85vw] bg-white rounded-2xl shadow-2xl border border-slate-200 p-1.5 z-50 space-y-1 text-right"
                         >
                           {/* نسخ بيانات العضو */}
                           <button
@@ -983,16 +981,16 @@ export default function MemberProfile() {
         <div className="space-y-4">
           {/* Member preview */}
           <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
-            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${accentGradient} p-[2px]`}>
+            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${accentGradient} p-[2px] flex-shrink-0`}>
               <div className="w-full h-full rounded-[10px] bg-white flex items-center justify-center">
                 <img src={avatar} alt="" className="w-full h-full object-contain p-1.5" />
               </div>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <p className="font-cairo font-bold text-slate-900 text-sm">{member.nickname}</p>
+                <p className="font-cairo font-bold text-slate-900 text-sm truncate">{member.nickname}</p>
               </div>
-              <div className="flex items-center gap-2 mt-0.5">
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                 <span className="text-[10px] text-slate-500 font-tajawal">{member.age} سنة</span>
                 <span className="text-[10px] text-slate-500 font-tajawal">· {member.city}</span>
                 <span className="text-[10px] text-slate-500 font-tajawal">· {member.maritalStatus || 'مكتمل البيانات'}</span>
@@ -1009,7 +1007,7 @@ export default function MemberProfile() {
             <p className="text-xs text-slate-700 font-tajawal leading-relaxed">
               سيتم إرسال طلبك مباشرة إلى <strong>{member.nickname}</strong> بانتظار قبوله المبدئي. بعد القبول، تنتقل الرحلة تلقائياً لمرحلة تأكيد الجدية والتواصل المباشر.
             </p>
-            <div className="pt-2 border-t border-amber-200/60 grid grid-cols-2 gap-2 text-[11px] font-tajawal text-slate-700">
+            <div className="pt-2 border-t border-amber-200/60 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-tajawal text-slate-700">
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                 <span>توافق موثّق بإشراف المنصة</span>
