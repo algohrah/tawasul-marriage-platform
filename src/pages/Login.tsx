@@ -17,7 +17,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // الصفحة اللي كان يبيها المستخدم قبل ما يُحوّل لتسجيل الدخول
+  // الصفحة اللي كان يبيها المستخدم قبل ما يتحوّل لتسجيل الدخول
   const from = (location.state as { from?: string })?.from || '/profile';
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -172,22 +172,22 @@ export default function Login() {
       </div>
 
       {/* Form side */}
-      <div className="flex items-center justify-center p-6 sm:p-12 bg-cream-50">
+      <div className="flex items-center justify-center p-5 sm:p-12 bg-cream-50">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md"
         >
-          <Link to="/" className="inline-flex items-center gap-2 text-navy-600 hover:text-gold-700 font-cairo font-semibold text-sm mb-8 transition-colors">
+          <Link to="/" className="inline-flex items-center gap-2 text-navy-600 hover:text-gold-700 font-cairo font-semibold text-sm mb-6 sm:mb-8 transition-colors">
             <ArrowLeft className="w-4 h-4" /> العودة للرئيسية
           </Link>
 
-          <h1 className="font-cairo font-extrabold text-3xl text-navy-900">تسجيل الدخول</h1>
-          <p className="mt-2 text-navy-600 font-tajawal">أدخل بياناتك للوصول إلى حسابك</p>
+          <h1 className="font-cairo font-extrabold text-2xl sm:text-3xl text-navy-900">تسجيل الدخول</h1>
+          <p className="mt-2 text-navy-600 font-tajawal text-sm sm:text-base">أدخل بياناتك للوصول إلى حسابك</p>
 
           {/* بطاقة تجربة لوحة الإدارة للمستخدم */}
           <div className="mt-4 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-navy-900">
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>
                 <span className="font-cairo font-bold text-xs text-amber-800 bg-amber-200/70 px-2 py-0.5 rounded-md inline-block mb-1">
                   💡 بيانات اختبار لوحة الإدارة
@@ -201,7 +201,7 @@ export default function Login() {
                   setEmail('admin@tawafok.com');
                   setPassword('password123');
                 }}
-                className="px-3 py-1.5 rounded-xl bg-gold-500 text-slate-900 font-cairo font-bold text-xs hover:bg-gold-600 transition-colors shadow-sm flex-shrink-0"
+                className="w-full sm:w-auto mt-2 sm:mt-0 px-3 py-1.5 rounded-xl bg-gold-500 text-slate-900 font-cairo font-bold text-xs hover:bg-gold-600 transition-colors shadow-sm flex-shrink-0"
               >
                 تعبئة تلقائية
               </button>
