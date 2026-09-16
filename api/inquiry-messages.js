@@ -52,7 +52,26 @@ export default async function handler(req, res) {
       if (!admin) return;
       const { id, action, moderatorName, ...fields } = req.body || {};
       if (!id) return res.status(400).json({ error: 'id is required' });
-      const update = action ? { message: fields.message || fields.text || '' } : { message: fields.message || fields.text || '' };
+
+      let update;
+      if (action === 'approve') {
+        update = {
+          approved: true,
+          rejected: false,
+          moderated_by: moderatorName || admin.email || 'admin',
+          moderated_at: new Date().toISOString(),
+        };
+      } else if (action === 'reject') {
+        update = {
+          approved: false,
+          rejected: true,
+          moderated_by: moderatorName || admin.email || 'admin',
+          moderated_at: new Date().toISOString(),
+        };
+      } else {
+        update = { message: fields.message || fields.text || '' };
+      }
+
       const { data, error } = await supabase.from('inquiry_messages').update(update).eq('id', String(id)).select().single();
       if (error) throw error;
       return res.status(200).json(data);
