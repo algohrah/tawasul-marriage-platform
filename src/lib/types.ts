@@ -66,7 +66,6 @@ export interface Member {
   district?: string;
   sect?: string;
   tribe?: string;
-  ethnicity?: string;
   weight?: number;
   skinColor?: string;
   health?: string;
