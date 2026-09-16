@@ -10,16 +10,16 @@ function setCors(res) {
 async function updateMembersForMerge(kind, name, country, targetName, targetCountry) {
   if (!targetName) return;
   if (kind === 'country') {
-    await supabase.from('members').update({ country: targetName }).ilike('country', name).catch(() => undefined);
-    await supabase.from('geo_cities').update({ country: targetName }).ilike('country', name).catch(() => undefined);
+    await supabase.from('members').update({ country: targetName }).ilike('country', name).then(({ error }) => { if (error) console.error('Failed to merge members country:', error.message); });
+    await supabase.from('geo_cities').update({ country: targetName }).ilike('country', name).then(({ error }) => { if (error) console.error('Failed to merge geo_cities country:', error.message); });
   }
   if (kind === 'city') {
     let query = supabase.from('members').update({ city: targetName }).ilike('city', name);
     if (country) query = query.ilike('country', country);
-    await query.catch(() => undefined);
+    await query.then(({ error }) => { if (error) console.error('Failed to merge members city:', error.message); });
   }
   if (kind === 'nationality') {
-    await supabase.from('members').update({ nationality: targetName }).ilike('nationality', name).catch(() => undefined);
+    await supabase.from('members').update({ nationality: targetName }).ilike('nationality', name).then(({ error }) => { if (error) console.error('Failed to merge members nationality:', error.message); });
   }
 }
 
@@ -77,15 +77,20 @@ export default async function handler(req, res) {
       if (action === 'approve') {
         const officialName = String(editedName || suggestion.name).trim();
         if (suggestion.kind === 'country') {
-          await supabase.from('geo_countries').upsert({ name: officialName }).catch(() => undefined);
+          const { error: countryError } = await supabase.from('geo_countries').upsert({ name: officialName });
+          if (countryError) console.error('Failed to add approved country:', countryError.message);
         }
         if (suggestion.kind === 'city') {
           // تفادي التكرار: تحقق أولاً ثم أضف
           const { data: existingCity } = await supabase.from('geo_cities').select('id').eq('country', suggestion.country).ilike('name', officialName).maybeSingle();
-          if (!existingCity) await supabase.from('geo_cities').insert({ country: suggestion.country, name: officialName }).catch(() => undefined);
+          if (!existingCity) {
+            const { error: cityError } = await supabase.from('geo_cities').insert({ country: suggestion.country, name: officialName });
+            if (cityError) console.error('Failed to add approved city:', cityError.message);
+          }
         }
         if (suggestion.kind === 'nationality') {
-          await supabase.from('geo_nationalities').upsert({ name: officialName, country: suggestion.country || '', gender: 'both' }).catch(() => undefined);
+          const { error: nationalityError } = await supabase.from('geo_nationalities').upsert({ name: officialName, country: suggestion.country || '', gender: 'both' });
+          if (nationalityError) console.error('Failed to add approved nationality:', nationalityError.message);
         }
         const { data, error } = await supabase
           .from('geo_suggestions')
