@@ -75,19 +75,19 @@ export default function Notifications() {
     <div className="bg-cream-50 min-h-screen pb-28 lg:pb-8">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between gap-3 flex-wrap mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gold-300/15 flex items-center justify-center">
-              <Bell className="w-6 h-6 text-gold-600" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gold-300/15 flex items-center justify-center">
+              <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-gold-600" />
             </div>
             <div>
-              <h1 className="font-cairo font-extrabold text-2xl text-navy-900">الإشعارات</h1>
+              <h1 className="font-cairo font-extrabold text-xl sm:text-2xl text-navy-900">الإشعارات</h1>
               <p className="text-navy-600 font-tajawal text-sm">
                 {unread > 0 ? `${unread} إشعار غير مقروء` : 'لا توجد إشعارات غير مقروءة'}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {unread > 0 && (
               <button
                 onClick={markAll}
@@ -127,12 +127,12 @@ export default function Notifications() {
             ))}
           </div>
         ) : notifs.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl border border-cream-200/60">
-            <div className="w-20 h-20 rounded-full bg-cream-100 flex items-center justify-center mx-auto mb-4">
-              <Inbox className="w-10 h-10 text-navy-300" />
+          <div className="text-center py-16 sm:py-20 bg-white rounded-3xl border border-cream-200/60">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-cream-100 flex items-center justify-center mx-auto mb-4">
+              <Inbox className="w-8 h-8 sm:w-10 sm:h-10 text-navy-300" />
             </div>
-            <h3 className="font-cairo font-bold text-xl text-navy-900">لا توجد إشعارات</h3>
-            <p className="text-navy-500 font-tajawal mt-2">ستظهر هنا جميع التنبيهات والتحديثات الجديدة</p>
+            <h3 className="font-cairo font-bold text-lg sm:text-xl text-navy-900">لا توجد إشعارات</h3>
+            <p className="text-navy-500 font-tajawal mt-2 text-sm sm:text-base">ستظهر هنا جميع التنبيهات والتحديثات الجديدة</p>
             <Link
               to="/search"
               className="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-2xl bg-gold-gradient text-navy-900 font-cairo font-bold text-sm shadow-gold hover:opacity-95 transition-opacity"
@@ -159,14 +159,14 @@ export default function Notifications() {
                       !n.read ? 'border-gold-300/40 ring-1 ring-gold-300/20' : 'border-cream-200/60'
                     }`}
                   >
-                    <Link to={n.href} onClick={() => { markUnifiedNotificationRead(n.id); }} className="flex items-center gap-3 p-4">
+                    <Link to={n.href} onClick={() => { markUnifiedNotificationRead(n.id); }} className="flex items-center gap-3 p-3 sm:p-4">
                       {/* Icon */}
                       <div className="relative flex-shrink-0">
-                        <div className="w-12 h-12 rounded-full bg-cream-100 flex items-center justify-center">
-                          <Info className="w-6 h-6 text-navy-400" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-cream-100 flex items-center justify-center">
+                          <Info className="w-5 h-5 sm:w-6 sm:h-6 text-navy-400" />
                         </div>
-                        <div className={`absolute -bottom-1 -left-1 w-6 h-6 rounded-full flex items-center justify-center ring-2 ring-white ${cfg.color}`}>
-                          <Icon className="w-3.5 h-3.5" />
+                        <div className={`absolute -bottom-1 -left-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center ring-2 ring-white ${cfg.color}`}>
+                          <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                         </div>
                       </div>
 
@@ -192,7 +192,7 @@ export default function Notifications() {
                       >
                         <X className="w-4 h-4" />
                       </button>
-                      <ChevronLeft className="w-4 h-4 text-navy-300 flex-shrink-0" />
+                      <ChevronLeft className="hidden sm:block w-4 h-4 text-navy-300 flex-shrink-0" />
                     </Link>
 
                     {/* Unread accent bar */}
