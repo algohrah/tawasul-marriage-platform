@@ -10,7 +10,7 @@ function buildGoogleUrl(appName: string) {
   const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!clientId || !redirectUri) return null;
   const state = btoa(JSON.stringify({ origin: window.location.origin, appName, supabaseUrl, supabaseAnonKey }));
-  return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid%20email%20profile&prompt=select_account&state=${encodeURIComponent(state)}`;
+  return `{{https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}}}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid%20email%20profile&prompt=select_account&state=${encodeURIComponent(state)}`;
 }
 
 export function signInWithGoogle(appName = 'تواصل للزواج') {
