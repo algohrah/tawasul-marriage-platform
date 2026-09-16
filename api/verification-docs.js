@@ -55,10 +55,12 @@ export default async function handler(req, res) {
         const { error: uploadError } = await supabase.storage
           .from('verification-docs')
           .upload(fileName, buffer, { contentType, upsert: true });
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from('verification-docs').getPublicUrl(fileName);
-          fileUrl = urlData.publicUrl;
+        if (uploadError) {
+          console.error('Verification doc upload failed:', uploadError.message);
+          return res.status(500).json({ error: 'تعذّر رفع ملف التوثيق، يرجى المحاولة مرة أخرى' });
         }
+        const { data: urlData } = supabase.storage.from('verification-docs').getPublicUrl(fileName);
+        fileUrl = urlData.publicUrl;
       }
 
       const row = {
