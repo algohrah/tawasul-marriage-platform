@@ -43,7 +43,7 @@ export default function Layout() {
       {/* Floating WhatsApp Support Button */}
       {socialSettings?.showWhatsapp && cleanNumber && (
         <motion.a
-          href={`https://wa.me/${cleanNumber}`}
+          href={`{{https://wa.me/${cleanNumber}}}`}
           target="_blank"
           rel="noopener noreferrer"
           initial={{ scale: 0, opacity: 0 }}
