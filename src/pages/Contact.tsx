@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send, MessageCircle, Clock, Download, Archive, ShieldCheck, Loader2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, MessageCircle, Clock, ShieldCheck, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { dataService } from '../lib/data/DataService';
 
@@ -12,7 +12,6 @@ export default function Contact() {
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
-  const projectZipPath = '/downloads/tawafoq-marriage-platform.zip';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,43 +52,6 @@ export default function Contact() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12">
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6 rounded-3xl border border-gold-300/35 bg-white shadow-luxe overflow-hidden"
-        >
-          <div className="relative p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.16),transparent_34rem)] pointer-events-none" />
-            <div className="relative flex items-start gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-gold-gradient flex items-center justify-center text-navy-950 shadow-gold flex-shrink-0">
-                <Archive className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="font-cairo font-extrabold text-lg text-navy-900">نسخة المشروع الحالية جاهزة للتحميل</h2>
-                <p className="text-sm text-navy-500 font-tajawal mt-1 leading-relaxed">
-                  ملف مضغوط يحتوي على كود المنصة الحالي العامل بالكامل (الواجهة + مسارات API)، بالإضافة إلى
-                  ملفات الإعداد اللازمة لتشغيله وإعادة نشره. تم استبعاد ملفات الاعتمادات المؤقتة والمفاتيح السرية لحماية بيانات المنصة.
-                </p>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-[11px] font-cairo font-bold border border-emerald-100">
-                    <ShieldCheck className="w-3.5 h-3.5" /> آمن للتحميل — بدون .env أو مفاتيح سرية
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gold-300/15 text-gold-700 px-3 py-1 text-[11px] font-cairo font-bold border border-gold-300/30">
-                    <Archive className="w-3.5 h-3.5" /> يتضمن ملفات المصدر وإعدادات البناء
-                  </span>
-                </div>
-              </div>
-            </div>
-            <a
-              href={projectZipPath}
-              download="tawafoq-marriage-platform.zip"
-              className="relative inline-flex items-center justify-center gap-2 rounded-2xl bg-navy-900 px-5 py-3 text-white font-cairo font-extrabold text-sm shadow-soft hover:bg-navy-800 hover:-translate-y-0.5 transition-all"
-            >
-              <Download className="w-4.5 h-4.5" /> تحميل ملف المشروع ZIP
-            </a>
-          </div>
-        </motion.div>
-
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Info cards */}
           <div className="space-y-4">
