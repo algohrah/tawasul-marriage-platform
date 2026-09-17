@@ -1490,4 +1490,284 @@ export default function Register() {
 
               {/* ====== الخطوة 3: بيانات الحساب والأمان ====== */}
               {step === 3 && (
-                <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5
+                <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+                  <SectionTitle icon={ShieldCheck} title="بيانات الحساب والأمان" desc="بيانات الحساب ووسائل التواصل الخاصة مع إدارة المنصة" />
+
+                  {/* الاسم الكامل الحقيقي (سري) */}
+                  <Field
+                    label={
+                      <div className="flex items-center justify-between w-full">
+                        <span>الاسم الكامل الرباعي الحقيقي</span>
+                        <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md font-cairo font-bold">🔒 سري للإدارة فقط</span>
+                      </div>
+                    }
+                    required
+                    error={errors.realName}
+                    hint="سري بالكامل — للإدارة فقط للتحقق من هوية صاحب الحساب"
+                  >
+                    <TextInput
+                      value={form.realName}
+                      onChange={(v) => {
+                        set('realName', v);
+                        if (!form.username) {
+                          const first = v.trim().split(' ')[0];
+                          if (first) set('username', translitArabicToEnglish(first));
+                        }
+                      }}
+                      placeholder="أدخل اسمك الرباعي الحقيقي"
+                    />
+                  </Field>
+
+                  {/* اسم المستخدم / اليوزر الفريد */}
+                  <Field
+                    label={
+                      <div className="flex items-center justify-between w-full">
+                        <span>اسم المستخدم / اليوزر الفريد</span>
+                        <span className="text-[10px] bg-slate-200 text-slate-800 px-2 py-0.5 rounded-md font-cairo font-bold">🔒 معرف الحساب</span>
+                      </div>
+                    }
+                    required
+                    error={errors.username}
+                    hint="معرف إنجليزي لملفك الشخصي بالمنصة (3-20 حرف/رقم بدون مسافات)"
+                  >
+                    <div className="flex gap-2 items-center">
+                      <div className="relative flex-1">
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 font-mono text-sm text-slate-400">@</span>
+                        <TextInput
+                          value={form.username}
+                          onChange={(v) => {
+                            const cleaned = v.toLowerCase().replace(/[^a-z0-9_]/g, '');
+                            set('username', cleaned);
+                          }}
+                          placeholder="abu_abdullah"
+                          className="pr-9 font-mono"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const base = form.nickname || form.realName || 'user';
+                          const sug = translitArabicToEnglish(base) + '_' + Math.floor(100 + Math.random() * 900);
+                          set('username', sug);
+                        }}
+                        className="px-3 py-3 rounded-xl bg-cream-100 text-navy-800 text-xs font-cairo font-bold hover:bg-cream-200 transition-colors whitespace-nowrap"
+                      >
+                        اقترح اسمًا
+                      </button>
+                    </div>
+                  </Field>
+
+                  {/* البريد الإلكتروني ورقم الواتساب */}
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <Field
+                      label="البريد الإلكتروني"
+                      required
+                      error={errors.email}
+                      hint={checkingEmail ? 'جارٍ التحقق من توفر البريد...' : 'لتسجيل الدخول واستعادة الحساب'}
+                    >
+                      <TextInput
+                        value={form.email}
+                        onChange={(v) => set('email', v)}
+                        onBlur={() => checkEmailAvailability(form.email)}
+                        placeholder="name@example.com"
+                        type="email"
+                      />
+                    </Field>
+
+                    <Field
+                      label={
+                        <div className="flex items-center justify-between w-full">
+                          <span>رقم الواتساب للتواصل والإدارة</span>
+                          <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md font-cairo font-bold">🔒 سري للإدارة</span>
+                        </div>
+                      }
+                      required
+                      error={errors.whatsapp}
+                      hint="لتواصل الإدارة المباشر معك للتوفيق عند وجود اهتمام متطابق"
+                    >
+                      <PhoneInputWithCountryCode
+                        value={form.whatsapp || ''}
+                        onChange={(v) => {
+                          set('whatsapp', v);
+                        }}
+                        placeholder="501234567"
+                      />
+                    </Field>
+                  </div>
+
+                  {/* كلمة المرور وتأكيدها ومقياس القوة */}
+                  <div className="pt-3 border-t border-cream-200 space-y-4">
+                    <h4 className="font-cairo font-bold text-navy-900 text-sm flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-gold-600" /> تعيين كلمة المرور
+                    </h4>
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <Field label="كلمة المرور" required error={errors.password}>
+                        <div className="relative">
+                          <input
+                            type={showPass ? 'text' : 'password'}
+                            value={form.password}
+                            onChange={(e) => set('password', e.target.value)}
+                            placeholder="••••••••"
+                            className="w-full pr-4 pl-12 py-3 rounded-xl bg-cream-50 border-2 border-cream-200 focus:border-gold-500 focus:outline-none font-tajawal text-navy-900 text-sm transition-colors"
+                          />
+                          <button type="button" onClick={() => setShowPass(!showPass)} className="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400 hover:text-navy-700">
+                            {showPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                          </button>
+                        </div>
+                      </Field>
+
+                      <Field label="تأكيد كلمة المرور" required error={errors.passwordConfirm}>
+                        <div className="relative">
+                          <input
+                            type={showPassConfirm ? 'text' : 'password'}
+                            value={form.passwordConfirm}
+                            onChange={(e) => set('passwordConfirm', e.target.value)}
+                            placeholder="••••••••"
+                            className="w-full pr-4 pl-12 py-3 rounded-xl bg-cream-50 border-2 border-cream-200 focus:border-gold-500 focus:outline-none font-tajawal text-navy-900 text-sm transition-colors"
+                          />
+                          <button type="button" onClick={() => setShowPassConfirm(!showPassConfirm)} className="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400 hover:text-navy-700">
+                            {showPassConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                          </button>
+                        </div>
+                      </Field>
+                    </div>
+
+                    {/* مؤشر قوة كلمة المرور */}
+                    {form.password && (
+                      <div className="bg-cream-50 p-3 rounded-xl border border-cream-200 space-y-1.5">
+                        <div className="flex justify-between items-center text-xs font-cairo">
+                          <span className="text-slate-600">قوة كلمة المرور:</span>
+                          <span className="font-bold text-slate-800">{passwordStrength.label}</span>
+                        </div>
+                        <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                          <div className={`h-full ${passwordStrength.color} transition-all duration-300`} style={{ width: `${passwordStrength.percentage}%` }} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* ====== الخطوة 4: المراجعة النهائية ====== */}
+              {step === 4 && (
+                <motion.div key="s4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+                  <SectionTitle icon={Check} title="المراجعة والتأكيد" desc="راجع بياناتك قبل إكمال التسجيل ويمكنك التعديل على أي قسم" />
+
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 flex items-start gap-3">
+                    <Check className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-cairo font-bold text-emerald-800 text-sm">جاهز لإنشاء الحساب</p>
+                      <p className="font-tajawal text-xs text-emerald-700 mt-1 leading-relaxed">
+                        سيظهر حسابك مباشرة في البحث ولوحة الإدارة، ويمكنك تعديل التفاصيل لاحقاً من صفحة الملف الشخصي.
+                      </p>
+                    </div>
+                  </div>
+
+                  <ReviewSection title="الهوية والإقامة" onEdit={() => setStep(0)} rows={[
+                    ['الجنس', form.gender === 'male' ? 'ذكر' : form.gender === 'female' ? 'أنثى' : '—'],
+                    ['الاسم المستعار', form.nickname || '—'],
+                    ['العمر وتاريخ الميلاد', form.birthDate ? `${form.birthDate} (${form.age} سنة)` : '—'],
+                    ['الإقامة والمدينة', [form.country, form.city, form.district].filter(Boolean).join(' - ') || '—'],
+                    ['الجنسية', form.nationalityMode === 'same' ? getNationalityForCountry(form.country, form.gender as any) : (form.nationalityOther || form.nationality || '—')],
+                    ['الحالة الاجتماعية ونوع الزواج', `${normalizeMaritalLabel(form.maritalStatus, form.gender as any) || '—'} (${form.marriageType === 'misyar' ? 'مسيار' : form.marriageType === 'both' ? 'لا مانع / معلن او مسيار' : 'معلن'})`],
+                    ['المذهب', form.sectOther || form.sect || '—'],
+                  ]} />
+
+                  <ReviewSection title="المظهر والعمل والنبذة" onEdit={() => setStep(1)} rows={[
+                    ['الطول والوزن', `${form.height || '—'} سم / ${form.weight || '—'} كجم`],
+                    ['البشرة والعرق', `${form.skinColorOther || form.skinColor || '—'} - ${form.ethnicity || '—'}`],
+                    ['التعليم', form.education || '—'],
+                    ['العمل', [form.workType, form.jobTitle].filter(Boolean).join(' - ') || '—'],
+                    ['السكن', form.housing || '—'],
+                    ['نبذة', form.bio || '—'],
+                  ]} />
+
+                  <ReviewSection title={`مواصفات ${partnerTerms.partnerLabel}`} onEdit={() => setStep(2)} rows={[
+                    ['الدولة والمدينة', [form.pCountry === 'لا يهم' ? 'لا مانع' : (form.pCountry || 'لا مانع'), form.pCity === 'لا يهم' ? 'لا مانع' : (form.pCity || 'لا مانع')].filter(Boolean).join(' - ')],
+                    ['الجنسية المطلوبة', (form.pNationalityOther || form.pNationality) === 'لا يهم' ? 'لا مانع' : (form.pNationalityOther || form.pNationality || 'لا مانع')],
+                    ['العمر المطلوب', form.pAgeMin || form.pAgeMax ? `من ${form.pAgeMin || 'أي عمر'} إلى ${form.pAgeMax || 'أي عمر'} سنة` : 'غير محدد (أي عمر)'],
+                    ['الحالة الاجتماعية', form.pMaritalStatus === 'لا يهم' ? 'لا مانع' : (form.pMaritalStatus || 'لم يتم التحديد')],
+                    ['ملاحظات', form.pNotes || '—'],
+                  ]} />
+
+                  <ReviewSection title="بيانات الحساب والأمان" onEdit={() => setStep(3)} rows={[
+                    ['الاسم الكامل الحقيقي', `${form.realName || '—'} (🔒 سري للإدارة)`],
+                    ['اسم المستخدم / اليوزر', `@${form.username}`],
+                    ['البريد الإلكتروني', form.email || '—'],
+                    ['رقم الواتساب', `${form.whatsapp || '—'} (🔒 سري للإدارة)`],
+                  ]} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {submitError && (
+              <div className="mt-5 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-3 text-sm font-tajawal text-center">
+                {submitError}
+              </div>
+            )}
+
+            {/* أزرار التنقل */}
+            <div className="flex items-center gap-3 mt-7">
+              {step > 0 && (
+                <button onClick={() => { setStep(step - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center gap-1 px-5 py-3 rounded-2xl text-navy-600 font-cairo font-semibold hover:bg-cream-100 transition-colors">
+                  <ArrowRight className="w-4 h-4" /> السابق
+                </button>
+              )}
+              {step < STEPS.length - 1 ? (
+                <Button onClick={handleNext} fullWidth size="lg">
+                  التالي <ArrowLeft className="w-4 h-4" />
+                </Button>
+              ) : (
+                <Button onClick={handleNext} fullWidth size="lg" className="shadow-gold" disabled={submitting}>
+                  <Check className="w-5 h-5" /> {submitting ? 'جارٍ إنشاء الحساب...' : 'إكمال التسجيل وإنشاء الحساب'}
+                </Button>
+              )}
+            </div>
+
+            {step === 0 && (
+              <p className="text-center text-sm text-navy-500 font-tajawal mt-5">
+                لديك حساب بالفعل؟ <Link to="/login" className="text-gold-700 font-cairo font-bold hover:underline">سجّل الدخول</Link>
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SectionTitle({ icon: Icon, title, desc }: { icon: typeof User; title: string; desc: string }) {
+  return (
+    <div className="flex items-center gap-3 pb-4 border-b border-cream-200">
+      <div className="w-11 h-11 rounded-xl bg-gold-300/15 flex items-center justify-center flex-shrink-0">
+        <Icon className="w-6 h-6 text-gold-600" />
+      </div>
+      <div>
+        <h2 className="font-cairo font-bold text-xl text-navy-900">{title}</h2>
+        <p className="text-sm text-navy-500 font-tajawal">{desc}</p>
+      </div>
+    </div>
+  );
+}
+
+function ReviewSection({ title, rows, onEdit }: { title: string; rows: Array<[string, string]>; onEdit: () => void }) {
+  return (
+    <div className="rounded-2xl bg-cream-50 border border-cream-200 overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-cream-200">
+        <h3 className="font-cairo font-bold text-navy-900 text-sm">{title}</h3>
+        <button type="button" onClick={onEdit} className="text-xs font-cairo font-bold text-gold-700 hover:underline">
+          تعديل
+        </button>
+      </div>
+      <div className="divide-y divide-cream-200/70">
+        {rows.map(([label, value], idx) => (
+          <div key={`${label}-${idx}`} className="grid grid-cols-3 gap-3 px-4 py-2.5">
+            <span className="text-xs font-cairo font-bold text-navy-500">{label}</span>
+            <span className="col-span-2 text-xs sm:text-sm font-tajawal text-navy-900 leading-relaxed break-words">{value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
