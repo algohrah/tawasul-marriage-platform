@@ -81,7 +81,7 @@ export default function Notifications() {
               <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-gold-600" />
             </div>
             <div>
-              <h1 className="font-cairo font-extrabold text-xl sm:text-2xl text-navy-900">الإشعارات</h1>
+              <h1 className="font-cairo font-extrabold text-lg sm:text-2xl text-navy-900">الإشعارات</h1>
               <p className="text-navy-600 font-tajawal text-sm">
                 {unread > 0 ? `${unread} إشعار غير مقروء` : 'لا توجد إشعارات غير مقروءة'}
               </p>
@@ -118,7 +118,7 @@ export default function Notifications() {
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="bg-white rounded-2xl border border-cream-200/60 p-4 flex items-center gap-3 animate-pulse">
-                <div className="w-11 h-11 rounded-full bg-cream-100 shrink-0" />
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-cream-100 shrink-0" />
                 <div className="flex-1 space-y-2">
                   <div className="h-3.5 bg-cream-200/80 rounded-full w-1/3" />
                   <div className="h-3 bg-cream-100 rounded-full w-2/3" />

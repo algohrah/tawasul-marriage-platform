@@ -173,7 +173,7 @@ export default function MemberProfile() {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
         <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-          <User className="w-10 h-10 text-slate-300" />
+          <User className="w-8 h-8 sm:w-10 sm:h-10 text-slate-300" />
         </div>
         <h2 className="font-cairo font-bold text-xl sm:text-2xl text-navy-900 mb-2">العضو غير موجود</h2>
         <p className="text-slate-500 font-tajawal mb-4">قد يكون الحساب محذوفاً أو غير متاح</p>
@@ -438,7 +438,7 @@ export default function MemberProfile() {
               {/* 2. زر الواتساب للمشاركة والاستفسار */}
               <button
                 onClick={handleShareWhatsApp}
-                className="py-3 sm:py-3.5 px-2.5 sm:px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-cairo font-bold text-[11px] sm:text-sm transition-colors flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer shadow-xs flex-shrink-0"
+                className="py-2.5 sm:py-3.5 px-2 sm:px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-cairo font-bold text-[10px] sm:text-sm transition-colors flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer shadow-xs flex-shrink-0"
                 title="تواصل واتساب للتوفيق مع هذا الملف"
               >
                 <MessageCircle className="w-4 h-4 fill-white flex-shrink-0" />
@@ -686,7 +686,7 @@ export default function MemberProfile() {
 
           {/* Mediation notice */}
           <div className="bg-gradient-to-l from-amber-50 to-yellow-50/50 rounded-2xl p-4 border border-amber-200/60 flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500 flex items-center justify-center flex-shrink-0">
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -981,7 +981,7 @@ export default function MemberProfile() {
         <div className="space-y-4">
           {/* Member preview */}
           <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
-            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${accentGradient} p-[2px] flex-shrink-0`}>
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${accentGradient} p-[2px] flex-shrink-0`}>
               <div className="w-full h-full rounded-[10px] bg-white flex items-center justify-center">
                 <img src={avatar} alt="" className="w-full h-full object-contain p-1.5" />
               </div>

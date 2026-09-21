@@ -114,7 +114,7 @@ export default function JourneyPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-cream-50 flex flex-col items-center justify-center" dir="rtl">
-        <Loader2 className="w-10 h-10 animate-spin text-gold-500 mb-3" />
+        <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 animate-spin text-gold-500 mb-2 sm:mb-3" />
         <p className="font-cairo text-navy-500">جارٍ فتح رحلتك...</p>
       </div>
     );
@@ -537,7 +537,7 @@ function EngagementPanel({ req, busy, runAction, showToast, meta, c, Icon }: any
         </div>
         
         <div className="text-center py-4">
-          <p className="font-mono font-black text-4xl text-amber-700">{settings.final_fee_amount || 2000} <span className="text-base font-cairo font-bold">ريال</span></p>
+          <p className="font-mono font-black text-2xl sm:text-4xl text-amber-700">{settings.final_fee_amount || 2000} <span className="text-base font-cairo font-bold">ريال</span></p>
           <p className="text-[11px] text-navy-500 font-cairo mt-1.5 leading-relaxed">
             تُسدّد عند إتمام الملكة إبراءً للذمة.
           </p>
@@ -1139,7 +1139,7 @@ function InquiryRoom({ req, other, inquiry, setInquiry, showToast, onProceedDepo
           </p>
 
           {/* Package Selection Cards */}
-          <div className="grid grid-cols-3 gap-3 mt-4">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-3 sm:mt-4">
             {messagePackages.map((pkg) => {
               const isSelected = selectedPkgId === pkg.id;
               const isPopular = pkg.id === 'medium';
@@ -1155,7 +1155,7 @@ function InquiryRoom({ req, other, inquiry, setInquiry, showToast, onProceedDepo
                     }`}
                 >
                   {isPopular && (
-                    <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-[8px] font-cairo font-black px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap">
+                    <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-[9px] font-cairo font-black px-1.5 py-0.5 rounded-full shadow-sm whitespace-nowrap">
                       الأكثر شعبية
                     </span>
                   )}
@@ -1590,7 +1590,7 @@ function DepositInline({ req, busy, runAction, showToast }: any) {
               <div className="absolute top-0 left-0 w-24 h-24 bg-amber-500/5 rounded-full -translate-x-6 -translate-y-6" />
               <div className="text-center relative z-10">
                 <ShieldCheck className="w-12 h-12 text-amber-600 mx-auto mb-2" />
-                <p className="font-cairo font-black text-4xl text-amber-700">{settings.deposit_amount || 500} <span className="text-lg font-bold">ريال</span></p>
+                <p className="font-cairo font-black text-2xl sm:text-4xl text-amber-700">{settings.deposit_amount || 500} <span className="text-lg font-bold">ريال</span></p>
                 <p className="text-xs text-navy-600 font-cairo mt-1.5 font-bold">
                   رسوم الجدية وتأكيد رغبة الزواج
                 </p>
@@ -1731,7 +1731,7 @@ function DepositInline({ req, busy, runAction, showToast }: any) {
                     type="button"
                     disabled={isDisabled}
                     onClick={() => setSelDay(dayNum)}
-                    className={`h-8 w-full rounded-lg font-cairo text-xs font-bold transition-all flex items-center justify-center
+                    className={`h-7 sm:h-8 w-full rounded-lg font-cairo text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center
                       ${isDisabled
                         ? 'opacity-30 cursor-not-allowed bg-cream-100/50 text-navy-300'
                         : selDay === dayNum

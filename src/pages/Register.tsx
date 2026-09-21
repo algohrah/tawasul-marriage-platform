@@ -1740,7 +1740,7 @@ export default function Register() {
 function SectionTitle({ icon: Icon, title, desc }: { icon: typeof User; title: string; desc: string }) {
   return (
     <div className="flex items-center gap-3 pb-4 border-b border-cream-200">
-      <div className="w-11 h-11 rounded-xl bg-gold-300/15 flex items-center justify-center flex-shrink-0">
+      <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gold-300/15 flex items-center justify-center flex-shrink-0">
         <Icon className="w-6 h-6 text-gold-600" />
       </div>
       <div>
@@ -1762,7 +1762,7 @@ function ReviewSection({ title, rows, onEdit }: { title: string; rows: Array<[st
       </div>
       <div className="divide-y divide-cream-200/70">
         {rows.map(([label, value], idx) => (
-          <div key={`${label}-${idx}`} className="grid grid-cols-3 gap-3 px-4 py-2.5">
+          <div key={`${label}-${idx}`} className="grid grid-cols-[auto_1fr] gap-2 px-3 sm:px-4 py-2">
             <span className="text-xs font-cairo font-bold text-navy-500">{label}</span>
             <span className="col-span-2 text-xs sm:text-sm font-tajawal text-navy-900 leading-relaxed break-words">{value}</span>
           </div>

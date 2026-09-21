@@ -182,7 +182,7 @@ export default function Login() {
             <ArrowLeft className="w-4 h-4" /> العودة للرئيسية
           </Link>
 
-          <h1 className="font-cairo font-extrabold text-2xl sm:text-3xl text-navy-900">تسجيل الدخول</h1>
+          <h1 className="font-cairo font-extrabold text-xl sm:text-3xl text-navy-900">تسجيل الدخول</h1>
           <p className="mt-2 text-navy-600 font-tajawal text-sm sm:text-base">أدخل بياناتك للوصول إلى حسابك</p>
 
           {/* بطاقة تجربة لوحة الإدارة للمستخدم */}

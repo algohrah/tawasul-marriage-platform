@@ -290,12 +290,12 @@ export default function Search() {
       <div className="bg-navy-gradient relative overflow-hidden">
         <div className="absolute inset-0 pattern-arabesque opacity-30" />
         <div className="absolute -top-20 -left-20 w-72 h-72 bg-gold-500/20 rounded-full blur-3xl" />
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-12 text-center">
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-12 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gold-300/15 mb-4">
               <SlidersHorizontal className="w-6 h-6 sm:w-7 sm:h-7 text-gold-300" />
             </div>
-            <h1 className="font-cairo font-extrabold text-2xl sm:text-4xl text-white">البحث المتقدم</h1>
+            <h1 className="font-cairo font-extrabold text-xl sm:text-4xl text-white">البحث المتقدم</h1>
             <p className="mt-3 text-sm sm:text-base text-cream-200/80 font-tajawal">خصّص بحثك بدقة للعثور على شريك الحياة المناسب</p>
           </motion.div>
         </div>
@@ -314,8 +314,8 @@ export default function Search() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ابحث بالكود أو الاسم أو المسمى..."
-                className="w-full px-4 py-3 pl-10 rounded-2xl bg-cream-50 dark:bg-navy-950 border-2 border-cream-200 dark:border-navy-800 focus:border-gold-500 focus:outline-none font-tajawal text-xs sm:text-sm text-navy-900 dark:text-cream-100 placeholder:text-navy-400"
+                placeholder="ابحث بكود العضو (مثل m1)، أو المسمى الوظيفي، أو الاسم المستعار..."
+                className="w-full px-4 py-3 pl-10 rounded-2xl bg-cream-50 dark:bg-navy-950 border-2 border-cream-200 dark:border-navy-800 focus:border-gold-500 focus:outline-none font-tajawal text-sm text-navy-900 dark:text-cream-100 placeholder:text-navy-400"
               />
               <SearchIcon className="w-4 h-4 text-navy-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             </div>
@@ -358,7 +358,7 @@ export default function Search() {
 
           {/* ===== الخطوة 3: العمر ===== */}
           <FilterSection icon={Calendar} title="الفئة العمرية" step={3}>
-            <div className="bg-cream-50 rounded-2xl p-2.5 sm:p-4 border border-cream-200">
+            <div className="bg-cream-50 rounded-2xl p-3 sm:p-4 border border-cream-200">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm text-navy-500 font-tajawal">من</span>
                 <span className="font-cairo font-bold text-base sm:text-lg text-gold-700 bg-gold-300/15 px-3 py-1 rounded-lg">{ageRange[0]} سنة</span>
@@ -367,7 +367,7 @@ export default function Search() {
                 onChange={(e) => setAgeRange([Math.min(Number(e.target.value), ageRange[1]), ageRange[1]])}
                 className="w-full accent-gold-500" />
             </div>
-            <div className="bg-cream-50 rounded-2xl p-2.5 sm:p-4 border border-cream-200 mt-3">
+            <div className="bg-cream-50 rounded-2xl p-3 sm:p-4 border border-cream-200 mt-3">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm text-navy-500 font-tajawal">إلى</span>
                 <span className="font-cairo font-bold text-base sm:text-lg text-gold-700 bg-gold-300/15 px-3 py-1 rounded-lg">{ageRange[1]} سنة</span>
@@ -579,7 +579,7 @@ export default function Search() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 mt-8 sm:mt-12 border-t border-cream-200/60">
         <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h2 className="font-cairo font-extrabold text-xl sm:text-2xl text-navy-900">
+            <h2 className="font-cairo font-extrabold text-lg sm:text-2xl text-navy-900">
               نتائج البحث ({filteredMembers.length})
             </h2>
             <p className="mt-1 text-sm text-navy-500 font-tajawal">
@@ -598,8 +598,8 @@ export default function Search() {
 
         {membersError && members.length === 0 ? (
           <div className="py-20 text-center bg-white rounded-3xl border border-rose-200/70">
-            <div className="w-16 h-16 rounded-full bg-rose-soft flex items-center justify-center mx-auto mb-4">
-              <SearchIcon className="w-8 h-8 text-rose-deep" />
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-rose-soft flex items-center justify-center mx-auto mb-4">
+              <SearchIcon className="w-6 h-6 sm:w-8 sm:h-8 text-rose-deep" />
             </div>
             <p className="font-cairo font-bold text-navy-800 text-lg mb-1">تعذر تحميل الأعضاء</p>
             <p className="text-sm text-navy-500 font-tajawal mb-6">{membersError}</p>
@@ -626,7 +626,7 @@ export default function Search() {
           </>
         ) : (
           <div className="py-20 text-center">
-            <SearchIcon className="w-16 h-16 text-navy-200 mx-auto mb-4" />
+            <SearchIcon className="w-12 h-12 sm:w-16 sm:h-16 text-navy-200 mx-auto mb-4" />
             <p className="font-cairo font-bold text-navy-700 text-lg mb-1">لا توجد نتائج مطابقة</p>
             <p className="text-sm text-navy-400 font-tajawal mb-6">جرّب توسيع نطاق البحث أو تعديل الفلاتر</p>
             <Button
@@ -684,7 +684,7 @@ function GenderButton({ active, onClick, label, color }: { active: boolean; onCl
   return (
     <button
       onClick={onClick}
-      className={`py-3 sm:py-3.5 rounded-xl font-cairo font-bold text-xs sm:text-sm transition-all no-tap-highlight ${
+      className={`py-2.5 sm:py-3.5 rounded-xl font-cairo font-bold text-[11px] sm:text-sm transition-all no-tap-highlight ${
         active ? colors[color] : 'bg-cream-100 dark:bg-navy-950 text-navy-600 dark:text-cream-200 hover:bg-cream-200 dark:hover:bg-navy-800'
       }`}
     >

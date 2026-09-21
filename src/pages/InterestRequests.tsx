@@ -273,7 +273,7 @@ export default function InterestRequests() {
           </div>
 
           {!loading && (
-            <div className="grid grid-cols-3 gap-2 mt-6 sm:gap-2.5 sm:mt-8">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 mt-4 sm:mt-8">
               <StatChip
                 active={stats.respond > 0}
                 value={stats.respond} label="تحتاج ردّك الفوري"
@@ -411,7 +411,7 @@ export default function InterestRequests() {
         <div className="mt-5 space-y-5">
           {loading && (
             <div className="flex flex-col items-center justify-center py-24 text-slate-400 bg-white dark:bg-navy-900 border border-slate-100 dark:border-navy-800 rounded-[2rem] shadow-sm">
-              <Loader2 className="w-10 h-10 animate-spin text-amber-500 mb-4" />
+              <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 animate-spin text-amber-500 mb-3 sm:mb-4" />
               <p className="font-cairo text-sm text-slate-600 dark:text-slate-300 font-medium">جارٍ تحميل طلبات التوافق الآمنة...</p>
               <p className="font-cairo text-xs text-slate-400 dark:text-slate-400 mt-1">نحن نهتم بخصوصيتك ونقوم بتهيئة البيانات</p>
             </div>

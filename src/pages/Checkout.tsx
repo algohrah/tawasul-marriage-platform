@@ -622,7 +622,7 @@ export default function Checkout() {
               <div className="bg-navy-gradient rounded-2xl p-4 mb-4 relative overflow-hidden">
                 <div className="absolute inset-0 pattern-arabesque opacity-30" />
                 <div className="relative flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-gold-gradient flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gold-gradient flex items-center justify-center flex-shrink-0">
                     <Crown className="w-6 h-6 text-navy-900" />
                   </div>
                   <div>
@@ -713,7 +713,7 @@ export default function Checkout() {
 
                 <div className="border-y border-dashed border-slate-200 py-3 text-center">
                   <span className="text-xs text-slate-400 block">TOTAL AMOUNT TO PAY</span>
-                  <span className="font-sans font-extrabold text-2xl text-slate-900">{total} SAR <span className="text-xs font-light text-slate-400">(incl. 15% VAT)</span></span>
+                  <span className="font-sans font-extrabold text-xl sm:text-2xl text-slate-900">{total} SAR <span className="text-xs font-light text-slate-400">(incl. 15% VAT)</span></span>
                 </div>
 
                 {/* Login credentials inside popup */}
