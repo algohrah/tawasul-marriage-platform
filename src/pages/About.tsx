@@ -123,7 +123,8 @@ export default function About() {
                   className="w-full sm:w-auto justify-center inline-flex items-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-cairo font-extrabold text-sm sm:text-base shadow-lg transition-transform hover:-translate-y-0.5"
                 >
                   <MessageCircle className="w-5 h-5 fill-current" />
-                  <span>تواصل مباشر مع الدعم المالي والتقني عبر WhatsApp</span>
+                  <span className="hidden sm:inline">تواصل مباشر مع الدعم المالي والتقني عبر WhatsApp</span>
+                  <span className="sm:hidden">تواصل عبر WhatsApp</span>
                 </a>
               )}
 

@@ -314,8 +314,8 @@ export default function Search() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ابحث بكود العضو (مثل m1)، أو المسمى الوظيفي، أو الاسم المستعار..."
-                className="w-full px-4 py-3 pl-10 rounded-2xl bg-cream-50 dark:bg-navy-950 border-2 border-cream-200 dark:border-navy-800 focus:border-gold-500 focus:outline-none font-tajawal text-sm text-navy-900 dark:text-cream-100 placeholder:text-navy-400"
+                placeholder="ابحث بالكود أو الاسم أو المسمى..."
+                className="w-full px-4 py-3 pl-10 rounded-2xl bg-cream-50 dark:bg-navy-950 border-2 border-cream-200 dark:border-navy-800 focus:border-gold-500 focus:outline-none font-tajawal text-xs sm:text-sm text-navy-900 dark:text-cream-100 placeholder:text-navy-400"
               />
               <SearchIcon className="w-4 h-4 text-navy-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             </div>
@@ -358,7 +358,7 @@ export default function Search() {
 
           {/* ===== الخطوة 3: العمر ===== */}
           <FilterSection icon={Calendar} title="الفئة العمرية" step={3}>
-            <div className="bg-cream-50 rounded-2xl p-3 sm:p-4 border border-cream-200">
+            <div className="bg-cream-50 rounded-2xl p-2.5 sm:p-4 border border-cream-200">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm text-navy-500 font-tajawal">من</span>
                 <span className="font-cairo font-bold text-base sm:text-lg text-gold-700 bg-gold-300/15 px-3 py-1 rounded-lg">{ageRange[0]} سنة</span>
@@ -367,7 +367,7 @@ export default function Search() {
                 onChange={(e) => setAgeRange([Math.min(Number(e.target.value), ageRange[1]), ageRange[1]])}
                 className="w-full accent-gold-500" />
             </div>
-            <div className="bg-cream-50 rounded-2xl p-3 sm:p-4 border border-cream-200 mt-3">
+            <div className="bg-cream-50 rounded-2xl p-2.5 sm:p-4 border border-cream-200 mt-3">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm text-navy-500 font-tajawal">إلى</span>
                 <span className="font-cairo font-bold text-base sm:text-lg text-gold-700 bg-gold-300/15 px-3 py-1 rounded-lg">{ageRange[1]} سنة</span>

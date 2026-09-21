@@ -213,7 +213,7 @@ export default function Home() {
                 تجمع وتعاون مع شبكة خطابات ومكاتب التوفيق
               </span>
 
-              <h1 className="font-cairo font-extrabold text-3xl sm:text-4xl lg:text-5xl text-white leading-[1.2] text-shadow-gold">
+              <h1 className="font-cairo font-extrabold text-2xl sm:text-4xl lg:text-5xl text-white leading-[1.25] text-shadow-gold">
                 ابدأ رحلة العمر مع
                 <span className="block text-gradient-gold mt-1.5">شريك الحياة المناسب</span>
               </h1>
@@ -223,7 +223,7 @@ export default function Home() {
               </p>
 
               {/* أزرار الإجراء السريع */}
-              <div className="mt-5 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start w-full sm:w-auto">
+              <div className="mt-5 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start w-full max-w-xs sm:max-w-none mx-auto lg:mx-0">
                 {isLoggedIn ? (
                   <>
                     <ButtonLink to="/search" size="lg" className="shadow-gold w-full sm:w-auto">
@@ -726,10 +726,10 @@ export default function Home() {
               <div className="flex items-center justify-between mt-6 sm:mt-8">
                 <button
                   onClick={prevTestimonial}
-                  className="w-11 h-11 rounded-full bg-cream-100 dark:bg-navy-800 hover:bg-gold-300/20 dark:hover:bg-gold-300/10 flex items-center justify-center transition-all duration-300 group"
+                  className="w-12 h-12 sm:w-11 sm:h-11 rounded-full bg-cream-100 dark:bg-navy-800 hover:bg-gold-300/20 dark:hover:bg-gold-300/10 flex items-center justify-center transition-all duration-300 group no-tap-highlight"
                   aria-label="السابق"
                 >
-                  <ChevronRight className="w-5 h-5 text-navy-600 dark:text-cream-200 group-hover:text-gold-700 dark:group-hover:text-gold-400" />
+                  <ChevronRight className="w-6 h-6 sm:w-5 sm:h-5 text-navy-600 dark:text-cream-200 group-hover:text-gold-700 dark:group-hover:text-gold-400" />
                 </button>
 
                 {/* نقاط مؤشّرة */}
@@ -748,10 +748,10 @@ export default function Home() {
 
                 <button
                   onClick={nextTestimonial}
-                  className="w-11 h-11 rounded-full bg-cream-100 dark:bg-navy-800 hover:bg-gold-300/20 dark:hover:bg-gold-300/10 flex items-center justify-center transition-all duration-300 group"
+                  className="w-12 h-12 sm:w-11 sm:h-11 rounded-full bg-cream-100 dark:bg-navy-800 hover:bg-gold-300/20 dark:hover:bg-gold-300/10 flex items-center justify-center transition-all duration-300 group no-tap-highlight"
                   aria-label="التالي"
                 >
-                  <ChevronLeft className="w-5 h-5 text-navy-600 dark:text-cream-200 group-hover:text-gold-700 dark:group-hover:text-gold-400" />
+                  <ChevronLeft className="w-6 h-6 sm:w-5 sm:h-5 text-navy-600 dark:text-cream-200 group-hover:text-gold-700 dark:group-hover:text-gold-400" />
                 </button>
               </div>
             </div>
@@ -818,3 +818,4 @@ export default function Home() {
     </div>
   );
 }
+
