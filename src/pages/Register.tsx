@@ -569,7 +569,7 @@ export default function Register() {
   return (
     <div className="min-h-[calc(100vh-5rem)] bg-cream-50 py-4 px-3 sm:py-6 sm:px-4">
       <div className="max-w-2xl mx-auto">
-        <Link to="/" className="inline-flex items-center gap-2 text-navy-600 hover:text-gold-700 font-cairo font-semibold text-sm mb-5 transition-colors">
+        <Link to="/" className="inline-flex items-center gap-2 text-navy-600 hover:text-gold-700 font-cairo font-semibold text-sm mb-3 transition-colors">
           <ArrowLeft className="w-4 h-4" /> العودة للرئيسية
         </Link>
 
@@ -596,7 +596,7 @@ export default function Register() {
                     i === step ? 'bg-gold-gradient text-navy-900 shadow-md ring-2 ring-gold-300/50' :
                     'bg-white/20 text-cream-100 hover:bg-white/30'
                   }`}>
-                    {i < step ? <Check className="w-4 h-4" /> : i + 1}
+                    {i < step ? <Check className="w-3.5 h-3.5" /> : i + 1}
                   </div>
                   <span className={`text-[10px] font-cairo font-semibold hidden sm:block ${i <= step ? 'text-gold-300' : 'text-cream-200/60'}`}>
                     {s.title}
@@ -607,16 +607,16 @@ export default function Register() {
           </div>
 
           {/* محتوى الخطوة */}
-          <div className="p-4 sm:p-7">
+          <div className="p-3 sm:p-7">
             <AnimatePresence mode="wait">
               {/* ====== الخطوة 0: الهوية الأساسية والإقامة ====== */}
               {step === 0 && (
-                <motion.div key="s0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+                <motion.div key="s0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
                   <SectionTitle icon={User} title="الهوية الأساسية والإقامة" desc="حدد بياناتك الاجتماعية والجغرافية الأساسية لتخصيص البحث والتوافق" />
 
                   {/* 1. تحديد الجنس أولاً */}
                   <Field label="الجنس" required error={errors.gender} hint="لتخصيص الخيارات ونظام المطابقة المعتمد">
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
                       <ChoiceCard
                         active={isMale}
                         onClick={() => {
@@ -629,7 +629,7 @@ export default function Register() {
                           }));
                           setErrors((prev) => ({ ...prev, gender: '', maritalStatus: '', nationality: '' }));
                         }}
-                        icon={<div className={`w-12 h-12 rounded-full flex items-center justify-center ${isMale ? 'bg-blue-500' : 'bg-cream-100'}`}><Mars className={`w-6 h-6 ${isMale ? 'text-white' : 'text-navy-400'}`} /></div>}
+                        icon={<div className={`w-10 h-10 rounded-full flex items-center justify-center ${isMale ? 'bg-blue-500' : 'bg-cream-100'}`}><Mars className={`w-5 h-5 ${isMale ? 'text-white' : 'text-navy-400'}`} /></div>}
                         title="ذكر"
                       />
                       <ChoiceCard
@@ -644,7 +644,7 @@ export default function Register() {
                           }));
                           setErrors((prev) => ({ ...prev, gender: '', maritalStatus: '', nationality: '' }));
                         }}
-                        icon={<div className={`w-12 h-12 rounded-full flex items-center justify-center ${isFemale ? 'bg-rose-500' : 'bg-cream-100'}`}><Venus className={`w-6 h-6 ${isFemale ? 'text-white' : 'text-navy-400'}`} /></div>}
+                        icon={<div className={`w-10 h-10 rounded-full flex items-center justify-center ${isFemale ? 'bg-rose-500' : 'bg-cream-100'}`}><Venus className={`w-5 h-5 ${isFemale ? 'text-white' : 'text-navy-400'}`} /></div>}
                         title="أنثى"
                       />
                     </div>
@@ -684,7 +684,7 @@ export default function Register() {
                       <div className="px-4 py-3 rounded-xl bg-gold-300/10 border-2 border-gold-300/40 flex items-center justify-between h-full">
                         <span className="text-xs text-navy-600 font-cairo">العمر الحالي:</span>
                         <div className="flex items-baseline gap-1">
-                          <span className="font-cairo font-extrabold text-2xl text-gradient-gold">
+                          <span className="font-cairo font-extrabold text-xl sm:text-2xl text-gradient-gold">
                             {form.age > 0 ? form.age : '—'}
                           </span>
                           {form.age > 0 && <span className="text-navy-500 font-tajawal text-xs">سنة</span>}
@@ -913,7 +913,7 @@ export default function Register() {
 
               {/* ====== الخطوة 1: المظهر والعمل والنبذة ====== */}
               {step === 1 && (
-                <motion.div key="s1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+                <motion.div key="s1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
                   <SectionTitle icon={FileText} title="المظهر والعمل والتعليم" desc="المواصفات الجسدية والوظيفية والنبذة التعريفية" />
 
                   <div className="grid sm:grid-cols-2 gap-4">
@@ -1044,7 +1044,7 @@ export default function Register() {
 
               {/* ====== الخطوة 2: مواصفات الشريك ====== */}
               {step === 2 && (
-                <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+                <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
                   <SectionTitle icon={Heart} title={`مواصفات ${partnerTerms.partnerFullLabel} المطلوبة`} desc="حدد الخيارات الأساسية المطلوبة لشريك حياتك باختصار وسهولة" />
 
                   {/* 1. دولة الشريك المطلوبة */}
@@ -1490,7 +1490,7 @@ export default function Register() {
 
               {/* ====== الخطوة 3: بيانات الحساب والأمان ====== */}
               {step === 3 && (
-                <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+                <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
                   <SectionTitle icon={ShieldCheck} title="بيانات الحساب والأمان" desc="بيانات الحساب ووسائل التواصل الخاصة مع إدارة المنصة" />
 
                   {/* الاسم الكامل الحقيقي (سري) */}
@@ -1651,7 +1651,7 @@ export default function Register() {
 
               {/* ====== الخطوة 4: المراجعة النهائية ====== */}
               {step === 4 && (
-                <motion.div key="s4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+                <motion.div key="s4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
                   <SectionTitle icon={Check} title="المراجعة والتأكيد" desc="راجع بياناتك قبل إكمال التسجيل ويمكنك التعديل على أي قسم" />
 
                   <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 flex items-start gap-3">
@@ -1741,7 +1741,7 @@ function SectionTitle({ icon: Icon, title, desc }: { icon: typeof User; title: s
   return (
     <div className="flex items-center gap-3 pb-4 border-b border-cream-200">
       <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gold-300/15 flex items-center justify-center flex-shrink-0">
-        <Icon className="w-6 h-6 text-gold-600" />
+        <Icon className="w-5 h-5 text-gold-600" />
       </div>
       <div>
         <h2 className="font-cairo font-bold text-xl text-navy-900">{title}</h2>

@@ -301,13 +301,13 @@ export default function Search() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 -mt-6 relative">
-        <div className="bg-white dark:bg-navy-900 rounded-3xl shadow-luxe border border-cream-200/60 dark:border-navy-800 p-4 sm:p-7 space-y-6">
+      <div className="max-w-3xl mx-auto px-3 sm:px-6 -mt-4 sm:-mt-6 relative">
+        <div className="bg-white dark:bg-navy-900 rounded-3xl shadow-luxe border border-cream-200/60 dark:border-navy-800 p-3 sm:p-7 space-y-4 sm:space-y-6">
 
           {/* ===== البحث بالرمز أو الكلمة المفتاحية ===== */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-cairo font-bold text-navy-800 dark:text-cream-100 mb-2">
-              <SearchIcon className="w-4 h-4 text-gold-600" /> البحث بالسير الذاتية / الرمز الكودي
+            <label className="flex items-center gap-1.5 text-xs font-cairo font-bold text-navy-800 dark:text-cream-100 mb-1.5">
+              <SearchIcon className="w-3.5 h-3.5 text-gold-600" /> البحث بالرمز أو الاسم
             </label>
             <div className="relative">
               <input
@@ -358,19 +358,19 @@ export default function Search() {
 
           {/* ===== الخطوة 3: العمر ===== */}
           <FilterSection icon={Calendar} title="الفئة العمرية" step={3}>
-            <div className="bg-cream-50 rounded-2xl p-3 sm:p-4 border border-cream-200">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-navy-500 font-tajawal">من</span>
-                <span className="font-cairo font-bold text-base sm:text-lg text-gold-700 bg-gold-300/15 px-3 py-1 rounded-lg">{ageRange[0]} سنة</span>
+            <div className="bg-cream-50 rounded-xl p-2.5 sm:p-4 border border-cream-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-navy-500 font-tajawal">من</span>
+                <span className="font-cairo font-bold text-sm text-gold-700 bg-gold-300/15 px-2.5 py-0.5 rounded-lg">{ageRange[0]} سنة</span>
               </div>
               <input type="range" min="16" max="80" value={ageRange[0]}
                 onChange={(e) => setAgeRange([Math.min(Number(e.target.value), ageRange[1]), ageRange[1]])}
                 className="w-full accent-gold-500" />
             </div>
-            <div className="bg-cream-50 rounded-2xl p-3 sm:p-4 border border-cream-200 mt-3">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-navy-500 font-tajawal">إلى</span>
-                <span className="font-cairo font-bold text-base sm:text-lg text-gold-700 bg-gold-300/15 px-3 py-1 rounded-lg">{ageRange[1]} سنة</span>
+            <div className="bg-cream-50 rounded-xl p-2.5 sm:p-4 border border-cream-200 mt-2 sm:mt-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-navy-500 font-tajawal">إلى</span>
+                <span className="font-cairo font-bold text-sm text-gold-700 bg-gold-300/15 px-2.5 py-0.5 rounded-lg">{ageRange[1]} سنة</span>
               </div>
               <input type="range" min="16" max="80" value={ageRange[1]}
                 onChange={(e) => setAgeRange([ageRange[0], Math.max(Number(e.target.value), ageRange[0])])}
@@ -382,15 +382,15 @@ export default function Search() {
           {gender !== 'all' && (
             <button
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className="w-full flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-navy-gradient text-white font-cairo font-bold transition-all hover:shadow-luxe relative overflow-hidden"
+              className="w-full flex items-center justify-between p-3 sm:p-4 rounded-2xl bg-navy-gradient text-white font-cairo font-bold transition-all hover:shadow-luxe relative overflow-hidden"
             >
               <div className="absolute inset-0 pattern-arabesque opacity-20" />
-              <span className="relative flex items-center gap-2 text-sm sm:text-base">
-                <SlidersHorizontal className="w-5 h-5 text-gold-300 flex-shrink-0" />
+              <span className="relative flex items-center gap-2 text-xs sm:text-base">
+                <SlidersHorizontal className="w-4 h-4 sm:w-5 sm:h-5 text-gold-300 flex-shrink-0" />
                 {showAdvanced ? 'إخفاء الخيارات المتقدمة' : 'مزيد من الخيارات'}
               </span>
               <span className="relative">
-                {showAdvanced ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </span>
             </button>
           )}
@@ -409,8 +409,8 @@ export default function Search() {
 
                   {/* الحالة الاجتماعية — تتغير حسب الجنس */}
                   <div>
-                    <label className="flex items-center gap-2 text-sm font-cairo font-bold text-navy-800 mb-2.5">
-                      <Heart className="w-4 h-4 text-gold-600" /> الحالة الاجتماعية
+                    <label className="flex items-center gap-1.5 text-xs font-cairo font-bold text-navy-800 mb-2">
+                      <Heart className="w-3.5 h-3.5 text-gold-600" /> الحالة الاجتماعية
                       <span className="text-[11px] font-normal text-navy-400">
                         ({gender === 'male' ? 'خيارات الرجال' : 'خيارات النساء'})
                       </span>
@@ -440,8 +440,8 @@ export default function Search() {
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden"
                     >
-                      <label className="flex items-center gap-2 text-sm font-cairo font-bold text-navy-800 mb-2.5">
-                        <Baby className="w-4 h-4 text-gold-600" /> الأبناء
+                      <label className="flex items-center gap-1.5 text-xs font-cairo font-bold text-navy-800 mb-2">
+                        <Baby className="w-3.5 h-3.5 text-gold-600" /> الأبناء
                       </label>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         <button
@@ -472,8 +472,8 @@ export default function Search() {
 
                   {/* نوع الزواج المطلوب */}
                   <div>
-                    <label className="flex items-center gap-2 text-sm font-cairo font-bold text-navy-800 mb-2.5">
-                      <Heart className="w-4 h-4 text-gold-600" /> نوع الزواج
+                    <label className="flex items-center gap-1.5 text-xs font-cairo font-bold text-navy-800 mb-2">
+                      <Heart className="w-3.5 h-3.5 text-gold-600" /> نوع الزواج
                     </label>
                     <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                       <button
@@ -511,8 +511,8 @@ export default function Search() {
 
                   {/* قبول غير مواطن / أجنبي */}
                   <div>
-                    <label className="flex items-center gap-2 text-sm font-cairo font-bold text-navy-800 mb-2.5">
-                      <Globe className="w-4 h-4 text-gold-600" /> قبول غير مواطن / أجنبي
+                    <label className="flex items-center gap-1.5 text-xs font-cairo font-bold text-navy-800 mb-2">
+                      <Globe className="w-3.5 h-3.5 text-gold-600" /> قبول غير مواطن / أجنبي
                     </label>
                     <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                       <button
@@ -662,12 +662,12 @@ export default function Search() {
 function FilterSection({ icon: Icon, title, step, children }: { icon: typeof Users; title: string; step: number; children: React.ReactNode }) {
   return (
     <div>
-      <label className="flex items-center gap-2.5 mb-3">
-        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-gold-300/20 text-gold-700 font-cairo font-bold text-sm flex-shrink-0">
+      <label className="flex items-center gap-2 mb-2">
+        <span className="flex items-center justify-center w-6 h-6 rounded-md bg-gold-300/20 text-gold-700 font-cairo font-bold text-xs flex-shrink-0">
           {step}
         </span>
-        <span className="flex items-center gap-2 text-sm font-cairo font-bold text-navy-800">
-          <Icon className="w-4 h-4 text-gold-600" /> {title}
+        <span className="flex items-center gap-1.5 text-xs sm:text-sm font-cairo font-bold text-navy-800">
+          <Icon className="w-3.5 h-3.5 text-gold-600" /> {title}
         </span>
       </label>
       {children}
@@ -706,7 +706,7 @@ function SelectField({ icon: Icon, label, value, onChange, options, placeholder,
           value={value}
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full px-4 py-3 rounded-xl border-2 font-tajawal appearance-none transition-colors ${
+          className={`w-full px-3 py-2 sm:py-3 rounded-xl border-2 font-tajawal appearance-none transition-colors text-sm ${
             disabled
               ? 'bg-slate-100 dark:bg-navy-900/50 border-slate-200 dark:border-navy-800 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-80'
               : 'bg-cream-50 dark:bg-navy-950 border-cream-200 dark:border-navy-800 text-navy-900 dark:text-cream-100 focus:border-gold-500 focus:outline-none cursor-pointer'
