@@ -1,25 +1,3 @@
-const routeModules = {
-  'admin-users': '../../api/admin-users.js',
-  'audit-log': '../../api/audit-log.js',
-  'batch-geo': '../../api/batch-geo.js',
-  coupons: '../../api/coupons.js',
-  exemptions: '../../api/exemptions.js',
-  geo: '../../api/geo.js',
-  'geo-nationalities': '../../api/geo-nationalities.js',
-  'geo-suggestions': '../../api/geo-suggestions.js',
-  'inquiry-messages': '../../api/inquiry-messages.js',
-  'interest-requests': '../../api/interest-requests.js',
-  'member-reports': '../../api/member-reports.js',
-  members: '../../api/members.js',
-  notifications: '../../api/notifications.js',
-  settings: '../../api/settings.js',
-  stats: '../../api/stats.js',
-  'support-tickets': '../../api/support-tickets.js',
-  transactions: '../../api/transactions.js',
-  'verification-docs': '../../api/verification-docs.js',
-  whoami: '../../api/whoami.js',
-};
-
 function json(statusCode, payload, headers = {}) {
   return {
     statusCode,
@@ -58,6 +36,33 @@ function createExpressResponse() {
   return { state, res };
 }
 
+// Keep each import path as a string literal so Netlify/esbuild includes every
+// API handler and its dependencies in the deployed function bundle.
+async function loadRouteHandler(route) {
+  switch (route) {
+    case 'admin-users': return (await import('../../api/admin-users.js')).default;
+    case 'audit-log': return (await import('../../api/audit-log.js')).default;
+    case 'batch-geo': return (await import('../../api/batch-geo.js')).default;
+    case 'coupons': return (await import('../../api/coupons.js')).default;
+    case 'exemptions': return (await import('../../api/exemptions.js')).default;
+    case 'geo': return (await import('../../api/geo.js')).default;
+    case 'geo-nationalities': return (await import('../../api/geo-nationalities.js')).default;
+    case 'geo-suggestions': return (await import('../../api/geo-suggestions.js')).default;
+    case 'inquiry-messages': return (await import('../../api/inquiry-messages.js')).default;
+    case 'interest-requests': return (await import('../../api/interest-requests.js')).default;
+    case 'member-reports': return (await import('../../api/member-reports.js')).default;
+    case 'members': return (await import('../../api/members.js')).default;
+    case 'notifications': return (await import('../../api/notifications.js')).default;
+    case 'settings': return (await import('../../api/settings.js')).default;
+    case 'stats': return (await import('../../api/stats.js')).default;
+    case 'support-tickets': return (await import('../../api/support-tickets.js')).default;
+    case 'transactions': return (await import('../../api/transactions.js')).default;
+    case 'verification-docs': return (await import('../../api/verification-docs.js')).default;
+    case 'whoami': return (await import('../../api/whoami.js')).default;
+    default: return null;
+  }
+}
+
 exports.handler = async function handler(event) {
   const route = getRoute(event);
 
@@ -65,15 +70,10 @@ exports.handler = async function handler(event) {
     return json(200, { status: 'ok', runtime: 'netlify-classic', time: new Date().toISOString() });
   }
 
-  const modulePath = routeModules[route];
-  if (!modulePath) return json(404, { error: `Unknown API route: ${route || 'missing'}` });
-
   try {
-    const imported = await import(modulePath);
-    const routeHandler = imported.default;
-    if (typeof routeHandler !== 'function') {
-      return json(500, { error: `Invalid API handler: ${route}` });
-    }
+    const routeHandler = await loadRouteHandler(route);
+    if (!routeHandler) return json(404, { error: `Unknown API route: ${route || 'missing'}` });
+    if (typeof routeHandler !== 'function') return json(500, { error: `Invalid API handler: ${route}` });
 
     const { state, res } = createExpressResponse();
     const req = {
