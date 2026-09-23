@@ -63,9 +63,7 @@ function parseBody(event) {
 function createResponse() {
   const response = {
     statusCode: 200,
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: '',
   };
 
@@ -95,7 +93,9 @@ function createResponse() {
   return { response, res };
 }
 
-export default async function handler(event) {
+// Netlify classic Functions require a named `handler` export when returning
+// Lambda-style objects ({ statusCode, headers, body }).
+export const handler = async (event) => {
   const route = getRoute(event);
 
   if (route === 'health') {
@@ -134,4 +134,4 @@ export default async function handler(event) {
       body: JSON.stringify({ error: error?.message || 'Internal Server Error' }),
     };
   }
-}
+};
