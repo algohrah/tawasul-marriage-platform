@@ -1,5 +1,3 @@
-import { Buffer } from 'node:buffer';
-
 import auditLog from '../../api/audit-log.js';
 import adminUsers from '../../api/admin-users.js';
 import batchGeo from '../../api/batch-geo.js';
@@ -42,17 +40,16 @@ const routeHandlers = {
   whoami,
 };
 
-function getRoute(event) {
-  const path = event.rawPath || event.path || '';
+function getRoute(request) {
+  const path = new URL(request.url).pathname;
   const match = path.match(/(?:\/api|\/functions\/api)\/([^/?]+)/);
   return match?.[1] || '';
 }
 
-function parseBody(event) {
-  if (!event.body) return undefined;
-  const raw = event.isBase64Encoded
-    ? Buffer.from(event.body, 'base64').toString('utf8')
-    : event.body;
+async function parseBody(request) {
+  if (request.method === 'GET' || request.method === 'HEAD') return undefined;
+  const raw = await request.text();
+  if (!raw) return undefined;
   try {
     return JSON.parse(raw);
   } catch {
@@ -60,78 +57,77 @@ function parseBody(event) {
   }
 }
 
-function createResponse() {
-  const response = {
-    statusCode: 200,
-    headers: { 'Content-Type': 'application/json' },
+function createExpressResponse() {
+  const state = {
+    status: 200,
+    headers: new Headers({ 'Content-Type': 'application/json' }),
     body: '',
   };
 
   const res = {
     setHeader(name, value) {
-      response.headers[name] = value;
+      state.headers.set(name, String(value));
     },
     status(code) {
-      response.statusCode = code;
+      state.status = code;
       return res;
     },
     json(payload) {
-      response.body = JSON.stringify(payload);
-      response.headers['Content-Type'] = 'application/json';
+      state.body = JSON.stringify(payload);
+      state.headers.set('Content-Type', 'application/json');
       return res;
     },
     send(payload) {
-      response.body = typeof payload === 'string' ? payload : JSON.stringify(payload);
+      state.body = typeof payload === 'string' ? payload : JSON.stringify(payload);
       return res;
     },
     end(payload = '') {
-      response.body = payload;
+      state.body = payload == null ? '' : String(payload);
       return res;
     },
   };
 
-  return { response, res };
+  return { state, res };
 }
 
-// Netlify classic Functions require a named `handler` export when returning
-// Lambda-style objects ({ statusCode, headers, body }).
-export const handler = async (event) => {
-  const route = getRoute(event);
+function jsonResponse(payload, status = 200) {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+// Modern Netlify Function: receives a Web Request and must return a Web Response.
+export default async function handler(request) {
+  const route = getRoute(request);
 
   if (route === 'health') {
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'ok', time: new Date().toISOString() }),
-    };
+    return jsonResponse({ status: 'ok', time: new Date().toISOString() });
   }
 
   const routeHandler = routeHandlers[route];
   if (!routeHandler) {
-    return {
-      statusCode: 404,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: `Unknown API route: ${route || 'missing'}` }),
-    };
+    return jsonResponse({ error: `Unknown API route: ${route || 'missing'}` }, 404);
   }
 
-  const { response, res } = createResponse();
+  const url = new URL(request.url);
+  const query = Object.fromEntries(url.searchParams.entries());
+  const { state, res } = createExpressResponse();
   const req = {
-    method: event.httpMethod || event.requestContext?.http?.method || 'GET',
-    headers: event.headers || {},
-    query: event.queryStringParameters || {},
-    body: parseBody(event),
+    method: request.method,
+    headers: Object.fromEntries(request.headers.entries()),
+    query,
+    body: await parseBody(request),
   };
 
   try {
     await routeHandler(req, res);
-    return response;
+    return new Response(state.body, {
+      status: state.status,
+      headers: state.headers,
+    });
   } catch (error) {
     console.error(`Netlify API route ${route} failed:`, error);
-    return {
-      statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: error?.message || 'Internal Server Error' }),
-    };
+    return jsonResponse({ error: error?.message || 'Internal Server Error' }, 500);
   }
-};
+}
