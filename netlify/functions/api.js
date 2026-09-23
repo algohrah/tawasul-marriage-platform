@@ -1,6 +1,5 @@
 import { Buffer } from 'node:buffer';
 
-import health from '../../api/db-wake.js';
 import auditLog from '../../api/audit-log.js';
 import adminUsers from '../../api/admin-users.js';
 import batchGeo from '../../api/batch-geo.js';
