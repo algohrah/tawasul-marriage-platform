@@ -567,15 +567,15 @@ export default function Register() {
   const progress = ((step + 1) / STEPS.length) * 100;
 
   return (
-    <div className="min-h-[calc(100vh-5rem)] bg-cream-50 py-4 px-3 sm:py-6 sm:px-4">
+    <div className="min-h-[calc(100vh-5rem)] bg-cream-50 py-3 px-2.5 sm:py-6 sm:px-4">
       <div className="max-w-2xl mx-auto">
         <Link to="/" className="inline-flex items-center gap-2 text-navy-600 hover:text-gold-700 font-cairo font-semibold text-sm mb-3 transition-colors">
           <ArrowLeft className="w-4 h-4" /> العودة للرئيسية
         </Link>
 
-        <div className="bg-white rounded-3xl shadow-luxe border border-cream-200/60 overflow-hidden">
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-luxe border border-cream-200/60 overflow-hidden">
           {/* Header مع شريط التقدم النقر الذكي */}
-          <div className="bg-navy-gradient p-4 sm:p-6">
+          <div className="bg-navy-gradient p-3 sm:p-6">
             <div className="flex items-center justify-between mb-3 gap-2">
               <h1 className="font-cairo font-bold text-white text-base sm:text-lg">إنشاء حساب جديد</h1>
               <span className="text-gold-300 font-cairo font-bold text-xs sm:text-sm whitespace-nowrap">
@@ -591,7 +591,7 @@ export default function Register() {
                   onClick={() => handleStepClick(i)}
                   className="flex flex-col items-center gap-1 flex-1 transition-all cursor-pointer hover:opacity-90"
                 >
-                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[11px] sm:text-xs font-bold transition-all ${
+                  <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[11px] sm:text-xs font-bold transition-all ${
                     i < step ? 'bg-emerald-500 text-white shadow-sm' :
                     i === step ? 'bg-gold-gradient text-navy-900 shadow-md ring-2 ring-gold-300/50' :
                     'bg-white/20 text-cream-100 hover:bg-white/30'
@@ -607,11 +607,11 @@ export default function Register() {
           </div>
 
           {/* محتوى الخطوة */}
-          <div className="p-3 sm:p-7">
+          <div className="p-3 sm:p-7 pb-5 sm:pb-7">
             <AnimatePresence mode="wait">
               {/* ====== الخطوة 0: الهوية الأساسية والإقامة ====== */}
               {step === 0 && (
-                <motion.div key="s0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                <motion.div key="s0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 sm:space-y-4">
                   <SectionTitle icon={User} title="الهوية الأساسية والإقامة" desc="حدد بياناتك الاجتماعية والجغرافية الأساسية لتخصيص البحث والتوافق" />
 
                   {/* 1. تحديد الجنس أولاً */}
@@ -913,7 +913,7 @@ export default function Register() {
 
               {/* ====== الخطوة 1: المظهر والعمل والنبذة ====== */}
               {step === 1 && (
-                <motion.div key="s1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                <motion.div key="s1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 sm:space-y-4">
                   <SectionTitle icon={FileText} title="المظهر والعمل والتعليم" desc="المواصفات الجسدية والوظيفية والنبذة التعريفية" />
 
                   <div className="grid sm:grid-cols-2 gap-4">
@@ -1044,7 +1044,7 @@ export default function Register() {
 
               {/* ====== الخطوة 2: مواصفات الشريك ====== */}
               {step === 2 && (
-                <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 sm:space-y-4">
                   <SectionTitle icon={Heart} title={`مواصفات ${partnerTerms.partnerFullLabel} المطلوبة`} desc="حدد الخيارات الأساسية المطلوبة لشريك حياتك باختصار وسهولة" />
 
                   {/* 1. دولة الشريك المطلوبة */}
@@ -1490,7 +1490,7 @@ export default function Register() {
 
               {/* ====== الخطوة 3: بيانات الحساب والأمان ====== */}
               {step === 3 && (
-                <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 sm:space-y-4">
                   <SectionTitle icon={ShieldCheck} title="بيانات الحساب والأمان" desc="بيانات الحساب ووسائل التواصل الخاصة مع إدارة المنصة" />
 
                   {/* الاسم الكامل الحقيقي (سري) */}
@@ -1651,7 +1651,7 @@ export default function Register() {
 
               {/* ====== الخطوة 4: المراجعة النهائية ====== */}
               {step === 4 && (
-                <motion.div key="s4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                <motion.div key="s4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 sm:space-y-4">
                   <SectionTitle icon={Check} title="المراجعة والتأكيد" desc="راجع بياناتك قبل إكمال التسجيل ويمكنك التعديل على أي قسم" />
 
                   <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 flex items-start gap-3">
@@ -1726,7 +1726,7 @@ export default function Register() {
             </div>
 
             {step === 0 && (
-              <p className="text-center text-sm text-navy-500 font-tajawal mt-5">
+              <p className="text-center text-xs sm:text-sm text-navy-500 font-tajawal mt-5">
                 لديك حساب بالفعل؟ <Link to="/login" className="text-gold-700 font-cairo font-bold hover:underline">سجّل الدخول</Link>
               </p>
             )}
@@ -1739,13 +1739,13 @@ export default function Register() {
 
 function SectionTitle({ icon: Icon, title, desc }: { icon: typeof User; title: string; desc: string }) {
   return (
-    <div className="flex items-center gap-3 pb-4 border-b border-cream-200">
-      <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gold-300/15 flex items-center justify-center flex-shrink-0">
-        <Icon className="w-5 h-5 text-gold-600" />
+    <div className="flex items-center gap-2.5 pb-3 sm:gap-3 sm:pb-4 border-b border-cream-200">
+      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gold-300/15 flex items-center justify-center flex-shrink-0">
+        <Icon className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-gold-600" />
       </div>
       <div>
-        <h2 className="font-cairo font-bold text-xl text-navy-900">{title}</h2>
-        <p className="text-sm text-navy-500 font-tajawal">{desc}</p>
+        <h2 className="font-cairo font-bold text-lg sm:text-xl text-navy-900">{title}</h2>
+        <p className="text-xs sm:text-sm text-navy-500 font-tajawal">{desc}</p>
       </div>
     </div>
   );
