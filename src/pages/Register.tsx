@@ -139,6 +139,7 @@ export default function Register() {
   const [showPassConfirm, setShowPassConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [submitSuccess, setSubmitSuccess] = useState('');
 
   // حالات فتح النوافذ المخصصة لمواصفات الشريك (تحديد عدة دول/مدن/جنسيات)
   const [pCountryCustomOpen, setPCountryCustomOpen] = useState(true);
@@ -206,6 +207,27 @@ export default function Register() {
     if (score === 3) return { score: 3, label: 'جيدة جداً', color: 'bg-blue-500', percentage: 75 };
     return { score: 4, label: 'قوية وآمنة', color: 'bg-emerald-500', percentage: 100 };
   }, [form.password]);
+
+  const passwordsMismatch = Boolean(form.passwordConfirm && form.password !== form.passwordConfirm);
+
+  const getFriendlySignUpError = (error: any) => {
+    const message = String(error?.message || '').toLowerCase();
+    const code = String(error?.code || '').toLowerCase();
+
+    if (message.includes('rate limit') || code.includes('rate_limit') || code.includes('over_email_send_rate_limit')) {
+      return 'تم إرسال عدة طلبات خلال وقت قصير. انتظر دقيقة ثم حاول مرة واحدة فقط، أو استخدم بريدًا آخر.';
+    }
+    if (message.includes('already') || message.includes('registered') || code.includes('user_already_exists')) {
+      return 'البريد الإلكتروني مستخدم بالفعل. جرّب تسجيل الدخول أو استعادة كلمة المرور.';
+    }
+    if (message.includes('password')) {
+      return 'كلمة المرور غير مقبولة. استخدم 8 أحرف على الأقل مع رقم أو رمز.';
+    }
+    if (message.includes('email') || code.includes('email')) {
+      return 'تعذّر استخدام هذا البريد الإلكتروني. تأكد من كتابته بشكل صحيح ثم حاول مرة أخرى.';
+    }
+    return 'تعذّر إنشاء الحساب حاليًا. تحقق من البيانات وانتظر قليلًا قبل إعادة المحاولة.';
+  };
 
   // حساب العمر تلقائيًا من تاريخ الميلاد
   const handleBirthDateChange = (date: string) => {
@@ -490,38 +512,52 @@ export default function Register() {
   };
 
   const handleNext = () => {
-    // التنقل متاح للاختبار والتجربة واستعراض كافة الخيارات دون قيود
     if (step < STEPS.length - 1) {
+      if (!validateStep(step)) return;
       setStep(step + 1);
-      setErrors({});
+      setSubmitError('');
+      setSubmitSuccess('');
     } else {
-      if (validateStep(step)) {
-        handleSubmit();
-      }
+      handleSubmit();
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleStepClick = (targetStep: number) => {
+    if (targetStep > step) {
+      if (targetStep > step + 1 || !validateStep(step)) return;
+    }
     setStep(targetStep);
-    setErrors({});
+    setSubmitError('');
+    setSubmitSuccess('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSubmit = async () => {
     setSubmitError('');
+    setSubmitSuccess('');
+
+    // إعادة التحقق من بيانات الحساب قبل أي طلب إلى Supabase. هذا يمنع
+    // إرسال طلبات إنشاء حساب عند اختلاف كلمتي المرور أو خطأ البريد.
+    if (!validateStep(3)) {
+      setStep(3);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     setSubmitting(true);
     try {
       // 1) إنشاء حساب مصادقة حقيقي عبر Supabase Auth (بريد + كلمة مرور)
-      const { data, error: signUpError } = await supabase.auth.signUp({ email: form.email.trim(), password: form.password });
+      const cleanEmail = form.email.trim().toLowerCase();
+      const { data, error: signUpError } = await supabase.auth.signUp({ email: cleanEmail, password: form.password });
       if (signUpError) {
-        setSubmitError(signUpError.message.includes('already') ? 'البريد الإلكتروني هذا مستخدم بالفعل بحساب آخر' : signUpError.message);
+        setSubmitError(getFriendlySignUpError(signUpError));
         setSubmitting(false);
         return;
       }
       if (!data.session) {
         // يتطلب المشروع تأكيد البريد الإلكتروني قبل تفعيل الجلسة
-        setSubmitError('تم إنشاء الحساب! يرجى تأكيد بريدك الإلكتروني من الرسالة المُرسلة إليك ثم تسجيل الدخول.');
+        setSubmitSuccess('تم إنشاء الحساب وإرسال رسالة التأكيد. افتح بريدك الإلكتروني وأكّد الحساب، ثم سجّل الدخول.');
         setSubmitting(false);
         return;
       }
@@ -1562,12 +1598,16 @@ export default function Register() {
                     <Field
                       label="البريد الإلكتروني"
                       required
-                      error={errors.email}
+                      error={errors.email || (emailTaken ? 'البريد الإلكتروني هذا مستخدم بالفعل بحساب آخر' : '')}
                       hint={checkingEmail ? 'جارٍ التحقق من توفر البريد...' : 'لتسجيل الدخول واستعادة الحساب'}
                     >
                       <TextInput
                         value={form.email}
-                        onChange={(v) => set('email', v)}
+                        onChange={(v) => {
+                          set('email', v);
+                          setEmailTaken(false);
+                          if (v.trim().toLowerCase() !== lastCheckedEmail.current) lastCheckedEmail.current = '';
+                        }}
                         onBlur={() => checkEmailAvailability(form.email)}
                         placeholder="name@example.com"
                         type="email"
@@ -1617,7 +1657,11 @@ export default function Register() {
                         </div>
                       </Field>
 
-                      <Field label="تأكيد كلمة المرور" required error={errors.passwordConfirm}>
+                      <Field
+                        label="تأكيد كلمة المرور"
+                        required
+                        error={errors.passwordConfirm || (passwordsMismatch ? 'كلمتا المرور غير متطابقتين' : '')}
+                      >
                         <div className="relative">
                           <input
                             type={showPassConfirm ? 'text' : 'password'}
@@ -1701,6 +1745,12 @@ export default function Register() {
               )}
             </AnimatePresence>
 
+            {submitSuccess && (
+              <div className="mt-5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl p-3 text-sm font-tajawal text-center">
+                {submitSuccess}
+              </div>
+            )}
+
             {submitError && (
               <div className="mt-5 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-3 text-sm font-tajawal text-center">
                 {submitError}
@@ -1719,8 +1769,8 @@ export default function Register() {
                   التالي <ArrowLeft className="w-4 h-4" />
                 </Button>
               ) : (
-                <Button onClick={handleNext} fullWidth size="lg" className="shadow-gold" disabled={submitting}>
-                  <Check className="w-5 h-5" /> {submitting ? 'جارٍ إنشاء الحساب...' : 'إكمال التسجيل وإنشاء الحساب'}
+                <Button onClick={handleNext} fullWidth size="lg" className="shadow-gold" disabled={submitting || checkingEmail}>
+                  <Check className="w-5 h-5" /> {submitting ? 'جارٍ إنشاء الحساب...' : checkingEmail ? 'جارٍ التحقق من البريد...' : 'إكمال التسجيل وإنشاء الحساب'}
                 </Button>
               )}
             </div>
