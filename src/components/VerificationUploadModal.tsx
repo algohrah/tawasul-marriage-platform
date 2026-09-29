@@ -10,9 +10,8 @@ const getMemberVerificationDoc = (memberId: string) => dataService.db.getMemberV
 const getVerificationStatus = (memberId: string) => dataService.db.getVerificationStatus(memberId);
 
 const REQUIRED_DOCS = [
-  { key: 'identity', label: 'صورة الهوية الوطنية / الإقامة', hint: 'صورة واضحة للوجه الأمامي من الهوية أو الإقامة' },
-  { key: 'marital', label: 'إثبات الحالة الاجتماعية', hint: 'مستند مناسب للحالة الاجتماعية المسجلة' },
-  { key: 'portrait', label: 'صورة شخصية حديثة', hint: 'صورة حديثة وواضحة لصاحب الحساب' },
+  { key: 'identity', label: 'إثبات الهوية', hint: 'صورة واضحة للهوية الوطنية أو الإقامة أو جواز السفر' },
+  { key: 'portrait', label: 'صورة شخصية حديثة', hint: 'ارفع صورة واضحة لك أو التقطها مباشرة بالكاميرا' },
 ] as const;
 
 type DocKey = typeof REQUIRED_DOCS[number]['key'];
@@ -66,7 +65,7 @@ export default function VerificationUploadModal({ open, onClose }: Props) {
 
   const handleSubmit = async () => {
     if (!user.memberId || !allReady) {
-      showToast('يرجى رفع الهوية وإثبات الحالة والصورة الشخصية معًا', 'error');
+      showToast('يرجى رفع إثبات الهوية والصورة الشخصية معًا', 'error');
       return;
     }
 
@@ -135,11 +134,11 @@ export default function VerificationUploadModal({ open, onClose }: Props) {
 
         <div className="bg-blue-50 rounded-xl p-3 border border-blue-200">
           <p className="text-xs font-cairo text-blue-800 leading-relaxed">
-            ارفع الملفات الثلاثة في هذه الشاشة ثم اضغط «إرسال جميع المستندات». تُراجع الملفات من الإدارة فقط ولا تظهر للأعضاء.
+            ارفع إثبات الهوية والصورة الشخصية في هذه الشاشة ثم اضغط «إرسال المستندات». تُراجع الملفات من الإدارة فقط ولا تظهر للأعضاء.
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-3 gap-3">
+        <div className="grid sm:grid-cols-2 gap-3">
           {REQUIRED_DOCS.map((slot) => {
             const prepared = documents[slot.key];
             const processing = processingKey === slot.key;
@@ -166,17 +165,35 @@ export default function VerificationUploadModal({ open, onClose }: Props) {
                     </div>
                   </div>
                 ) : (
-                  <label className={`min-h-[150px] p-4 flex flex-col items-center justify-center gap-2 text-center cursor-pointer hover:bg-amber-50 ${processing ? 'pointer-events-none opacity-60' : ''}`}>
+                  <div className={`min-h-[150px] p-4 flex flex-col items-center justify-center gap-3 text-center ${processing ? 'pointer-events-none opacity-60' : ''}`}>
                     {processing ? <Loader2 className="w-7 h-7 text-amber-500 animate-spin" /> : <ImageIcon className="w-7 h-7 text-slate-400" />}
-                    <span className="text-[11px] font-cairo font-bold text-slate-600">{processing ? 'جارٍ تجهيز الصورة...' : 'اختر الصورة'}</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      disabled={processing || submitting || currentStatus === 'pending'}
-                      onChange={(event) => handleFileSelect(slot.key, event)}
-                    />
-                  </label>
+                    <span className="text-[11px] font-cairo font-bold text-slate-600">{processing ? 'جارٍ تجهيز الصورة...' : 'اختر طريقة إضافة الصورة'}</span>
+                    <div className="w-full grid gap-2">
+                      <label className="w-full py-2 px-3 rounded-lg bg-white border border-slate-200 text-[11px] font-cairo font-bold text-slate-700 cursor-pointer hover:border-amber-400 hover:bg-amber-50">
+                        رفع صورة
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={processing || submitting || currentStatus === 'pending'}
+                          onChange={(event) => handleFileSelect(slot.key, event)}
+                        />
+                      </label>
+                      {slot.key === 'portrait' && (
+                        <label className="w-full py-2 px-3 rounded-lg bg-slate-900 text-[11px] font-cairo font-bold text-white cursor-pointer hover:bg-slate-800">
+                          التقاط من الكاميرا
+                          <input
+                            type="file"
+                            accept="image/*"
+                            capture="user"
+                            className="hidden"
+                            disabled={processing || submitting || currentStatus === 'pending'}
+                            onChange={(event) => handleFileSelect(slot.key, event)}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             );
@@ -193,7 +210,7 @@ export default function VerificationUploadModal({ open, onClose }: Props) {
           disabled={!allReady || submitting || processingKey !== null || currentStatus === 'pending'}
           className="w-full py-3 rounded-xl bg-slate-900 text-white font-cairo font-bold text-sm hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> جارٍ رفع جميع الملفات...</> : <><ShieldCheck className="w-4 h-4" /> إرسال جميع المستندات للمراجعة</>}
+          {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> جارٍ رفع المستندات...</> : <><ShieldCheck className="w-4 h-4" /> إرسال المستندات للمراجعة</>}
         </button>
       </div>
     </Modal>
