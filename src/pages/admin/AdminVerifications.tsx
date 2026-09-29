@@ -1,5 +1,5 @@
 import { dataService } from '../../lib/data/DataService';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BadgeCheck, Search, CheckCircle2, XCircle, Clock, FileCheck, Eye,
@@ -25,12 +25,38 @@ export default function AdminVerifications() {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | VerifStatus>('all');
   const [selected, setSelected] = useState<VerifMember | null>(null);
+  const [verificationDocs, setVerificationDocs] = useState<any[]>([]);
 
   // ===== التحديد المتعدد =====
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   // نافذة تأكيد الإجراء الجماعي
   const [bulkConfirm, setBulkConfirm] = useState<{ action: 'verify' | 'reject' | 'delete'; label: string } | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
+
+  // ===== مستندات التوثيق الحقيقية من الخادم =====
+  useEffect(() => {
+    let mounted = true;
+    const loadDocs = async () => {
+      try {
+        const refresh = (dataService.db as any).refreshVerificationDocsNow;
+        const docs = typeof refresh === 'function'
+          ? await refresh.call(dataService.db)
+          : dataService.db.getAllVerificationDocs();
+        if (mounted) setVerificationDocs(Array.isArray(docs) ? [...docs] : []);
+      } catch {
+        if (mounted) setVerificationDocs([...(dataService.db.getAllVerificationDocs() || [])]);
+      }
+    };
+
+    loadDocs();
+    window.addEventListener('twafok_verification_docs_changed', loadDocs);
+    window.addEventListener('focus', loadDocs);
+    return () => {
+      mounted = false;
+      window.removeEventListener('twafok_verification_docs_changed', loadDocs);
+      window.removeEventListener('focus', loadDocs);
+    };
+  }, []);
 
   // ===== حالة التوثيق الحقيقية =====
   const verifStatusMap = useMemo(() => {
@@ -58,14 +84,14 @@ export default function AdminVerifications() {
   };
 
   const combined = useMemo(() => {
-    // جلب خريطة مستندات التوثيق المرفوعة من ملفات الأعضاء الشخصية
-    const vdocMap: Record<string, string> = {};
-    try {
-      const docs = dataService.db.getAllVerificationDocs() || [];
-      docs.forEach((d: { memberId?: string; status?: string }) => {
-        if (d.memberId && d.status) vdocMap[d.memberId] = d.status;
-      });
-    } catch { /* تجاهل */ }
+    // تجميع حالة جميع ملفات العضو: أي ملف معلق يجعل الطلب معلقًا،
+    // ولا يصبح موثقًا إلا بعد اعتماد الملفات كلها.
+    const docsByMember: Record<string, any[]> = {};
+    verificationDocs.forEach((doc) => {
+      const memberId = String(doc.member_id || doc.memberId || '');
+      if (!memberId) return;
+      (docsByMember[memberId] ||= []).push(doc);
+    });
 
     const results: VerifMember[] = [];
 
@@ -74,7 +100,14 @@ export default function AdminVerifications() {
       const isVerified = live?.verified ?? adminM.verified;
 
       const storedStatus = verifStatusMap[adminM.id];
-      const docStatus = vdocMap[adminM.id];
+      const memberDocs = docsByMember[adminM.id] || [];
+      const docStatus = memberDocs.some((doc) => doc.status === 'pending')
+        ? 'pending'
+        : memberDocs.length > 0 && memberDocs.every((doc) => doc.status === 'approved')
+          ? 'approved'
+          : memberDocs.some((doc) => doc.status === 'rejected')
+            ? 'rejected'
+            : undefined;
 
       let finalStatus: VerifStatus | 'none' = 'none';
 
@@ -95,7 +128,7 @@ export default function AdminVerifications() {
     });
 
     return results;
-  }, [adminMembers, members, verifStatusMap]);
+  }, [adminMembers, members, verifStatusMap, verificationDocs]);
 
   const filtered = useMemo(() => {
     return combined.filter((m) => {
@@ -115,9 +148,26 @@ export default function AdminVerifications() {
 
   const handleVerify = async (id: string, verified: boolean) => {
     await toggleVerified(id, verified);
+    const memberDocs = verificationDocs.filter((doc) => String(doc.member_id || doc.memberId) === String(id));
+    memberDocs.forEach((doc) => {
+      if (verified) dataService.db.approveVerificationDoc(doc.id, 'الإدارة');
+      else dataService.db.rejectVerificationDoc(doc.id, 'الإدارة', 'تم رفض طلب التوثيق من الإدارة');
+    });
+    setVerificationDocs((prev) => prev.map((doc) =>
+      String(doc.member_id || doc.memberId) === String(id)
+        ? { ...doc, status: verified ? 'approved' : 'rejected' }
+        : doc
+    ));
     saveVerifStatus(id, verified ? 'verified' : 'rejected');
     showToast(verified ? 'تم التوثيق بنجاح' : 'تم رفض التوثيق', 'success');
   };
+
+  const selectedDocs = useMemo(
+    () => selected
+      ? verificationDocs.filter((doc) => String(doc.member_id || doc.memberId) === String(selected.id))
+      : [],
+    [selected, verificationDocs]
+  );
 
   // ===== منطق التحديد المتعدد =====
   const toggleSelect = (id: string) => {
@@ -160,10 +210,16 @@ export default function AdminVerifications() {
       const stringId = id as string;
       if (bulkConfirm.action === 'verify') {
         await toggleVerified(stringId, true);
+        verificationDocs
+          .filter((doc) => String(doc.member_id || doc.memberId) === stringId)
+          .forEach((doc) => dataService.db.approveVerificationDoc(doc.id, 'الإدارة'));
         saveVerifStatus(stringId, 'verified');
         okCount++;
       } else if (bulkConfirm.action === 'reject') {
         await toggleVerified(stringId, false);
+        verificationDocs
+          .filter((doc) => String(doc.member_id || doc.memberId) === stringId)
+          .forEach((doc) => dataService.db.rejectVerificationDoc(doc.id, 'الإدارة', 'تم رفض طلب التوثيق من الإدارة'));
         saveVerifStatus(stringId, 'rejected');
         okCount++;
       } else if (bulkConfirm.action === 'delete') {
@@ -172,6 +228,13 @@ export default function AdminVerifications() {
         okCount++;
       }
     }
+    setVerificationDocs((prev) => prev.map((doc) => {
+      const memberId = String(doc.member_id || doc.memberId);
+      if (!ids.includes(memberId)) return doc;
+      if (bulkConfirm.action === 'verify') return { ...doc, status: 'approved' };
+      if (bulkConfirm.action === 'reject') return { ...doc, status: 'rejected' };
+      return doc;
+    }));
     setBulkBusy(false);
     showToast(`تم تطبيق "${bulkConfirm.label}" على ${okCount} عضو ✓`, 'success');
     clearSelection();
@@ -664,24 +727,42 @@ export default function AdminVerifications() {
               <h4 className="font-cairo font-bold text-sm text-slate-800 mb-2 flex items-center gap-1.5">
                 <ImageIcon className="w-4 h-4 text-amber-500" /> المستندات المرفقة
               </h4>
-              <div className="grid grid-cols-3 gap-3">
-                {['الهوية الوطنية', 'إثبات الحالة الاجتماعية', 'صورة شخصية'].map((doc, i) => (
-                  <div key={i} className="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
-                    <div className="aspect-[3/4] bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                      <ImageIcon className="w-8 h-8 text-slate-300" />
-                    </div>
-                    <div className="p-2 text-center">
-                      <p className="text-[10px] font-cairo font-bold text-slate-600">{doc}</p>
-                      <button
-                        onClick={() => showToast('سيتم توفير رفع المستندات الفعلي في الإصدار القادم', 'info')}
-                        className="text-[9px] text-amber-600 font-cairo font-bold mt-1 hover:underline"
-                      >
-                        رفع مستند
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {selectedDocs.length > 0 ? (
+                <div className="grid sm:grid-cols-3 gap-3">
+                  {selectedDocs.map((doc) => {
+                    const source = doc.file_url || doc.fileUrl || doc.docBase64 || '';
+                    const title = doc.file_name || doc.docName || doc.docType || 'مستند توثيق';
+                    return (
+                      <div key={doc.id} className="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+                        {source ? (
+                          <a href={source} target="_blank" rel="noopener noreferrer" className="block">
+                            <img src={source} alt={title} className="w-full aspect-[4/3] object-cover bg-white" />
+                          </a>
+                        ) : (
+                          <div className="aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                            <ImageIcon className="w-8 h-8 text-slate-300" />
+                          </div>
+                        )}
+                        <div className="p-2 text-center">
+                          <p className="text-[10px] font-cairo font-bold text-slate-700 line-clamp-2">{title}</p>
+                          <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[9px] font-cairo font-bold ${
+                            doc.status === 'approved' ? 'bg-emerald-100 text-emerald-700'
+                              : doc.status === 'rejected' ? 'bg-rose-100 text-rose-700'
+                                : 'bg-amber-100 text-amber-700'
+                          }`}>
+                            {doc.status === 'approved' ? 'معتمد' : doc.status === 'rejected' ? 'مرفوض' : 'قيد المراجعة'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+                  <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                  <p className="text-xs font-cairo text-slate-500">لا توجد ملفات محفوظة لهذا العضو.</p>
+                </div>
+              )}
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-start gap-2">
