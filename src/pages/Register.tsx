@@ -129,6 +129,8 @@ const STEPS = [
   { id: 4, title: 'المراجعة والتأكيد', icon: Check },
 ];
 
+const PENDING_REGISTRATION_KEY = 'tawafok_pending_registration';
+
 export default function Register() {
   const navigate = useNavigate();
   const { registerNewMember, members } = useApp();
@@ -140,6 +142,7 @@ export default function Register() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState('');
+  const confirmationHandled = useRef(false);
 
   // حالات فتح النوافذ المخصصة لمواصفات الشريك (تحديد عدة دول/مدن/جنسيات)
   const [pCountryCustomOpen, setPCountryCustomOpen] = useState(true);
@@ -153,6 +156,64 @@ export default function Register() {
   const [emailTaken, setEmailTaken] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const lastCheckedEmail = useRef('');
+
+  // بعد الضغط على رابط تأكيد البريد يعيد Supabase المستخدم إلى هذه الصفحة.
+  // نكمل إنشاء ملف العضو باستخدام الجلسة المؤكدة والبيانات المحفوظة مؤقتًا،
+  // من دون حفظ كلمة المرور في المتصفح.
+  useEffect(() => {
+    if (confirmationHandled.current || typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('confirmed') !== '1') return;
+
+    confirmationHandled.current = true;
+    let active = true;
+
+    const finishRegistration = async () => {
+      setSubmitting(true);
+      setSubmitError('');
+      setSubmitSuccess('جارٍ إكمال إنشاء ملفك بعد تأكيد البريد...');
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setSubmitSuccess('');
+          setSubmitError('تم تأكيد البريد، لكن الجلسة لم تكتمل. سجّل الدخول بالبريد وكلمة المرور لإكمال حسابك.');
+          return;
+        }
+
+        const raw = localStorage.getItem(PENDING_REGISTRATION_KEY);
+        if (!raw) {
+          setSubmitSuccess('تم تأكيد بريدك بنجاح. يمكنك الآن تسجيل الدخول.');
+          return;
+        }
+
+        const pendingForm = JSON.parse(raw) as FormData;
+        const result = await registerNewMember(pendingForm);
+        if (!active) return;
+        if (!result.ok) {
+          setSubmitSuccess('');
+          setSubmitError(result.error || 'تم تأكيد البريد، لكن تعذّر إنشاء الملف الشخصي. حاول تسجيل الدخول ثم أكمل ملفك.');
+          return;
+        }
+
+        localStorage.removeItem(PENDING_REGISTRATION_KEY);
+        navigate('/profile', { replace: true });
+      } catch {
+        if (active) {
+          setSubmitSuccess('');
+          setSubmitError('تم فتح رابط التأكيد، لكن تعذّر إكمال الملف تلقائيًا. سجّل الدخول ثم حاول مجددًا.');
+        }
+      } finally {
+        if (active) setSubmitting(false);
+      }
+    };
+
+    const timer = window.setTimeout(finishRegistration, 500);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [navigate, registerNewMember]);
 
   const checkEmailAvailability = async (email: string) => {
     const clean = email.trim().toLowerCase();
@@ -547,9 +608,38 @@ export default function Register() {
 
     setSubmitting(true);
     try {
+      // تجهيز البيانات قبل إنشاء حساب Auth حتى يمكن استكمال ملف العضو بعد
+      // الضغط على رابط تأكيد البريد.
+      const finalNationality = form.nationalityMode === 'same'
+        ? (getNationalityForCountry(form.country, form.gender as any) || form.country)
+        : ((form.nationalityOther || form.nationality || '').trim() || form.country);
+
+      let finalPartnerNationality = form.pNationality;
+      if (!finalPartnerNationality || finalPartnerNationality === 'نفس جنسيتي' || finalPartnerNationality === userActualNationality) {
+        finalPartnerNationality = userActualNationality;
+      }
+
+      const submissionForm: FormData = {
+        ...form,
+        password: '',
+        passwordConfirm: '',
+        nationality: finalNationality,
+        pNationality: finalPartnerNationality,
+        pCountry: form.pCountry === 'لا يهم' ? 'لا مانع' : (form.pCountry || 'لا مانع'),
+        pCity: form.pCity === 'لا يهم' ? 'لا مانع' : (form.pCity || 'لا مانع'),
+        pAcceptChildren: form.pAcceptChildren === 'لا يهم' ? 'لا مانع' : (form.pAcceptChildren || 'لا مانع'),
+      };
+
+      localStorage.setItem(PENDING_REGISTRATION_KEY, JSON.stringify(submissionForm));
+
       // 1) إنشاء حساب مصادقة حقيقي عبر Supabase Auth (بريد + كلمة مرور)
       const cleanEmail = form.email.trim().toLowerCase();
-      const { data, error: signUpError } = await supabase.auth.signUp({ email: cleanEmail, password: form.password });
+      const emailRedirectTo = `${window.location.origin}/register?confirmed=1`;
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password: form.password,
+        options: { emailRedirectTo },
+      });
       if (signUpError) {
         setSubmitError(getFriendlySignUpError(signUpError));
         setSubmitting(false);
@@ -561,29 +651,11 @@ export default function Register() {
         setSubmitting(false);
         return;
       }
-      // 2) تجهيز الحقول بصيغتها النهائية النظيفة وحفظ أي بيانات جغرافية جديدة
-      const finalNationality = form.nationalityMode === 'same'
-        ? (getNationalityForCountry(form.country, form.gender as any) || form.country)
-        : ((form.nationalityOther || form.nationality || '').trim() || form.country);
 
       if (form.nationalityOther?.trim()) {
         handleAddNationality(form.nationalityOther.trim());
         handleAddCountry(form.nationalityOther.trim());
       }
-
-      let finalPartnerNationality = form.pNationality;
-      if (!finalPartnerNationality || finalPartnerNationality === 'نفس جنسيتي' || finalPartnerNationality === userActualNationality) {
-        finalPartnerNationality = userActualNationality;
-      }
-
-      const submissionForm: FormData = {
-        ...form,
-        nationality: finalNationality,
-        pNationality: finalPartnerNationality,
-        pCountry: form.pCountry === 'لا يهم' ? 'لا مانع' : (form.pCountry || 'لا مانع'),
-        pCity: form.pCity === 'لا يهم' ? 'لا مانع' : (form.pCity || 'لا مانع'),
-        pAcceptChildren: form.pAcceptChildren === 'لا يهم' ? 'لا مانع' : (form.pAcceptChildren || 'لا مانع'),
-      };
 
       // إنشاء الملف الشخصي الفعلي مرتبطاً بحساب المصادقة (الجلسة تُرفق تلقائياً مع الطلب)
       const result = await registerNewMember(submissionForm);
@@ -592,6 +664,7 @@ export default function Register() {
         setSubmitting(false);
         return;
       }
+      localStorage.removeItem(PENDING_REGISTRATION_KEY);
       navigate('/profile');
     } catch (err: any) {
       setSubmitError(err?.message || 'حدث خطأ غير متوقع، حاول مرة أخرى');
