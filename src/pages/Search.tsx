@@ -20,7 +20,7 @@ import { getMemberTimestamp } from '../lib/memberUtils';
 
 type GenderFilter = 'male' | 'female' | 'all';
 
-const PAGE_SIZE = 24;
+const PAGE_SIZE = 16;
 
 export default function Search() {
   const navigate = useNavigate();
@@ -290,19 +290,19 @@ export default function Search() {
       <div className="bg-navy-gradient relative overflow-hidden">
         <div className="absolute inset-0 pattern-arabesque opacity-30" />
         <div className="absolute -top-20 -left-20 w-72 h-72 bg-gold-500/20 rounded-full blur-3xl" />
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-12 text-center">
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-12 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gold-300/15 mb-4">
-              <SlidersHorizontal className="w-6 h-6 sm:w-7 sm:h-7 text-gold-300" />
+            <div className="inline-flex items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gold-300/15 mb-2 sm:mb-4">
+              <SlidersHorizontal className="w-5 h-5 sm:w-7 sm:h-7 text-gold-300" />
             </div>
             <h1 className="font-cairo font-extrabold text-xl sm:text-4xl text-white">البحث المتقدم</h1>
-            <p className="mt-3 text-sm sm:text-base text-cream-200/80 font-tajawal">خصّص بحثك بدقة للعثور على شريك الحياة المناسب</p>
+            <p className="mt-1.5 sm:mt-3 text-xs sm:text-base text-cream-200/80 font-tajawal">خصّص بحثك بدقة للعثور على شريك الحياة المناسب</p>
           </motion.div>
         </div>
       </div>
 
       <div className="max-w-3xl mx-auto px-3 sm:px-6 -mt-4 sm:-mt-6 relative">
-        <div className="bg-white dark:bg-navy-900 rounded-3xl shadow-luxe border border-cream-200/60 dark:border-navy-800 p-3 sm:p-7 space-y-4 sm:space-y-6">
+        <div className="bg-white dark:bg-navy-900 rounded-2xl sm:rounded-3xl shadow-luxe border border-cream-200/60 dark:border-navy-800 p-3 sm:p-7 space-y-3 sm:space-y-6">
 
           {/* ===== البحث بالرمز أو الكلمة المفتاحية ===== */}
           <div>
@@ -576,8 +576,8 @@ export default function Search() {
       </div>
 
       {/* عرض النتائج */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 mt-8 sm:mt-12 border-t border-cream-200/60">
-        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 mt-5 sm:mt-12 border-t border-cream-200/60">
+        <div className="mb-4 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h2 className="font-cairo font-extrabold text-lg sm:text-2xl text-navy-900">
               نتائج البحث ({filteredMembers.length})
@@ -606,18 +606,18 @@ export default function Search() {
             <Button onClick={retryLoadMembers}>إعادة المحاولة</Button>
           </div>
         ) : membersLoading && members.length === 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-5">
             <MemberGridSkeleton count={8} />
           </div>
         ) : filteredMembers.length > 0 ? (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-5">
               {visibleMembers.map((m, idx) => (
                 <MemberCard key={m?.id ? `search-member-${m.id}-${idx}` : `search-member-idx-${idx}`} member={m} />
               ))}
             </div>
             {hasMore && (
-              <div className="flex justify-center mt-8">
+              <div className="flex justify-center mt-6 sm:mt-8">
                 <Button onClick={() => setVisibleCount((c) => c + PAGE_SIZE)} variant="outline" size="md">
                   عرض المزيد ({filteredMembers.length - visibleMembers.length} متبقٍ)
                 </Button>

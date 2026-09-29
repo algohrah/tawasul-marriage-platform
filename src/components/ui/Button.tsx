@@ -27,9 +27,9 @@ const variants: Record<Variant, string> = {
 };
 
 const sizes: Record<Size, string> = {
-  sm: 'px-4 py-2 text-sm rounded-xl',
-  md: 'px-6 py-3 text-sm rounded-2xl',
-  lg: 'px-8 py-4 text-base rounded-[1.15rem]',
+  sm: 'min-h-11 px-3 py-2 text-xs sm:px-4 sm:text-sm rounded-xl',
+  md: 'min-h-11 px-4 py-2.5 text-sm sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl',
+  lg: 'min-h-12 px-6 py-3 text-sm sm:px-8 sm:py-4 sm:text-base rounded-2xl sm:rounded-[1.15rem]',
 };
 
 function classNames({ variant, size, fullWidth, disabled, className }: Required<Pick<BaseProps, 'variant' | 'size'>> & Pick<BaseProps, 'fullWidth' | 'disabled' | 'className'>) {

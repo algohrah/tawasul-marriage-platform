@@ -66,8 +66,8 @@ export default function MobileNav() {
   // ===== قائمة الأعضاء المسجلين =====
   if (isLoggedIn) {
     return (
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pointer-events-none">
-        <div className="pointer-events-auto mx-auto flex h-16 max-w-md items-center justify-around rounded-[1.6rem] border border-gold-300/25 bg-white/88 shadow-luxe backdrop-blur-xl dark:bg-navy-900/88 dark:border-white/10">
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 px-2.5 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pointer-events-none">
+        <div className="pointer-events-auto mx-auto flex h-14 max-w-md items-center justify-around rounded-[1.35rem] border border-gold-300/25 bg-white/88 shadow-luxe backdrop-blur-xl dark:bg-navy-900/88 dark:border-white/10">
           {memberItems.map((item) => {
             const badge = memberBadges[item.to] || 0;
             return (
@@ -76,7 +76,7 @@ export default function MobileNav() {
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `relative flex flex-col items-center justify-center gap-1 px-3 py-1.5 rounded-xl transition-all no-tap-highlight ${
+                  `relative flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 rounded-lg transition-all no-tap-highlight ${
                     isActive
                       ? 'text-navy-950 bg-gold-gradient shadow-gold'
                       : 'text-navy-500 dark:text-cream-200/70 hover:bg-cream-100/70 dark:hover:bg-white/8'
@@ -87,7 +87,7 @@ export default function MobileNav() {
                   <>
                     <div className="relative">
                       <item.icon
-                        className={`w-5 h-5 ${isActive ? 'fill-gold-300/30' : ''}`}
+                        className={`w-[18px] h-[18px] ${isActive ? 'fill-gold-300/30' : ''}`}
                         strokeWidth={isActive ? 2.5 : 2}
                       />
                       {badge > 0 && (
@@ -96,7 +96,7 @@ export default function MobileNav() {
                         </span>
                       )}
                     </div>
-                    <span className="text-[10px] font-cairo font-semibold">{item.label}</span>
+                    <span className="text-[9px] font-cairo font-semibold">{item.label}</span>
                   </>
                 )}
               </NavLink>
@@ -109,15 +109,15 @@ export default function MobileNav() {
 
   // ===== قائمة الزوار غير المسجلين =====
   return (
-    <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pointer-events-none">
-      <div className="pointer-events-auto mx-auto flex h-16 max-w-md items-center justify-around rounded-[1.6rem] border border-gold-300/25 bg-white/88 shadow-luxe backdrop-blur-xl dark:bg-navy-900/88 dark:border-white/10">
+    <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 px-2.5 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pointer-events-none">
+      <div className="pointer-events-auto mx-auto flex h-14 max-w-md items-center justify-around rounded-[1.35rem] border border-gold-300/25 bg-white/88 shadow-luxe backdrop-blur-xl dark:bg-navy-900/88 dark:border-white/10">
         {guestItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.end}
             className={({ isActive }) =>
-              `relative flex flex-col items-center justify-center gap-1 px-3 py-1.5 rounded-xl transition-all no-tap-highlight ${
+              `relative flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 rounded-lg transition-all no-tap-highlight ${
                 item.cta
                   ? 'bg-gold-gradient text-navy-900 shadow-gold'
                   : isActive
@@ -129,10 +129,10 @@ export default function MobileNav() {
             {({ isActive }) => (
               <>
                 <item.icon
-                  className={`w-5 h-5 ${isActive || item.cta ? 'fill-current/10' : ''}`}
+                  className={`w-[18px] h-[18px] ${isActive || item.cta ? 'fill-current/10' : ''}`}
                   strokeWidth={isActive || item.cta ? 2.5 : 2}
                 />
-                <span className="text-[10px] font-cairo font-semibold">{item.label}</span>
+                <span className="text-[9px] font-cairo font-semibold">{item.label}</span>
               </>
             )}
           </NavLink>

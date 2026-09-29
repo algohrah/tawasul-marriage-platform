@@ -60,7 +60,7 @@ export default function Layout() {
           animate={{ scale: 1, opacity: 1 }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="fixed right-4 sm:right-6 bottom-[5.5rem] lg:bottom-8 z-50 flex items-center justify-center gap-2 h-14 min-w-[3.5rem] px-3.5 bg-[#25D366] text-white rounded-full shadow-luxe hover:bg-[#20ba5a] transition-all duration-300 group cursor-pointer border border-white/20"
+          className="fixed right-4 sm:right-6 bottom-[4.75rem] lg:bottom-8 z-50 flex items-center justify-center gap-2 h-12 min-w-12 px-3 bg-[#25D366] text-white rounded-full shadow-luxe hover:bg-[#20ba5a] transition-all duration-300 group cursor-pointer border border-white/20"
           title="تواصل معنا عبر واتساب"
         >
           {/* تأثير النبض */}
@@ -68,7 +68,7 @@ export default function Layout() {
 
           {/* أيقونة واتساب الرسمية */}
           <svg
-            className="w-6 h-6 relative z-10 fill-current drop-shadow-md flex-shrink-0"
+            className="w-5 h-5 relative z-10 fill-current drop-shadow-md flex-shrink-0"
             viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
           >
