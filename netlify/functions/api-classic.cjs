@@ -53,6 +53,7 @@ async function loadRouteHandler(route) {
     case 'member-reports': return (await import('../../api/member-reports.js')).default;
     case 'members': return (await import('../../api/members.js')).default;
     case 'notifications': return (await import('../../api/notifications.js')).default;
+    case 'register-auth': return (await import('../../api/register-auth.js')).default;
     case 'settings': return (await import('../../api/settings.js')).default;
     case 'stats': return (await import('../../api/stats.js')).default;
     case 'support-tickets': return (await import('../../api/support-tickets.js')).default;

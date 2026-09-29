@@ -272,9 +272,11 @@ export default function Register() {
   const passwordsMismatch = Boolean(form.passwordConfirm && form.password !== form.passwordConfirm);
 
   const getFriendlySignUpError = (error: any) => {
-    const message = String(error?.message || '').toLowerCase();
+    const originalMessage = String(error?.message || '');
+    const message = originalMessage.toLowerCase();
     const code = String(error?.code || '').toLowerCase();
 
+    if (/[\u0600-\u06FF]/.test(originalMessage)) return originalMessage;
     if (message.includes('rate limit') || code.includes('rate_limit') || code.includes('over_email_send_rate_limit')) {
       return 'تم إرسال عدة طلبات خلال وقت قصير. انتظر دقيقة ثم حاول مرة واحدة فقط، أو استخدم بريدًا آخر.';
     }
@@ -630,26 +632,26 @@ export default function Register() {
         pAcceptChildren: form.pAcceptChildren === 'لا يهم' ? 'لا مانع' : (form.pAcceptChildren || 'لا مانع'),
       };
 
-      localStorage.setItem(PENDING_REGISTRATION_KEY, JSON.stringify(submissionForm));
-
-      // 1) إنشاء حساب مصادقة حقيقي عبر Supabase Auth (بريد + كلمة مرور)
+      // 1) إنشاء حساب Auth مؤكد من المسار الخادمي. لا يعتمد هذا المسار على
+      // رسائل Supabase التجريبية، ولذلك لا يتأثر بحد إرسال البريد العالمي.
       const cleanEmail = form.email.trim().toLowerCase();
-      const emailRedirectTo = `${window.location.origin}/register?confirmed=1`;
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      const createResponse = await fetch('/api/register-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, password: form.password }),
+      });
+      const createPayload = await createResponse.json().catch(() => ({}));
+      if (!createResponse.ok) {
+        throw new Error(createPayload?.error || 'تعذّر إنشاء حساب المصادقة');
+      }
+
+      // 2) تسجيل الدخول بالحساب الجديد للحصول على جلسة حقيقية قبل إنشاء الملف.
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
         password: form.password,
-        options: { emailRedirectTo },
       });
-      if (signUpError) {
-        setSubmitError(getFriendlySignUpError(signUpError));
-        setSubmitting(false);
-        return;
-      }
-      if (!data.session) {
-        // يتطلب المشروع تأكيد البريد الإلكتروني قبل تفعيل الجلسة
-        setSubmitSuccess('تم إنشاء الحساب وإرسال رسالة التأكيد. افتح بريدك الإلكتروني وأكّد الحساب، ثم سجّل الدخول.');
-        setSubmitting(false);
-        return;
+      if (signInError || !signInData?.session) {
+        throw new Error('تم إنشاء الحساب، لكن تعذّر بدء الجلسة. استخدم صفحة تسجيل الدخول بنفس البريد وكلمة المرور.');
       }
 
       if (form.nationalityOther?.trim()) {
@@ -657,7 +659,7 @@ export default function Register() {
         handleAddCountry(form.nationalityOther.trim());
       }
 
-      // إنشاء الملف الشخصي الفعلي مرتبطاً بحساب المصادقة (الجلسة تُرفق تلقائياً مع الطلب)
+      // 3) إنشاء الملف الشخصي الفعلي مرتبطاً بحساب المصادقة.
       const result = await registerNewMember(submissionForm);
       if (!result.ok) {
         setSubmitError(result.error || 'تعذّر إنشاء الملف الشخصي، حاول مرة أخرى');
@@ -665,9 +667,10 @@ export default function Register() {
         return;
       }
       localStorage.removeItem(PENDING_REGISTRATION_KEY);
+      setSubmitSuccess('تم إنشاء الحساب والملف الشخصي بنجاح.');
       navigate('/profile');
     } catch (err: any) {
-      setSubmitError(err?.message || 'حدث خطأ غير متوقع، حاول مرة أخرى');
+      setSubmitError(getFriendlySignUpError(err));
     } finally {
       setSubmitting(false);
     }
