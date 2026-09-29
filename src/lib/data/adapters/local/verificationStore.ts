@@ -72,8 +72,13 @@ export async function syncVerificationDocsFromCloud(): Promise<void> {
 /** رفع مستند توثيق جديد */
 export function submitVerificationDoc(doc: Omit<VerificationDocument, 'id' | 'status' | 'submittedAt'>): VerificationDocument {
   const docs = loadAll();
-  // إزالة أي مستند سابق معلق أو مرفوض لنفس العضو
-  const filtered = docs.filter(d => !(d.memberId === doc.memberId && (d.status === 'pending' || d.status === 'rejected')));
+  // استبدال النسخة السابقة من النوع نفسه فقط، مع الإبقاء على بقية ملفات
+  // الدفعة (الهوية، إثبات الحالة، الصورة الشخصية).
+  const filtered = docs.filter(d => !(
+    d.memberId === doc.memberId &&
+    d.docType === doc.docType &&
+    (d.status === 'pending' || d.status === 'rejected')
+  ));
   const newDoc: VerificationDocument = {
     ...doc,
     id: 'vdoc-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8),

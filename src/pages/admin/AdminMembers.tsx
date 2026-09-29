@@ -1064,6 +1064,19 @@ export default function AdminMembers() {
                matchMaritalStatus && matchMarriageType && matchCustomList && matchTribe && matchAgeMin && matchAgeMax && matchHeightMin && matchHeightMax &&
                matchWeightMin && matchWeightMax && matchEducation && matchOccupation && matchHealth && matchSmoking && matchVerification &&
                matchPartnerNationality && matchPartnerMarital && matchPartnerCity && matchPartnerAge && matchPartnerChildren;
+      }).sort((a, b) => {
+        // ترتيب ثابت حسب تاريخ إنشاء العضو فقط. لا نستخدم updated_at حتى لا
+        // ينتقل العضو إلى موضع آخر عند تغيير الاسم أو التوثيق أو الباقة.
+        const getCreatedTime = (member: any) => {
+          const raw = member.created_at || member.createdAt || member.importDate || member.joinedAt || '';
+          const parsed = raw ? new Date(raw).getTime() : NaN;
+          if (Number.isFinite(parsed)) return parsed;
+          const idTimestamp = String(member.id || '').match(/(\d{13})/)?.[1];
+          return idTimestamp ? Number(idTimestamp) : 0;
+        };
+        const timeDiff = getCreatedTime(b) - getCreatedTime(a);
+        if (timeDiff !== 0) return timeDiff;
+        return String(b.id || '').localeCompare(String(a.id || ''), 'ar');
       });
     },
     [

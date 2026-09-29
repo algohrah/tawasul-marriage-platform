@@ -1116,13 +1116,21 @@ export class ApiAdapter extends LocalStorageAdapter {
   };
 
   // ===== مستندات التوثيق =====
-  private async refreshVerificationDocs() {
+  private async refreshVerificationDocs(force = false) {
+    if (force) this.lastRefreshAt['verification-docs'] = 0;
     if (!this.canRefresh('verification-docs')) return this.safeDocCache;
     try {
       const data = await apiFetch<any[]>('/api/verification-docs');
       if (Array.isArray(data)) {
-        this.docCache = data;
+        this.docCache = data.map((doc) => ({
+          ...doc,
+          memberId: doc.member_id || doc.memberId,
+          fileUrl: doc.file_url || doc.fileUrl,
+          docName: doc.file_name || doc.docName,
+          submittedAt: doc.created_at || doc.submittedAt,
+        }));
         writeCache(DOC_CACHE_KEY, this.docCache);
+        if (isBrowser()) window.dispatchEvent(new CustomEvent('twafok_verification_docs_changed'));
       }
     } catch {
       // fallback
@@ -1130,12 +1138,30 @@ export class ApiAdapter extends LocalStorageAdapter {
     return this.safeDocCache;
   }
 
-  submitVerificationDoc = (doc: any): any => {
+  refreshVerificationDocsNow = async (): Promise<any[]> => this.refreshVerificationDocs(true);
+
+  submitVerificationDoc = async (doc: any): Promise<any> => {
     const row = { ...doc, id: doc.id || `doc_${Date.now()}`, status: doc.status || 'pending', created_at: doc.created_at || new Date().toISOString() };
     this.safeDocCache.unshift(row);
     writeCache(DOC_CACHE_KEY, this.safeDocCache);
-    apiFetch('/api/verification-docs', { method: 'POST', body: JSON.stringify(row) }).catch(() => undefined);
-    return row;
+    try {
+      const saved = await apiFetch<any>('/api/verification-docs', { method: 'POST', body: JSON.stringify(row) });
+      const normalized = {
+        ...saved,
+        memberId: saved.member_id || saved.memberId,
+        fileUrl: saved.file_url || saved.fileUrl,
+        docName: saved.file_name || saved.docName,
+        submittedAt: saved.created_at || saved.submittedAt,
+      };
+      this.docCache = this.safeDocCache.map((item) => item.id === row.id ? normalized : item);
+      writeCache(DOC_CACHE_KEY, this.docCache);
+      if (isBrowser()) window.dispatchEvent(new CustomEvent('twafok_verification_docs_changed'));
+      return normalized;
+    } catch (error) {
+      this.docCache = this.safeDocCache.filter((item) => item.id !== row.id);
+      writeCache(DOC_CACHE_KEY, this.docCache);
+      throw error;
+    }
   };
 
   getAllVerificationDocs = (): any[] => {
@@ -1150,14 +1176,18 @@ export class ApiAdapter extends LocalStorageAdapter {
   approveVerificationDoc = (docId: string, reviewerName: string): boolean => {
     this.docCache = this.safeDocCache.map((d) => d.id === docId ? { ...d, status: 'approved', reviewer_name: reviewerName } : d);
     writeCache(DOC_CACHE_KEY, this.docCache);
-    apiFetch('/api/verification-docs', { method: 'PUT', body: JSON.stringify({ id: docId, status: 'approved', reviewer_name: reviewerName }) }).catch(() => undefined);
+    apiFetch('/api/verification-docs', { method: 'PUT', body: JSON.stringify({ id: docId, status: 'approved', reviewer_name: reviewerName }) })
+      .then(() => isBrowser() && window.dispatchEvent(new CustomEvent('twafok_verification_docs_changed')))
+      .catch(() => undefined);
     return true;
   };
 
   rejectVerificationDoc = (docId: string, reviewerName: string, reason: string): boolean => {
     this.docCache = this.safeDocCache.map((d) => d.id === docId ? { ...d, status: 'rejected', reviewer_name: reviewerName, rejection_reason: reason } : d);
     writeCache(DOC_CACHE_KEY, this.docCache);
-    apiFetch('/api/verification-docs', { method: 'PUT', body: JSON.stringify({ id: docId, status: 'rejected', reviewer_name: reviewerName, rejection_reason: reason }) }).catch(() => undefined);
+    apiFetch('/api/verification-docs', { method: 'PUT', body: JSON.stringify({ id: docId, status: 'rejected', reviewer_name: reviewerName, rejection_reason: reason }) })
+      .then(() => isBrowser() && window.dispatchEvent(new CustomEvent('twafok_verification_docs_changed')))
+      .catch(() => undefined);
     return true;
   };
 
