@@ -386,7 +386,7 @@ export default function AdminLayout() {
       {sidebarOpen && (
         <div className="lg:hidden fixed inset-0 z-[60]">
           <div className="absolute inset-0 bg-navy-950/70 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-          <aside className="absolute top-0 right-0 bottom-0 w-72 bg-gradient-to-b from-navy-950 to-navy-900 flex flex-col animate-float-up shadow-2xl">
+          <aside className="absolute top-0 right-0 bottom-0 w-72 max-w-[86vw] bg-gradient-to-b from-navy-950 to-navy-900 flex flex-col animate-float-up shadow-2xl">
             {sidebarContent}
           </aside>
         </div>
@@ -394,22 +394,22 @@ export default function AdminLayout() {
 
       <div className="lg:mr-72">
         <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 shadow-sm">
-          <div className="flex items-center justify-between gap-3 px-4 sm:px-7 h-16">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-2 px-3 sm:px-7 min-h-16 py-2">
+            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-700 transition-colors"
+                className="lg:hidden w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-700 transition-colors"
                 title="القائمة"
               >
                 <Menu className="w-5 h-5" />
               </button>
-              <div>
-                <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-tajawal">
+              <div className="min-w-0">
+                <div className="hidden min-[390px]:flex items-center gap-1.5 text-[11px] text-slate-400 font-tajawal">
                   <span>لوحة الإدارة</span>
                   <span>/</span>
                   <span className="text-amber-600 font-bold">{activeSection}</span>
                 </div>
-                <h1 className="font-cairo font-black text-sm sm:text-base text-slate-900 leading-tight">
+                <h1 className="max-w-[8.5rem] sm:max-w-none truncate font-cairo font-black text-sm sm:text-base text-slate-900 leading-tight">
                   {currentTitle}
                 </h1>
               </div>
@@ -417,7 +417,7 @@ export default function AdminLayout() {
 
             <AdminQuickSearch members={adminMembers || []} requests={interestRequests || []} />
 
-            <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="flex flex-shrink-0 items-center gap-1 sm:gap-3">
               {/* شارة حالة قاعدة البيانات */}
               <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-emerald-700 text-[11px] font-tajawal font-bold shadow-xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -446,7 +446,7 @@ export default function AdminLayout() {
                 openTickets={openTickets}
               />
 
-              <div className="flex items-center gap-2 pr-1 border-r border-slate-200/80 pl-1">
+              <div className="hidden min-[390px]:flex items-center gap-2 pr-1 border-r border-slate-200/80 pl-1">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white font-bold text-xs shadow-xs">
                   إ
                 </div>
@@ -461,7 +461,7 @@ export default function AdminLayout() {
               <button
                 onClick={handleAdminLogout}
                 title="تسجيل الخروج من لوحة الإدارة"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-cairo font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors border border-rose-200/60"
+                className="flex min-h-11 min-w-11 items-center justify-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-xs font-cairo font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors border border-rose-200/60"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">خروج</span>
@@ -485,7 +485,7 @@ export default function AdminLayout() {
           )}
         </header>
 
-        <main className="p-4 sm:p-6 lg:p-8 max-w-[1560px] mx-auto">
+        <main className="min-w-0 p-3 min-[390px]:p-4 sm:p-6 lg:p-8 max-w-[1560px] mx-auto">
           <AdminErrorBoundary resetKey={location.pathname}>
             <Outlet />
           </AdminErrorBoundary>
@@ -733,7 +733,7 @@ function NotificationsBell({
             initial={{ opacity: 0, y: -8, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.96 }}
-            className="absolute left-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-50"
+            className="fixed left-3 right-3 top-16 mt-2 sm:absolute sm:left-0 sm:right-auto sm:top-auto sm:w-72 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-50"
           >
             <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
               <span className="font-cairo font-bold text-sm text-slate-900">الإشعارات</span>

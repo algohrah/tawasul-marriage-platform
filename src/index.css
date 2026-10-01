@@ -133,11 +133,13 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 body {
   margin: 0;
   min-width: 320px;
+  overflow-x: clip;
   font-family: var(--font-cairo), var(--font-tajawal), system-ui, -apple-system, sans-serif;
   background:
     radial-gradient(circle at top right, rgba(239, 194, 91, 0.08), transparent 32rem),
@@ -158,6 +160,56 @@ body.dark, .dark body {
 
 button, input, textarea, select {
   font: inherit;
+}
+
+/* Responsive guardrails shared by every route.
+   These rules intentionally stay below the desktop breakpoint so the
+   existing desktop composition and visual identity remain unchanged. */
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+main,
+main > *,
+.admin-shell,
+.admin-shell main {
+  min-width: 0;
+}
+
+:where(p, li, td, th, label, h1, h2, h3, h4) {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 639px) {
+  /* Prevent iOS form zoom and keep every primary control comfortably tappable. */
+  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select) {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  :where(button, a, input, textarea, select) {
+    touch-action: manipulation;
+  }
+
+  /* Dense data stays scrollable inside its own surface rather than widening
+     the entire page. */
+  :where(.admin-shell, [role="dialog"]) :where(table, pre, code) {
+    max-width: 100%;
+  }
+
+  .admin-shell :where(.overflow-x-auto, .overflow-auto) {
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Keep long identifiers, emails, cities and nationalities inside cards. */
+  :where(.admin-shell, main) :where([dir="ltr"], .font-mono) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
 }
 
 /* طبقة تصميم لوحة الإدارة: هرمية هادئة، بطاقات واضحة، وتركيز مرئي للوصول بلوحة المفاتيح. */

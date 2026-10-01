@@ -44,7 +44,7 @@ export function TextInput({
       min={min}
       max={max}
       step={step}
-      className={`w-full px-4 py-3 rounded-xl bg-cream-50 border-2 border-cream-200 focus:border-gold-500 focus:outline-none font-tajawal text-navy-900 transition-colors ${className}`}
+      className={`w-full min-h-12 px-4 py-3 rounded-xl bg-cream-50 border-2 border-cream-200 focus:border-gold-500 focus:outline-none font-tajawal text-navy-900 transition-colors ${className}`}
     />
   );
 }
@@ -124,7 +124,7 @@ export function SelectInput({
   return (
     <div className="relative">
       <button ref={btnRef} type="button" onClick={() => isOpen ? doClose() : doOpen()} disabled={disabled}
-        className={`w-full px-4 py-3 rounded-xl bg-cream-50 border-2 ${error ? 'border-rose-400' : isOpen ? 'border-gold-500' : 'border-cream-200'} focus:border-gold-500 focus:outline-none font-tajawal text-navy-900 transition-colors cursor-pointer text-right flex items-center justify-between gap-2 ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}>
+        className={`w-full min-h-12 px-4 py-3 rounded-xl bg-cream-50 border-2 ${error ? 'border-rose-400' : isOpen ? 'border-gold-500' : 'border-cream-200'} focus:border-gold-500 focus:outline-none font-tajawal text-navy-900 transition-colors cursor-pointer text-right flex items-center justify-between gap-2 ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}>
         <span className={`truncate ${selectedLabel ? 'text-navy-900' : 'text-navy-400'}`}>{selectedLabel || placeholder}</span>
         <ChevronDown className={`w-4 h-4 text-navy-400 flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -145,7 +145,7 @@ export function TextArea({
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       rows={rows}
-      className="w-full px-4 py-3 rounded-xl bg-cream-50 border-2 border-cream-200 focus:border-gold-500 focus:outline-none font-tajawal text-navy-900 resize-none transition-colors"
+      className="w-full min-h-12 px-4 py-3 rounded-xl bg-cream-50 border-2 border-cream-200 focus:border-gold-500 focus:outline-none font-tajawal text-navy-900 resize-none transition-colors"
     />
   );
 }
@@ -194,7 +194,7 @@ export function RadioGroup({
 }: {
   options: (string | { value: string; label: string | any })[]; value: string; onChange: (v: string) => void; columns?: number;
 }) {
-  const gridClass = columns === 1 ? 'grid-cols-1' : columns === 3 ? 'grid-cols-3' : columns === 4 ? 'grid-cols-4' : 'grid-cols-2';
+  const gridClass = columns === 1 ? 'grid-cols-1' : columns === 3 ? 'grid-cols-2 sm:grid-cols-3' : columns === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2';
   return (
     <div className={`grid ${gridClass} gap-2`}>
       {options.map((rawOpt, idx) => {
@@ -221,7 +221,7 @@ export function RadioGroup({
             key={`${optVal}-${idx}`}
             type="button"
             onClick={() => onChange(optVal)}
-            className={`px-4 py-2.5 rounded-xl text-sm font-cairo font-semibold transition-all border-2 no-tap-highlight text-center ${
+            className={`min-h-11 px-3 sm:px-4 py-2.5 rounded-xl text-sm font-cairo font-semibold leading-snug transition-all border-2 no-tap-highlight text-center ${
               value === optVal
                 ? 'border-gold-500 bg-gold-300/10 text-navy-900'
                 : 'border-cream-200 bg-cream-50 text-navy-600 hover:border-gold-300'

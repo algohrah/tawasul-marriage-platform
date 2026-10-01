@@ -30,7 +30,7 @@ export default function Layout() {
     : '';
 
   return (
-    <div className="min-h-screen flex flex-col bg-cream-50 text-navy-950 dark:bg-navy-950 dark:text-cream-50 transition-colors duration-300">
+    <div className="min-h-screen min-w-0 overflow-x-clip flex flex-col bg-cream-50 text-navy-950 dark:bg-navy-950 dark:text-cream-50 transition-colors duration-300">
       <ImpersonationBar />
       <Header />
 
@@ -60,7 +60,7 @@ export default function Layout() {
           animate={{ scale: 1, opacity: 1 }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="fixed right-4 sm:right-6 bottom-[4.75rem] lg:bottom-8 z-50 flex items-center justify-center gap-2 h-12 min-w-12 px-3 bg-[#25D366] text-white rounded-full shadow-luxe hover:bg-[#20ba5a] transition-all duration-300 group cursor-pointer border border-white/20"
+          className="fixed right-[max(1rem,env(safe-area-inset-right))] sm:right-6 bottom-[calc(env(safe-area-inset-bottom)+4.75rem)] lg:bottom-8 z-50 flex items-center justify-center gap-2 h-12 min-w-12 px-3 overflow-hidden bg-[#25D366] text-white rounded-full shadow-luxe hover:bg-[#20ba5a] transition-all duration-300 group cursor-pointer border border-white/20"
           title="تواصل معنا عبر واتساب"
         >
           {/* تأثير النبض */}
