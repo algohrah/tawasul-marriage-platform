@@ -284,29 +284,64 @@ export default function Search() {
     incrementUsage('search');
   };
 
+  const resetFilters = () => {
+    setSearchQuery('');
+    setGender('all');
+    setAgeRange([16, 80]);
+    setCountry('');
+    setCity('');
+    setMarriageType('');
+    setAcceptForeigner('');
+    setNationality('');
+    setEducation('');
+    setJob('');
+    setMaritalStatus('');
+    setSect('');
+    setHasChildren('');
+    setChildrenCount('');
+    setShowAdvanced(false);
+  };
+
+  const activeFilterCount = [
+    searchQuery.trim(),
+    gender !== 'all' ? gender : '',
+    ageRange[0] !== 16 || ageRange[1] !== 80 ? 'age' : '',
+    country,
+    city,
+    marriageType,
+    acceptForeigner,
+    nationality,
+    education,
+    job,
+    maritalStatus,
+    sect,
+    hasChildren,
+    childrenCount,
+  ].filter(Boolean).length;
+
   return (
-    <div className="bg-cream-50 min-h-screen pb-12">
+    <div className="bg-cream-50 dark:bg-navy-950 min-h-screen pb-8 sm:pb-12">
       {/* Header banner */}
       <div className="bg-navy-gradient relative overflow-hidden">
         <div className="absolute inset-0 pattern-arabesque opacity-30" />
         <div className="absolute -top-20 -left-20 w-72 h-72 bg-gold-500/20 rounded-full blur-3xl" />
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-12 text-center">
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-3.5 sm:py-12 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="inline-flex items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gold-300/15 mb-2 sm:mb-4">
-              <SlidersHorizontal className="w-5 h-5 sm:w-7 sm:h-7 text-gold-300" />
+            <div className="inline-flex items-center justify-center w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gold-300/15 mb-1.5 sm:mb-4">
+              <SlidersHorizontal className="w-4.5 h-4.5 sm:w-7 sm:h-7 text-gold-300" />
             </div>
-            <h1 className="font-cairo font-extrabold text-xl sm:text-4xl text-white">البحث المتقدم</h1>
-            <p className="mt-1.5 sm:mt-3 text-xs sm:text-base text-cream-200/80 font-tajawal">خصّص بحثك بدقة للعثور على شريك الحياة المناسب</p>
+            <h1 className="font-cairo font-extrabold text-[19px] sm:text-4xl text-white">البحث المتقدم</h1>
+            <p className="mt-1 sm:mt-3 text-[11px] sm:text-base text-cream-200/80 font-tajawal">خصّص بحثك بدقة للعثور على شريك الحياة المناسب</p>
           </motion.div>
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-3 sm:px-6 -mt-4 sm:-mt-6 relative">
-        <div className="bg-white dark:bg-navy-900 rounded-2xl sm:rounded-3xl shadow-luxe border border-cream-200/60 dark:border-navy-800 p-3 sm:p-7 space-y-3 sm:space-y-6">
+      <div className="max-w-3xl mx-auto px-2.5 min-[390px]:px-3 sm:px-6 -mt-2.5 sm:-mt-6 relative">
+        <div className="bg-white dark:bg-navy-900 rounded-2xl sm:rounded-3xl shadow-luxe border border-cream-200/60 dark:border-navy-800 p-3 min-[390px]:p-3.5 sm:p-7 space-y-3 sm:space-y-6">
 
           {/* ===== البحث بالرمز أو الكلمة المفتاحية ===== */}
           <div>
-            <label className="flex items-center gap-1.5 text-xs font-cairo font-bold text-navy-800 dark:text-cream-100 mb-1.5">
+            <label className="flex items-center gap-1.5 text-[11px] sm:text-xs font-cairo font-bold text-navy-800 dark:text-cream-100 mb-1.5">
               <SearchIcon className="w-3.5 h-3.5 text-gold-600" /> البحث بالرمز أو الاسم
             </label>
             <div className="relative">
@@ -315,9 +350,9 @@ export default function Search() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="ابحث بكود العضو (مثل m1)، أو المسمى الوظيفي، أو الاسم المستعار..."
-                className="w-full px-4 py-3 pl-10 rounded-2xl bg-cream-50 dark:bg-navy-950 border-2 border-cream-200 dark:border-navy-800 focus:border-gold-500 focus:outline-none font-tajawal text-sm text-navy-900 dark:text-cream-100 placeholder:text-navy-400"
+                className="w-full h-11 px-3.5 pl-9 rounded-xl sm:rounded-2xl bg-cream-50 dark:bg-navy-950 border border-cream-200 dark:border-navy-800 focus:border-gold-500 focus:outline-none font-tajawal text-[13px] sm:text-sm text-navy-900 dark:text-cream-100 placeholder:text-navy-400"
               />
-              <SearchIcon className="w-4 h-4 text-navy-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <SearchIcon className="w-4 h-4 text-navy-400 absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
           </div>
 
@@ -347,7 +382,7 @@ export default function Search() {
 
           {/* ===== الخطوة 2: الدولة والمدينة ===== */}
           <FilterSection icon={MapPin} title="الدولة والمدينة" step={2}>
-            <div className="grid sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <SelectField icon={Globe} label="الدولة" value={country} onChange={(v) => { setCountry(v); setCity(''); }}
                 options={countryOptions} placeholder="كل الدول" />
               <SelectField icon={MapPin} label="المدينة" value={city} onChange={setCity}
@@ -358,23 +393,25 @@ export default function Search() {
 
           {/* ===== الخطوة 3: العمر ===== */}
           <FilterSection icon={Calendar} title="الفئة العمرية" step={3}>
-            <div className="bg-cream-50 rounded-xl p-2.5 sm:p-4 border border-cream-200">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-navy-500 font-tajawal">من</span>
-                <span className="font-cairo font-bold text-sm text-gold-700 bg-gold-300/15 px-2.5 py-0.5 rounded-lg">{ageRange[0]} سنة</span>
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+              <div className="bg-cream-50 dark:bg-navy-950 rounded-xl p-2.5 sm:p-4 border border-cream-200 dark:border-navy-800">
+                <div className="flex items-center justify-between gap-1 mb-1.5">
+                  <span className="text-[11px] sm:text-xs text-navy-500 dark:text-slate-400 font-tajawal">من</span>
+                  <span className="font-cairo font-bold text-xs sm:text-sm text-gold-700 dark:text-gold-300 bg-gold-300/15 px-2 py-0.5 rounded-lg whitespace-nowrap">{ageRange[0]} سنة</span>
+                </div>
+                <input type="range" min="16" max="80" value={ageRange[0]}
+                  onChange={(e) => setAgeRange([Math.min(Number(e.target.value), ageRange[1]), ageRange[1]])}
+                  className="w-full h-5 accent-gold-500 cursor-pointer" />
               </div>
-              <input type="range" min="16" max="80" value={ageRange[0]}
-                onChange={(e) => setAgeRange([Math.min(Number(e.target.value), ageRange[1]), ageRange[1]])}
-                className="w-full accent-gold-500" />
-            </div>
-            <div className="bg-cream-50 rounded-xl p-2.5 sm:p-4 border border-cream-200 mt-2 sm:mt-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-navy-500 font-tajawal">إلى</span>
-                <span className="font-cairo font-bold text-sm text-gold-700 bg-gold-300/15 px-2.5 py-0.5 rounded-lg">{ageRange[1]} سنة</span>
+              <div className="bg-cream-50 dark:bg-navy-950 rounded-xl p-2.5 sm:p-4 border border-cream-200 dark:border-navy-800">
+                <div className="flex items-center justify-between gap-1 mb-1.5">
+                  <span className="text-[11px] sm:text-xs text-navy-500 dark:text-slate-400 font-tajawal">إلى</span>
+                  <span className="font-cairo font-bold text-xs sm:text-sm text-gold-700 dark:text-gold-300 bg-gold-300/15 px-2 py-0.5 rounded-lg whitespace-nowrap">{ageRange[1]} سنة</span>
+                </div>
+                <input type="range" min="16" max="80" value={ageRange[1]}
+                  onChange={(e) => setAgeRange([ageRange[0], Math.max(Number(e.target.value), ageRange[0])])}
+                  className="w-full h-5 accent-gold-500 cursor-pointer" />
               </div>
-              <input type="range" min="16" max="80" value={ageRange[1]}
-                onChange={(e) => setAgeRange([ageRange[0], Math.max(Number(e.target.value), ageRange[0])])}
-                className="w-full accent-gold-500" />
             </div>
           </FilterSection>
 
@@ -382,12 +419,19 @@ export default function Search() {
           {gender !== 'all' && (
             <button
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className="w-full flex items-center justify-between p-3 sm:p-4 rounded-2xl bg-navy-gradient text-white font-cairo font-bold transition-all hover:shadow-luxe relative overflow-hidden"
+              aria-expanded={showAdvanced}
+              aria-controls="advanced-search-filters"
+              className="w-full min-h-11 flex items-center justify-between px-3 py-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-navy-gradient text-white font-cairo font-bold transition-all hover:shadow-luxe relative overflow-hidden"
             >
               <div className="absolute inset-0 pattern-arabesque opacity-20" />
-              <span className="relative flex items-center gap-2 text-xs sm:text-base">
+              <span className="relative flex items-center gap-2 text-xs sm:text-base min-w-0">
                 <SlidersHorizontal className="w-4 h-4 sm:w-5 sm:h-5 text-gold-300 flex-shrink-0" />
                 {showAdvanced ? 'إخفاء الخيارات المتقدمة' : 'مزيد من الخيارات'}
+                {activeFilterCount > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-gold-300 text-navy-950 text-[10px]">
+                    {activeFilterCount}
+                  </span>
+                )}
               </span>
               <span className="relative">
                 {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -399,13 +443,14 @@ export default function Search() {
           <AnimatePresence>
             {showAdvanced && gender !== 'all' && (
               <motion.div
+                id="advanced-search-filters"
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.3 }}
                 className="overflow-hidden"
               >
-                <div className="space-y-5 pt-2 border-t border-cream-200">
+                <div className="space-y-3.5 sm:space-y-5 pt-3 border-t border-cream-200 dark:border-navy-800">
 
                   {/* الحالة الاجتماعية — تتغير حسب الجنس */}
                   <div>
@@ -420,7 +465,7 @@ export default function Search() {
                         <button
                           key={opt.value}
                           onClick={() => setMaritalStatus(maritalStatus === opt.value ? '' : opt.value)}
-                          className={`py-2.5 px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all no-tap-highlight ${
+                          className={`min-h-11 py-2 px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all no-tap-highlight ${
                             maritalStatus === opt.value
                               ? 'bg-gold-gradient text-navy-900 shadow-soft'
                               : 'bg-cream-100 text-navy-600 hover:bg-cream-200'
@@ -478,7 +523,7 @@ export default function Search() {
                     <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                       <button
                         onClick={() => setMarriageType('')}
-                        className={`py-2.5 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
+                        className={`min-h-11 py-2 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
                           marriageType === ''
                             ? 'bg-gold-gradient text-navy-900 shadow-soft'
                             : 'bg-cream-100 text-navy-600 hover:bg-cream-200'
@@ -488,7 +533,7 @@ export default function Search() {
                       </button>
                       <button
                         onClick={() => setMarriageType('announced')}
-                        className={`py-2.5 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
+                        className={`min-h-11 py-2 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
                           marriageType === 'announced'
                             ? 'bg-gold-gradient text-navy-900 shadow-soft'
                             : 'bg-cream-100 text-navy-600 hover:bg-cream-200'
@@ -498,7 +543,7 @@ export default function Search() {
                       </button>
                       <button
                         onClick={() => setMarriageType('misyar')}
-                        className={`py-2.5 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
+                        className={`min-h-11 py-2 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
                           marriageType === 'misyar'
                             ? 'bg-gold-gradient text-navy-900 shadow-soft'
                             : 'bg-cream-100 text-navy-600 hover:bg-cream-200'
@@ -517,7 +562,7 @@ export default function Search() {
                     <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                       <button
                         onClick={() => setAcceptForeigner('')}
-                        className={`py-2.5 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
+                        className={`min-h-11 py-2 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
                           acceptForeigner === ''
                             ? 'bg-gold-gradient text-navy-900 shadow-soft'
                             : 'bg-cream-100 text-navy-600 hover:bg-cream-200'
@@ -527,7 +572,7 @@ export default function Search() {
                       </button>
                       <button
                         onClick={() => setAcceptForeigner('yes')}
-                        className={`py-2.5 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
+                        className={`min-h-11 py-2 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
                           acceptForeigner === 'yes'
                             ? 'bg-gold-gradient text-navy-900 shadow-soft'
                             : 'bg-cream-100 text-navy-600 hover:bg-cream-200'
@@ -537,7 +582,7 @@ export default function Search() {
                       </button>
                       <button
                         onClick={() => setAcceptForeigner('no')}
-                        className={`py-2.5 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
+                        className={`min-h-11 py-2 px-1.5 sm:px-2 rounded-xl font-cairo font-semibold text-xs sm:text-sm transition-all ${
                           acceptForeigner === 'no'
                             ? 'bg-gold-gradient text-navy-900 shadow-soft'
                             : 'bg-cream-100 text-navy-600 hover:bg-cream-200'
@@ -557,7 +602,7 @@ export default function Search() {
                     options={nationalityOptions} placeholder="كل الجنسيات" />
 
                   {/* التعليم والوظيفة */}
-                  <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
                     <SelectField icon={GraduationCap} label="التعليم" value={education} onChange={setEducation}
                       options={EDUCATION_LEVELS} placeholder="الكل" />
                     <SelectField icon={Briefcase} label="نوع العمل" value={job} onChange={setJob}
@@ -568,10 +613,22 @@ export default function Search() {
             )}
           </AnimatePresence>
 
-          {/* زر البحث */}
-          <Button onClick={handleSearch} fullWidth size="lg" className="shadow-gold">
-            <SearchIcon className="w-5 h-5" /> ابحث الآن
-          </Button>
+          {/* إجراءات البحث */}
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+            <Button onClick={handleSearch} fullWidth size="md" className="shadow-gold">
+              <SearchIcon className="w-4 h-4 sm:w-5 sm:h-5" /> ابحث الآن
+            </Button>
+            <Button
+              onClick={resetFilters}
+              variant="outline"
+              size="sm"
+              disabled={activeFilterCount === 0}
+              className="whitespace-nowrap shadow-none"
+            >
+              مسح الفلاتر
+              {activeFilterCount > 0 && <span className="text-[10px]">({activeFilterCount})</span>}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -631,19 +688,7 @@ export default function Search() {
             <p className="text-sm text-navy-400 font-tajawal mb-6">جرّب توسيع نطاق البحث أو تعديل الفلاتر</p>
             <Button
               onClick={() => {
-                setSearchQuery('');
-                setGender('all');
-                setAgeRange([16, 80]);
-                setCountry('');
-                setCity('');
-                setNationality('');
-                setEducation('');
-                setJob('');
-                setMaritalStatus('');
-                setSect('');
-                setHasChildren('');
-                setChildrenCount('');
-                setShowAdvanced(false);
+                resetFilters();
               }}
               variant="outline"
               size="md"
@@ -661,15 +706,15 @@ export default function Search() {
 
 function FilterSection({ icon: Icon, title, step, children }: { icon: typeof Users; title: string; step: number; children: React.ReactNode }) {
   return (
-    <div>
-      <label className="flex items-center gap-2 mb-2">
-        <span className="flex items-center justify-center w-6 h-6 rounded-md bg-gold-300/20 text-gold-700 font-cairo font-bold text-xs flex-shrink-0">
+    <div className="rounded-xl sm:rounded-none border border-cream-200/70 dark:border-navy-800 sm:border-0 p-2.5 sm:p-0 bg-cream-50/45 dark:bg-navy-950/25 sm:bg-transparent">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="flex items-center justify-center w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-md bg-gold-300/20 text-gold-700 dark:text-gold-300 font-cairo font-bold text-[10px] sm:text-xs flex-shrink-0">
           {step}
         </span>
-        <span className="flex items-center gap-1.5 text-xs sm:text-sm font-cairo font-bold text-navy-800">
+        <span className="flex items-center gap-1.5 text-[11px] sm:text-sm font-cairo font-bold text-navy-800 dark:text-cream-100">
           <Icon className="w-3.5 h-3.5 text-gold-600" /> {title}
         </span>
-      </label>
+      </div>
       {children}
     </div>
   );
@@ -684,7 +729,7 @@ function GenderButton({ active, onClick, label, color }: { active: boolean; onCl
   return (
     <button
       onClick={onClick}
-      className={`py-2.5 sm:py-3.5 rounded-xl font-cairo font-bold text-[11px] sm:text-sm transition-all no-tap-highlight ${
+      className={`min-h-11 px-1.5 py-2 sm:py-3.5 rounded-xl font-cairo font-bold text-[11px] sm:text-sm transition-all no-tap-highlight ${
         active ? colors[color] : 'bg-cream-100 dark:bg-navy-950 text-navy-600 dark:text-cream-200 hover:bg-cream-200 dark:hover:bg-navy-800'
       }`}
     >
@@ -706,7 +751,7 @@ function SelectField({ icon: Icon, label, value, onChange, options, placeholder,
           value={value}
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full px-3 py-2 sm:py-3 rounded-xl border-2 font-tajawal appearance-none transition-colors text-sm ${
+          className={`w-full h-11 px-2.5 pl-8 rounded-xl border font-tajawal appearance-none transition-colors text-xs sm:text-sm truncate ${
             disabled
               ? 'bg-slate-100 dark:bg-navy-900/50 border-slate-200 dark:border-navy-800 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-80'
               : 'bg-cream-50 dark:bg-navy-950 border-cream-200 dark:border-navy-800 text-navy-900 dark:text-cream-100 focus:border-gold-500 focus:outline-none cursor-pointer'

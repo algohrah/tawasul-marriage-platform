@@ -194,13 +194,13 @@ export default function Home() {
   return (
     <div>
       {/* ===== HERO ===== */}
-      <section className="relative overflow-hidden bg-navy-gradient pb-6 pt-3 sm:pb-6 sm:pt-2">
+      <section className="relative overflow-hidden bg-navy-gradient pb-5 pt-2 sm:pb-6 sm:pt-2">
         <div className="absolute inset-0 pattern-islamic opacity-40" />
         <div className="absolute -top-16 -left-16 w-56 h-56 sm:-top-24 sm:-left-24 sm:w-80 sm:h-80 bg-gold-500/15 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
         <div className="absolute -bottom-20 -right-20 w-64 h-64 sm:-bottom-32 sm:-right-32 sm:w-96 sm:h-96 bg-rose-deep/5 rounded-full blur-3xl" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-4 sm:pt-8 sm:pb-8 lg:pt-12 lg:pb-10">
-          <div className="grid lg:grid-cols-12 gap-4 sm:gap-8 items-center">
+        <div className="relative max-w-7xl mx-auto px-3.5 min-[390px]:px-4 sm:px-6 lg:px-8 pt-3 pb-3 sm:pt-8 sm:pb-8 lg:pt-12 lg:pb-10">
+          <div className="grid lg:grid-cols-12 gap-3.5 sm:gap-8 items-center">
             {/* النص والتقديم */}
             <motion.div
               initial={{ opacity: 0, y: 25 }}
@@ -208,7 +208,7 @@ export default function Home() {
               transition={{ duration: 0.6 }}
               className="lg:col-span-7 text-center lg:text-right flex flex-col items-center lg:items-start"
             >
-              <span className="badge-shimmer inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 rounded-full bg-gold-500/15 border border-gold-500/30 text-gold-300 text-[11px] sm:text-xs font-cairo font-semibold mb-3 text-center leading-snug">
+              <span className="badge-shimmer inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-gold-500/15 border border-gold-500/30 text-gold-300 text-[10.5px] sm:text-xs font-cairo font-semibold mb-2.5 sm:mb-3 text-center leading-snug">
                 <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
                 تجمع وتعاون مع شبكة خطابات ومكاتب التوفيق
               </span>
@@ -218,30 +218,30 @@ export default function Home() {
                 <span className="block text-gradient-gold mt-1.5">شريك الحياة المناسب</span>
               </h1>
 
-              <p className="mt-2.5 text-[13px] sm:text-base text-cream-200/90 font-tajawal leading-relaxed max-w-xl lg:max-w-lg">
+              <p className="mt-2 text-[12.5px] sm:text-base text-cream-200/90 font-tajawal leading-[1.65] max-w-xl lg:max-w-lg">
                 منصة تجمع وتنسق بين الباحثين الجادين ونخبة من الخطابات ومكاتب التوفيق، مع متابعة مستمرة وتصفية للحسابات غير الجادة لنوفر لك بيئة منظمة وآمنة للزواج الشرعي.
               </p>
 
               {/* أزرار الإجراء السريع */}
-              <div className="mt-4 sm:mt-5 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start w-full max-w-xs sm:max-w-none mx-auto lg:mx-0">
+              <div className="mt-3.5 sm:mt-5 grid grid-cols-1 min-[390px]:grid-cols-2 sm:flex sm:flex-row gap-2 sm:gap-3 justify-center lg:justify-start w-full max-w-xs min-[390px]:max-w-sm sm:max-w-none mx-auto lg:mx-0">
                 {isLoggedIn ? (
                   <>
-                    <ButtonLink to="/search" size="lg" className="shadow-gold w-full sm:w-auto">
+                    <ButtonLink to="/search" size="lg" className="shadow-gold w-full sm:w-auto !px-3 sm:!px-8">
                       <Search className="w-4 h-4" />
                       تصفّح كافة الأعضاء
                     </ButtonLink>
-                    <ButtonLink to="/profile" variant="outline" size="lg" className="bg-white/5 hover:bg-white hover:text-navy-950 border border-white/40 text-white font-cairo font-bold transition-all duration-300 shadow-md w-full sm:w-auto">
+                    <ButtonLink to="/profile" variant="outline" size="lg" className="bg-white/5 hover:bg-white hover:text-navy-950 border border-white/40 text-white font-cairo font-bold transition-all duration-300 shadow-md w-full sm:w-auto !px-3 sm:!px-8">
                       <Heart className="w-4 h-4" />
                       ملفي الشخصي
                     </ButtonLink>
                   </>
                 ) : (
                   <>
-                    <ButtonLink to="/register" size="lg" className="shadow-gold w-full sm:w-auto">
+                    <ButtonLink to="/register" size="lg" className="shadow-gold w-full sm:w-auto !px-3 sm:!px-8">
                       <Heart className="w-4 h-4" />
                       ابدأ مجانًا الآن
                     </ButtonLink>
-                    <ButtonLink to="/search" variant="outline" size="lg" className="bg-white/5 hover:bg-white hover:text-navy-950 border border-white/40 text-white font-cairo font-bold transition-all duration-300 shadow-md w-full sm:w-auto">
+                    <ButtonLink to="/search" variant="outline" size="lg" className="bg-white/5 hover:bg-white hover:text-navy-950 border border-white/40 text-white font-cairo font-bold transition-all duration-300 shadow-md w-full sm:w-auto !px-3 sm:!px-8">
                       <Search className="w-4 h-4" />
                       تصفّح الأعضاء
                     </ButtonLink>
@@ -250,7 +250,7 @@ export default function Home() {
               </div>
 
               {/* مؤشرات الثقة البارزة */}
-              <div className="mt-4 sm:mt-5 flex flex-wrap items-center justify-center lg:justify-start gap-x-3 gap-y-2 sm:gap-x-5 text-[11px] sm:text-xs text-cream-200/80 font-tajawal">
+              <div className="mt-3.5 sm:mt-5 flex flex-wrap items-center justify-center lg:justify-start gap-x-3 gap-y-1.5 sm:gap-x-5 sm:gap-y-2 text-[10.5px] sm:text-xs text-cream-200/80 font-tajawal">
                 <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-gold-300" /> شبكة خطابات معتمدة</span>
                 <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> تصفية مستمرة لغير الجادين</span>
                 <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-blue-300" /> خصوصية وسرية تامة</span>
@@ -265,7 +265,7 @@ export default function Home() {
               className="lg:col-span-5 w-full"
             >
               <div className="relative rounded-2xl sm:rounded-3xl bg-gradient-to-br from-navy-800/90 to-navy-950/95 backdrop-blur-md border border-gold-500/25 p-3 sm:p-6 shadow-luxe glow-gold">
-                <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/10 mb-3 sm:mb-4">
+                <div className="flex items-center justify-between pb-2.5 sm:pb-4 border-b border-white/10 mb-2.5 sm:mb-4">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-gold-500/20 flex items-center justify-center text-gold-300">
                       <Search className="w-4 h-4" />
@@ -280,7 +280,7 @@ export default function Home() {
                   </span>
                 </div>
 
-                <form onSubmit={handleQuickSearch} className="space-y-2.5 sm:space-y-3.5">
+                <form onSubmit={handleQuickSearch} className="space-y-2 sm:space-y-3.5">
                   {/* اختيار الجنس */}
                   <div>
                     <label className="block text-xs font-cairo font-semibold text-cream-200/90 mb-1.5">
@@ -296,7 +296,7 @@ export default function Home() {
                           type="button"
                           key={item.value}
                           onClick={() => setQuickGender(item.value as typeof quickGender)}
-                          className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg sm:rounded-xl text-xs font-cairo font-bold transition-all border ${
+                          className={`min-h-11 flex flex-col items-center justify-center py-1.5 px-1 rounded-lg sm:rounded-xl text-xs font-cairo font-bold transition-all border ${
                             quickGender === item.value
                               ? 'bg-gold-500 text-navy-950 border-gold-400 shadow-gold scale-[1.02]'
                               : 'bg-white/5 hover:bg-white/10 text-cream-100 border-white/10'
@@ -309,58 +309,60 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* اختيار الدولة */}
-                  <div>
-                    <label className="block text-xs font-cairo font-semibold text-cream-200/90 mb-1">
-                      الدولة:
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={quickCountry}
-                        onChange={(e) => {
-                          setQuickCountry(e.target.value);
-                          setQuickCity('');
-                        }}
-                        className="w-full h-11 sm:h-10 px-3 pr-8 rounded-xl bg-navy-900/90 border border-white/20 text-white text-xs font-tajawal focus:outline-none focus:border-gold-400 transition-colors appearance-none cursor-pointer"
-                      >
-                        <option value="">جميع الدول</option>
-                        {countryOptions.map((c) => (
-                          <option key={c} value={c} className="bg-navy-900 text-white">
-                            {c}
-                          </option>
-                        ))}
-                      </select>
-                      <Globe className="w-4 h-4 text-gold-300/70 absolute left-3 top-3.5 sm:top-3 pointer-events-none" />
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* اختيار الدولة */}
+                    <div className="min-w-0">
+                      <label className="block text-[11px] sm:text-xs font-cairo font-semibold text-cream-200/90 mb-1">
+                        الدولة:
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={quickCountry}
+                          onChange={(e) => {
+                            setQuickCountry(e.target.value);
+                            setQuickCity('');
+                          }}
+                          className="w-full h-11 sm:h-10 px-2.5 pl-8 rounded-xl bg-navy-900/90 border border-white/20 text-white text-[11px] sm:text-xs font-tajawal focus:outline-none focus:border-gold-400 transition-colors appearance-none cursor-pointer truncate"
+                        >
+                          <option value="">جميع الدول</option>
+                          {countryOptions.map((c) => (
+                            <option key={c} value={c} className="bg-navy-900 text-white">
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+                        <Globe className="w-3.5 h-3.5 text-gold-300/70 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
                     </div>
-                  </div>
 
-                  {/* اختيار المدينة */}
-                  <div>
-                    <label className="block text-xs font-cairo font-semibold text-cream-200/90 mb-1">
-                      المدينة:
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={quickCity}
-                        onChange={(e) => setQuickCity(e.target.value)}
-                        disabled={!quickCountry || cityOptions.length === 0}
-                        className="w-full h-11 sm:h-10 px-3 pr-8 rounded-xl bg-navy-900/90 border border-white/20 text-white text-xs font-tajawal focus:outline-none focus:border-gold-400 transition-colors appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <option value="">{quickCountry ? 'جميع المدن' : 'اختر الدولة أولاً'}</option>
-                        {cityOptions.map((ct) => (
-                          <option key={ct} value={ct} className="bg-navy-900 text-white">
-                            {ct}
-                          </option>
-                        ))}
-                      </select>
-                      <MapPin className="w-4 h-4 text-gold-300/70 absolute left-3 top-3.5 sm:top-3 pointer-events-none" />
+                    {/* اختيار المدينة */}
+                    <div className="min-w-0">
+                      <label className="block text-[11px] sm:text-xs font-cairo font-semibold text-cream-200/90 mb-1">
+                        المدينة:
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={quickCity}
+                          onChange={(e) => setQuickCity(e.target.value)}
+                          disabled={!quickCountry || cityOptions.length === 0}
+                          className="w-full h-11 sm:h-10 px-2.5 pl-8 rounded-xl bg-navy-900/90 border border-white/20 text-white text-[11px] sm:text-xs font-tajawal focus:outline-none focus:border-gold-400 transition-colors appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed truncate"
+                        >
+                          <option value="">{quickCountry ? 'جميع المدن' : 'اختر الدولة أولاً'}</option>
+                          {cityOptions.map((ct) => (
+                            <option key={ct} value={ct} className="bg-navy-900 text-white">
+                              {ct}
+                            </option>
+                          ))}
+                        </select>
+                        <MapPin className="w-3.5 h-3.5 text-gold-300/70 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
                     </div>
                   </div>
 
                   {/* زر البحث */}
                   <button
                     type="submit"
-                    className="w-full mt-1.5 py-3 sm:py-3 rounded-xl bg-gold-gradient text-navy-950 font-cairo font-extrabold text-sm shadow-gold hover:opacity-95 transition-all flex items-center justify-center gap-2"
+                    className="w-full min-h-11 mt-1 py-2.5 rounded-xl bg-gold-gradient text-navy-950 font-cairo font-extrabold text-[13px] sm:text-sm shadow-gold hover:opacity-95 transition-all flex items-center justify-center gap-2"
                   >
                     <Search className="w-4 h-4" />
                     ابحث عن شريكك المناسب
@@ -373,7 +375,7 @@ export default function Home() {
       </section>
 
       {/* ===== 1. MEMBERS IN THE FOREFRONT (الأعضاء في المقدمة مباشرة) ===== */}
-      <section className="py-8 sm:py-12 lg:py-16 bg-white dark:bg-navy-950 border-b border-cream-200/50 dark:border-navy-800">
+      <section className="py-6 sm:py-12 lg:py-16 bg-white dark:bg-navy-950 border-b border-cream-200/50 dark:border-navy-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 mb-4 sm:mb-8">
             <div>
@@ -468,7 +470,7 @@ export default function Home() {
       </section>
 
       {/* ===== 2. TRUST PILLARS & MATCHMAKER NETWORK (ركائز الثقة والتعاون) ===== */}
-      <section className="py-8 sm:py-12 bg-cream-100/60 dark:bg-navy-900/60 border-b border-cream-200/50 dark:border-navy-800">
+      <section className="py-6 sm:py-12 bg-cream-100/60 dark:bg-navy-900/60 border-b border-cream-200/50 dark:border-navy-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
             <span className="text-xs font-cairo font-bold text-gold-600 dark:text-gold-400">منظومة موثوقة</span>
@@ -501,7 +503,7 @@ export default function Home() {
       </section>
 
       {/* ===== 3. FEATURES (لماذا توافق) ===== */}
-      <section className="py-8 sm:py-14 lg:py-20 bg-white dark:bg-navy-950">
+      <section className="py-6 sm:py-14 lg:py-20 bg-white dark:bg-navy-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading
             eyebrow="لماذا توافق؟"
@@ -509,7 +511,7 @@ export default function Home() {
             subtitle="نحن ننسق مع نخبة من الخطابات ونراجع البيانات باستمرار مع حفظ الخصوصية التامة لنسهل لك الوصول إلى شريك الحياة."
           />
 
-          <div className="mt-7 sm:mt-14 relative">
+          <div className="mt-5 sm:mt-14 relative">
             <div className="hidden lg:block absolute top-10 right-[12.5%] left-[12.5%] h-0.5 bg-gradient-to-l from-gold-500/10 via-gold-500/30 to-gold-500/10" />
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
@@ -541,7 +543,7 @@ export default function Home() {
       </section>
 
       {/* ===== 4. PROCESS: كيف تعمل المنصة ===== */}
-      <section className="py-8 sm:py-14 lg:py-20 bg-cream-100 dark:bg-navy-900">
+      <section className="py-6 sm:py-14 lg:py-20 bg-cream-100 dark:bg-navy-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading
             eyebrow="كيف تعمل المنصة؟"
@@ -549,7 +551,7 @@ export default function Home() {
             subtitle="خطوات واضحة تبدأ باختيار الشريك وإرسال طلب التوافق وتنتهي بالتنسيق الشرعي والمبارك تحت إشراف الإدارة."
           />
 
-          <div className="mt-7 sm:mt-14 relative">
+          <div className="mt-5 sm:mt-14 relative">
             <div className="hidden lg:block absolute top-10 right-[8.33%] left-[8.33%] h-0.5 bg-gradient-to-l from-gold-500/10 via-gold-500/30 to-gold-500/10" />
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5 sm:gap-6">
@@ -586,7 +588,7 @@ export default function Home() {
       </section>
 
       {/* ===== SECURITY HIGHLIGHT ===== */}
-      <section className="py-8 sm:py-16 lg:py-24 bg-navy-gradient relative overflow-hidden">
+      <section className="py-6 sm:py-16 lg:py-24 bg-navy-gradient relative overflow-hidden">
         <div className="absolute inset-0 pattern-islamic opacity-30" />
         <div className="absolute top-0 right-0 w-72 h-72 bg-gold-500/10 rounded-full blur-3xl" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -599,7 +601,7 @@ export default function Home() {
                 title={<>بيئة نقية <span className="text-gradient-gold">بإشراف ومتابعة مستمرة</span></>}
                 subtitle="نحرص على تصفية الحسابات غير الجادة دورياً، وحماية بيانات التواصل وعدم مشاركتها إلا بموافقة صريحة."
               />
-              <div className="mt-6 sm:mt-8 grid sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="mt-5 sm:mt-8 grid grid-cols-3 gap-2 sm:gap-4">
                 {securityPoints.map((item, i) => (
                   <motion.div
                     key={item.text}
@@ -607,12 +609,12 @@ export default function Home() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.15 }}
-                    className="glass-navy rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-gold-500/20 flex flex-col items-center text-center gap-3"
+                    className="glass-navy rounded-xl sm:rounded-2xl p-2 sm:p-4 border border-gold-500/20 flex flex-col items-center text-center gap-2 sm:gap-3"
                   >
-                    <div className={`w-12 h-12 rounded-xl ${item.bg} flex items-center justify-center flex-shrink-0`}>
-                      <item.icon className={`w-6 h-6 ${item.color}`} />
+                    <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl ${item.bg} flex items-center justify-center flex-shrink-0`}>
+                      <item.icon className={`w-4.5 h-4.5 sm:w-6 sm:h-6 ${item.color}`} />
                     </div>
-                    <p className="text-cream-200/90 font-tajawal text-sm leading-relaxed">{item.text}</p>
+                    <p className="text-cream-200/90 font-tajawal text-[10.5px] sm:text-sm leading-[1.55] sm:leading-relaxed">{item.text}</p>
                   </motion.div>
                 ))}
               </div>
@@ -679,7 +681,7 @@ export default function Home() {
       </section>
 
       {/* ===== TESTIMONIALS (Carousel) ===== */}
-      <section className="py-8 sm:py-16 lg:py-24">
+      <section className="py-6 sm:py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading
             eyebrow="تجارب وتطلعات"
@@ -687,7 +689,7 @@ export default function Home() {
             subtitle="تجارب وتطلعات مباركة نحو بناء أسرة مستقرة على هدي وسنة."
           />
 
-          <div className="mt-7 sm:mt-14 max-w-3xl mx-auto">
+          <div className="mt-5 sm:mt-14 max-w-3xl mx-auto">
             <div className="relative bg-white dark:bg-navy-900 rounded-2xl sm:rounded-3xl p-4 sm:p-8 lg:p-12 shadow-luxe border border-cream-200/60 dark:border-navy-800 overflow-hidden">
               <Quote className="w-16 h-16 sm:w-24 sm:h-24 text-gold-300/20 absolute -top-2 -left-2 sm:-top-4 sm:-left-4" />
 
@@ -760,7 +762,7 @@ export default function Home() {
       </section>
 
       {/* ===== CTA (خلفية ذهبية مميّزة) ===== */}
-      <section className="py-8 sm:py-16 lg:py-24">
+      <section className="py-6 sm:py-16 lg:py-24">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative wave-bg rounded-3xl sm:rounded-[2.5rem] overflow-hidden p-5 sm:p-10 lg:p-16 text-center shadow-luxe">
             <div className="absolute inset-0 pattern-islamic opacity-20" />

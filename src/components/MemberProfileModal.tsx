@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -45,6 +45,12 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
   const [sending, setSending] = useState(false);
   const [whatsAppModalOpen, setWhatsAppModalOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    personal: true,
+    family: false,
+    work: false,
+    physical: false,
+  });
 
   const currentUserId = user?.isLoggedIn ? (user.memberId || getCurrentUserId()) : '';
   const { requests } = useInterestRequests(currentUserId);
@@ -55,6 +61,29 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
     if (sent.length === 0) return null;
     return [...sent].sort((a, b) => b.id - a.id)[0];
   }, [requests, currentUserId, member?.id, user?.isLoggedIn]);
+
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [open, onClose]);
+
+  useEffect(() => {
+    if (!open) return;
+    setExpandedSections({ personal: true, family: false, work: false, physical: false });
+  }, [open, member?.id]);
+
+  const toggleSection = (section: string) => {
+    setExpandedSections((current) => ({ ...current, [section]: !current[section] }));
+  };
 
   if (!open || !member) return null;
 
@@ -188,7 +217,7 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
 
   return (
     <>
-      <div key={`modal-overlay-${member.id}`} className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden dir-rtl" dir="rtl">
+      <div key={`modal-overlay-${member.id}`} className="fixed inset-0 z-[100] flex items-stretch sm:items-center justify-center p-0 sm:p-4 overflow-hidden dir-rtl" dir="rtl">
         {/* الخلفية المظلمة الضبابية */}
         <motion.div
           key={`modal-backdrop-${member.id}`}
@@ -206,22 +235,22 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 50, scale: 0.97 }}
           transition={{ type: 'spring', damping: 26, stiffness: 300 }}
-          className={`relative w-full max-w-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[92vh] flex flex-col overflow-hidden border transition-colors ${
+          className={`relative w-full max-w-2xl h-[100dvh] sm:h-auto sm:max-h-[92vh] rounded-none sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden border-0 sm:border transition-colors ${
             isMale
               ? 'bg-[#edf5ff] dark:bg-[#0b1728] border-sky-300 dark:border-sky-800/80'
               : 'bg-[#faf0f4] dark:bg-[#230913] border-rose-300 dark:border-rose-900/80'
           }`}
         >
           {/* Header Bar: هيدر مرتب بدون تكرار أزرار */}
-          <div className={`sticky top-0 z-20 flex items-center justify-between px-4 sm:px-6 py-3 border-b ${
+          <div className={`sticky top-0 z-20 flex items-center justify-between gap-2 px-3 sm:px-6 py-2 sm:py-3 border-b ${
             isMale
               ? 'bg-[#e0f2fe]/95 dark:bg-[#071322]/95 border-sky-200 dark:border-sky-800/80 backdrop-blur-md'
               : 'bg-[#f4dbe3]/95 dark:bg-[#1a050d]/95 border-rose-200 dark:border-rose-900/80 backdrop-blur-md'
           }`}>
             <div className="flex items-center gap-2 min-w-0">
-              <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 animate-pulse ${isMale ? 'bg-sky-500' : 'bg-rose-600'}`} />
-              <h3 className="font-cairo font-bold text-sm sm:text-base text-navy-900 dark:text-cream-50 truncate">
-                ملف العضو: {member.nickname}
+              <span className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full flex-shrink-0 ${isMale ? 'bg-sky-500' : 'bg-rose-600'}`} />
+              <h3 className="font-cairo font-bold text-[13px] sm:text-base text-navy-900 dark:text-cream-50 truncate">
+                {member.nickname || 'ملف العضو'}
               </h3>
               {member.username && (
                 <span className="text-xs font-mono text-navy-400 dark:text-slate-400 hidden xs:inline" dir="ltr">
@@ -234,7 +263,8 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
               {/* زر عرض الصفحة كاملة (أنيق وموجز في الرأس) */}
               <button
                 onClick={handleViewFullPage}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-navy-800/90 hover:bg-white dark:hover:bg-navy-800 text-navy-800 dark:text-cream-100 font-cairo font-bold text-xs transition-colors border border-navy-100 dark:border-navy-700 shadow-2xs cursor-pointer"
+                className="w-10 h-10 sm:w-auto sm:h-auto inline-flex items-center justify-center gap-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-white/90 dark:bg-navy-800/90 hover:bg-white dark:hover:bg-navy-800 text-navy-800 dark:text-cream-100 font-cairo font-bold text-xs transition-colors border border-navy-100 dark:border-navy-700 shadow-2xs cursor-pointer"
+                aria-label="عرض الصفحة الكاملة"
                 title="الانتقال إلى الصفحة الكاملة"
               >
                 <ExternalLink className="w-3.5 h-3.5 text-gold-600" />
@@ -244,27 +274,28 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
               {/* زر إغلاق النافذة */}
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-white/80 hover:bg-white dark:bg-navy-800 dark:hover:bg-navy-700 flex items-center justify-center text-navy-600 dark:text-cream-200 transition-colors shadow-2xs cursor-pointer"
+                className="w-11 h-11 sm:w-9 sm:h-9 rounded-xl sm:rounded-full bg-white/80 hover:bg-white dark:bg-navy-800 dark:hover:bg-navy-700 flex items-center justify-center text-navy-700 dark:text-cream-200 transition-colors shadow-2xs cursor-pointer"
                 title="إغلاق النافذة"
+                aria-label="إغلاق نافذة ملف العضو"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5 sm:w-4 sm:h-4" />
               </button>
             </div>
           </div>
 
           {/* محتوى البطاقة القابل للتمرير */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 py-3 sm:p-6 space-y-3 sm:space-y-5">
 
             {/* 1. بطاقة البطل التلخيصية (Hero Profile Card) */}
-            <div className={`relative rounded-2xl p-4 border shadow-sm transition-colors ${
+            <div className={`relative rounded-2xl p-3 sm:p-4 border shadow-sm transition-colors ${
               isMale
                 ? 'bg-gradient-to-br from-sky-50 via-blue-50/40 to-white dark:from-sky-950/40 dark:to-navy-800/90 border-sky-200/80 dark:border-sky-800/40'
                 : 'bg-gradient-to-br from-[#4a1224]/10 via-rose-50/50 to-white dark:from-[#3a0d1c]/40 dark:to-navy-800/90 border-rose-200/80 dark:border-rose-900/50'
             }`}>
-              <div className="flex items-start gap-3.5 sm:gap-4">
+              <div className="flex items-start gap-3 sm:gap-4">
                 {/* الصورة الرمزية مع الشارة */}
                 <div className="relative flex-shrink-0">
-                  <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white dark:bg-navy-950 p-1 ring-2 ${c.ring} ring-opacity-30 shadow-md flex items-center justify-center overflow-hidden`}>
+                  <div className={`w-14 h-14 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl bg-white dark:bg-navy-950 p-1 ring-2 ${c.ring} ring-opacity-30 shadow-md flex items-center justify-center overflow-hidden`}>
                     <img src={avatar} alt="" className="w-full h-full object-contain p-1.5" />
                   </div>
                   {member.verified && (
@@ -277,7 +308,7 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                 {/* تفاصيل الاسم والشارات الأساسية */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <h2 className="font-cairo font-black text-lg sm:text-xl text-navy-900 dark:text-cream-50 leading-tight">
+                    <h2 className="font-cairo font-black text-base sm:text-xl text-navy-900 dark:text-cream-50 leading-tight break-words">
                       {member.nickname}
                     </h2>
                     {member.username && (
@@ -317,19 +348,23 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                     )}
                   </div>
 
-                  {/* معلومات أساسية سريعة */}
-                  <div className="flex items-center gap-3 flex-wrap text-xs text-navy-700 dark:text-cream-200/80 font-tajawal">
-                    <span className="inline-flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-gold-600" />{member.age ? `${member.age} سنة` : '—'}</span>
-                    <span className="inline-flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-gold-600" />{[member.city, member.country].filter(Boolean).join('، ') || 'الموقع غير محدد'}</span>
-                    <span className="inline-flex items-center gap-1"><Users className="w-3.5 h-3.5 text-gold-600" />{maritalFormatted}</span>
-                  </div>
                 </div>
+              </div>
+
+              {/* أهم المعلومات في أول نظرة */}
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mt-3 pt-3 border-t border-white/80 dark:border-navy-700/70">
+                <QuickFact icon={Calendar} label="العمر" value={member.age ? `${member.age} سنة` : '—'} />
+                <QuickFact icon={Globe} label="الجنسية" value={member.nationality ? normalizeNationality(member.nationality) : '—'} />
+                <QuickFact icon={MapPin} label="المدينة" value={member.city || '—'} />
+                <QuickFact icon={Users} label="الحالة" value={maritalFormatted || '—'} />
+                <QuickFact icon={GraduationCap} label="التعليم" value={member.education || '—'} />
+                <QuickFact icon={Briefcase} label="العمل" value={member.jobTitle || member.workType || '—'} />
               </div>
             </div>
 
             {/* تنبيه وساطة الإدارة للملفات المرفوعة */}
             {isImported && (
-              <div className="bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200/90 dark:border-amber-800/50 rounded-2xl p-3.5 flex items-start gap-3 text-right shadow-2xs">
+              <div className="bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200/90 dark:border-amber-800/50 rounded-xl sm:rounded-2xl p-3 sm:p-3.5 flex items-start gap-2.5 sm:gap-3 text-right shadow-2xs">
                 <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-800 dark:text-amber-300 flex-shrink-0 mt-0.5">
                   <Building2 className="w-4 h-4" />
                 </div>
@@ -345,11 +380,13 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
             )}
 
             {/* 1. المعلومات الأساسية والشخصية */}
-            <div className="space-y-2">
-              <h4 className="font-cairo font-bold text-xs sm:text-sm text-navy-900 dark:text-cream-100 flex items-center gap-1.5">
-                <User className="w-4 h-4 text-amber-500" />
-                <span>المعلومات الأساسية والشخصية:</span>
-              </h4>
+            <ProfileSection
+              icon={User}
+              title="المعلومات الشخصية"
+              iconClass="text-amber-500"
+              expanded={expandedSections.personal}
+              onToggle={() => toggleSection('personal')}
+            >
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                 <DetailGridItem icon={User} label="الجنس" value={member.gender === 'female' ? 'أنثى' : 'ذكر'} />
                 {member.age ? <DetailGridItem icon={Calendar} label="العمر" value={`${member.age} سنة`} /> : null}
@@ -365,14 +402,16 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                   <DetailGridItem icon={Globe} label="العرق / الأصل" value={member.ethnicity} />
                 ) : null}
               </div>
-            </div>
+            </ProfileSection>
 
             {/* 2. الحالة الاجتماعية والسكن والأبناء والتعدد */}
-            <div className="space-y-2">
-              <h4 className="font-cairo font-bold text-xs sm:text-sm text-navy-900 dark:text-cream-100 flex items-center gap-1.5">
-                <Users className="w-4 h-4 text-emerald-500" />
-                <span>الحالة الاجتماعية والسكن والأبناء:</span>
-              </h4>
+            <ProfileSection
+              icon={Users}
+              title="الحالة الاجتماعية والسكن والأبناء"
+              iconClass="text-emerald-500"
+              expanded={expandedSections.family}
+              onToggle={() => toggleSection('family')}
+            >
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                 <DetailGridItem icon={Users} label="الحالة الاجتماعية" value={maritalFormatted} />
                 {marriageTypeFormatted && !['غير ينطبق', '—', ''].includes(marriageTypeFormatted) && (
@@ -404,30 +443,34 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                   <DetailGridItem icon={Home} label="نوع السكن" value={member.housing} />
                 )}
               </div>
-            </div>
+            </ProfileSection>
 
             {/* 3. التعليم والعمل */}
             {(member.education || member.workType || member.jobTitle) && (
-              <div className="space-y-2">
-                <h4 className="font-cairo font-bold text-xs sm:text-sm text-navy-900 dark:text-cream-100 flex items-center gap-1.5">
-                  <Briefcase className="w-4 h-4 text-blue-500" />
-                  <span>التعليم والعمل:</span>
-                </h4>
+              <ProfileSection
+                icon={Briefcase}
+                title="التعليم والعمل"
+                iconClass="text-blue-500"
+                expanded={expandedSections.work}
+                onToggle={() => toggleSection('work')}
+              >
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                   {member.education && !['—', ''].includes(member.education) ? <DetailGridItem icon={GraduationCap} label="المؤهل العلمي" value={member.education} /> : null}
                   {member.workType && !['—', ''].includes(member.workType) ? <DetailGridItem icon={Building2} label="جهة العمل" value={member.workType} /> : null}
                   {member.jobTitle && !['—', ''].includes(member.jobTitle) ? <DetailGridItem icon={Briefcase} label="المسمى الوظيفي" value={member.jobTitle} /> : null}
                 </div>
-              </div>
+              </ProfileSection>
             )}
 
             {/* 4. المواصفات الجسدية والصحية */}
             {(member.height || member.weight || member.skinColor || member.health || member.smoking) && (
-              <div className="space-y-2">
-                <h4 className="font-cairo font-bold text-xs sm:text-sm text-navy-900 dark:text-cream-100 flex items-center gap-1.5">
-                  <Ruler className="w-4 h-4 text-purple-500" />
-                  <span>المواصفات الجسدية والصحية:</span>
-                </h4>
+              <ProfileSection
+                icon={Ruler}
+                title="المواصفات الجسدية والصحية"
+                iconClass="text-purple-500"
+                expanded={expandedSections.physical}
+                onToggle={() => toggleSection('physical')}
+              >
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                   {member.height ? <DetailGridItem icon={Ruler} label="الطول" value={`${member.height} سم`} /> : null}
                   {member.weight ? <DetailGridItem icon={Weight} label="الوزن" value={`${member.weight} كجم`} /> : null}
@@ -435,28 +478,28 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                   {member.health && !['—', ''].includes(member.health) ? <DetailGridItem icon={Stethoscope} label="الحالة الصحية" value={member.health} /> : null}
                   {member.smoking && !['—', ''].includes(member.smoking) ? <DetailGridItem icon={Cigarette} label="التدخين" value={member.smoking} /> : null}
                 </div>
-              </div>
+              </ProfileSection>
             )}
 
             {/* 5. نبذة عن العضو (عن نفسي) */}
-            <div className="bg-white dark:bg-navy-800/60 rounded-2xl p-4 border border-cream-200 dark:border-navy-700/60 shadow-xs space-y-1.5">
+            <div className="bg-white dark:bg-navy-800/60 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-cream-200 dark:border-navy-700/60 shadow-xs space-y-1.5">
               <div className="flex items-center gap-2 text-gold-600 font-cairo font-bold text-xs sm:text-sm">
                 <FileText className="w-4.5 h-4.5 text-gold-500" />
                 <span>نبذة عن العضو (عن نفسي):</span>
               </div>
-              <p className="text-xs sm:text-sm font-tajawal text-navy-800 dark:text-cream-100 leading-relaxed bg-cream-50/60 dark:bg-navy-950/40 p-3 rounded-xl border border-cream-100 dark:border-navy-800">
+              <p className="text-xs sm:text-sm font-tajawal text-navy-800 dark:text-cream-100 leading-relaxed whitespace-pre-wrap break-words bg-cream-50/60 dark:bg-navy-950/40 p-2.5 sm:p-3 rounded-xl border border-cream-100 dark:border-navy-800">
                 {member.bio || 'لم يقم العضو بإضافة نبذة عن نفسه بعد.'}
               </p>
             </div>
 
             {/* 6. مواصفات الشريك المطلوب (أبحث عن) 🎯 - في الأسفل */}
-            <div className="bg-white dark:bg-navy-800/70 rounded-2xl p-4 border border-rose-200/80 dark:border-rose-900/50 shadow-xs space-y-2.5">
+            <div className="bg-white dark:bg-navy-800/70 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-rose-200/80 dark:border-rose-900/50 shadow-xs space-y-2.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-cairo font-bold text-xs sm:text-sm">
                   <Heart className="w-4.5 h-4.5 text-rose-500 fill-rose-100" />
                   <span>مواصفات الشريك المطلوب (أبحث عن):</span>
                 </div>
-                <span className="text-[10px] font-cairo font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 px-2.5 py-0.5 rounded-full border border-rose-200/60">
+                <span className="hidden min-[390px]:inline-flex text-[10px] font-cairo font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 px-2.5 py-0.5 rounded-full border border-rose-200/60">
                   المواصفات والشروط المطلوبة
                 </span>
               </div>
@@ -472,7 +515,7 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
 
               {/* النص التفصيلي والملاحظات */}
               {partnerSummary.text ? (
-                <p className="text-xs sm:text-sm font-tajawal text-navy-800 dark:text-cream-100 leading-relaxed bg-rose-50/40 dark:bg-navy-950/40 p-3 rounded-xl border border-rose-100 dark:border-navy-800">
+                <p className="text-xs sm:text-sm font-tajawal text-navy-800 dark:text-cream-100 leading-relaxed whitespace-pre-wrap break-words bg-rose-50/40 dark:bg-navy-950/40 p-2.5 sm:p-3 rounded-xl border border-rose-100 dark:border-navy-800">
                   {partnerSummary.text}
                 </p>
               ) : partnerSummary.tags.length === 0 ? (
@@ -494,7 +537,7 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
           </div>
 
           {/* ═══════════ شريط الإجراءات السفلي الذكي والمطور (STICKY ACTION BAR) ═══════════ */}
-          <div className={`p-3 sm:p-4 border-t relative z-30 transition-colors ${
+          <div className={`px-2.5 pt-2.5 pb-[calc(env(safe-area-inset-bottom)+0.625rem)] sm:p-4 border-t relative z-30 transition-colors ${
             isMale
               ? 'bg-[#e0f2fe] dark:bg-[#071322] border-sky-200 dark:border-sky-800/80'
               : 'bg-[#f4dbe3] dark:bg-[#1a050d] border-rose-200 dark:border-rose-900/80'
@@ -509,10 +552,11 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                       onClose();
                       navigate('/register');
                     }}
-                    className="w-full py-2.5 sm:py-3 px-3 rounded-2xl bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-cairo font-black text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full min-h-11 py-2 sm:py-3 px-2.5 sm:px-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-cairo font-black text-[11px] min-[390px]:text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Send className="w-4 h-4 -scale-x-100 text-slate-900" />
-                    <span className="truncate">
+                    <span className="sm:hidden">أنشئ حسابًا لطلب التوافق</span>
+                    <span className="hidden sm:inline truncate">
                       إنشاء حساب لطلب التوافق 💌
                     </span>
                   </button>
@@ -522,10 +566,11 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                       onClose();
                       navigate('/requests');
                     }}
-                    className="w-full py-2.5 sm:py-3 px-3 rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-cairo font-black text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full min-h-11 py-2 sm:py-3 px-2.5 sm:px-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-cairo font-black text-[11px] min-[390px]:text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <CheckCircle2 className="w-4 h-4" />
-                    <span className="truncate">
+                    <span className="sm:hidden">متابعة طلب التوافق</span>
+                    <span className="hidden sm:inline truncate">
                       {latestRequest.journey_stage === 'sent' 
                         ? (isImported ? 'طلب الوساطة قيد المتابعة والتنسيق' : 'طلب التوافق قيد الانتظار (متابعة)')
                         : 'متابعة رحلة التوافق والوساطة'}
@@ -537,10 +582,11 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                       setContactOpen(!contactOpen);
                     }}
                     disabled={isSelf}
-                    className="w-full py-2.5 sm:py-3 px-3 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-105 text-white font-cairo font-black text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    className="w-full min-h-11 py-2 sm:py-3 px-2.5 sm:px-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-105 text-white font-cairo font-black text-[11px] min-[390px]:text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                   >
                     <Building2 className="w-4.5 h-4.5 text-white" />
-                    <span className="truncate">
+                    <span className="sm:hidden">طلب التوفيق والوساطة</span>
+                    <span className="hidden sm:inline truncate">
                       طلب التوفيق والوساطة لهذا الملف 💍
                     </span>
                   </button>
@@ -550,10 +596,11 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                       setContactOpen(!contactOpen);
                     }}
                     disabled={isSelf}
-                    className="w-full py-2.5 sm:py-3 px-3 rounded-2xl bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-cairo font-black text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    className="w-full min-h-11 py-2 sm:py-3 px-2.5 sm:px-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-cairo font-black text-[11px] min-[390px]:text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                   >
                     <Send className="w-4 h-4 -scale-x-100 text-slate-900" />
-                    <span className="truncate">
+                    <span className="sm:hidden">إرسال طلب توافق</span>
+                    <span className="hidden sm:inline truncate">
                       إرسال طلب توافق للزواج 💌
                     </span>
                   </button>
@@ -563,11 +610,12 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
               {/* 2. زر الواتساب للتوفيق والوساطة */}
               <button
                 onClick={handleShareWhatsApp}
-                className="py-2.5 sm:py-3 px-3 sm:px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-cairo font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs flex-shrink-0"
+                className="w-11 h-11 sm:w-auto sm:h-auto sm:py-3 sm:px-4 rounded-xl sm:rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-cairo font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs flex-shrink-0"
                 title="تواصل واتساب للتوفيق والوساطة مع هذا الملف"
+                aria-label="تواصل واتساب للتوفيق والوساطة"
               >
                 <MessageCircle className="w-4 h-4 fill-white" />
-                <span className="inline">{!user?.isLoggedIn ? 'تواصل واتساب للتوفيق 💬' : 'واتساب للتوفيق 💬'}</span>
+                <span className="hidden sm:inline">{!user?.isLoggedIn ? 'تواصل واتساب للتوفيق 💬' : 'واتساب للتوفيق 💬'}</span>
               </button>
 
               {/* 3. زر المفضلة التفاعلي */}
@@ -581,7 +629,7 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                   }
                   toggleLike(member.id);
                 }}
-                className={`py-2.5 sm:py-3 px-3 rounded-2xl font-cairo font-bold text-xs transition-all flex items-center justify-center gap-1.5 border cursor-pointer flex-shrink-0 shadow-xs ${
+                className={`w-11 h-11 sm:w-auto sm:h-auto sm:py-3 sm:px-3 rounded-xl sm:rounded-2xl font-cairo font-bold text-xs transition-all flex items-center justify-center gap-1.5 border cursor-pointer flex-shrink-0 shadow-xs ${
                   liked
                     ? 'bg-amber-500 text-white border-amber-500'
                     : 'bg-white dark:bg-navy-900 text-navy-700 dark:text-cream-100 border-cream-300 dark:border-navy-700 hover:bg-cream-50'
@@ -596,7 +644,7 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
               <div className="relative flex-shrink-0">
                 <button
                   onClick={() => setMoreMenuOpen(!moreMenuOpen)}
-                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-white dark:bg-navy-900 hover:bg-cream-100 dark:hover:bg-navy-800 text-navy-700 dark:text-cream-100 border border-cream-300 dark:border-navy-700 transition-colors flex items-center justify-center cursor-pointer shadow-xs"
+                  className="w-11 h-11 rounded-xl sm:rounded-2xl bg-white dark:bg-navy-900 hover:bg-cream-100 dark:hover:bg-navy-800 text-navy-700 dark:text-cream-100 border border-cream-300 dark:border-navy-700 transition-colors flex items-center justify-center cursor-pointer shadow-xs"
                   title="خيارات إضافية"
                 >
                   <MoreVertical className="w-4 h-4" />
@@ -949,14 +997,64 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
   );
 }
 
+function QuickFact({ icon: Icon, label, value }: { icon: any; label: string; value: string | number }) {
+  return (
+    <div className="min-w-0 rounded-lg sm:rounded-xl bg-white/75 dark:bg-navy-950/45 border border-white dark:border-navy-700/70 px-1.5 py-1.5 sm:p-2 text-center">
+      <Icon className="w-3.5 h-3.5 text-gold-600 dark:text-gold-400 mx-auto mb-0.5" />
+      <span className="block text-[9px] text-navy-400 dark:text-slate-400 font-tajawal leading-tight">{label}</span>
+      <span className="block mt-0.5 text-[10.5px] sm:text-xs font-cairo font-bold text-navy-900 dark:text-cream-50 leading-[1.35] line-clamp-2 break-words" title={String(value)}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function ProfileSection({
+  icon: Icon,
+  title,
+  iconClass,
+  expanded,
+  onToggle,
+  children,
+}: {
+  icon: any;
+  title: string;
+  iconClass: string;
+  expanded: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <section className="rounded-xl sm:rounded-none border border-cream-200/80 dark:border-navy-700/70 sm:border-0 bg-white/65 dark:bg-navy-800/35 sm:bg-transparent overflow-hidden">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full min-h-11 sm:min-h-0 px-3 py-2 sm:p-0 flex items-center justify-between text-right"
+        aria-expanded={expanded}
+      >
+        <span className="font-cairo font-bold text-xs sm:text-sm text-navy-900 dark:text-cream-100 flex items-center gap-1.5">
+          <Icon className={`w-4 h-4 ${iconClass}`} />
+          {title}
+        </span>
+        <span className="sm:hidden text-navy-400 dark:text-slate-400">
+          {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </span>
+      </button>
+      <div className={`${expanded ? 'block' : 'hidden'} sm:block px-2.5 pb-2.5 sm:p-0 sm:mt-2`}>
+        {children}
+      </div>
+    </section>
+  );
+}
+
 // عنصر الخلية الصغيرة في قائمة التفاصيل
 function DetailGridItem({ icon: Icon, label, value }: { icon: any; label: string; value: string | number }) {
   return (
-    <div className="bg-cream-50/80 dark:bg-navy-950/60 rounded-xl p-1.5 sm:p-2 border border-cream-200/70 dark:border-navy-800 flex items-start gap-1.5 min-w-0 shadow-2xs">
+    <div className="bg-cream-50/80 dark:bg-navy-950/60 rounded-xl p-2 border border-cream-200/70 dark:border-navy-800 flex items-start gap-1.5 min-w-0 shadow-2xs">
       <Icon className="w-3.5 h-3.5 text-gold-600 dark:text-gold-400 mt-0.5 flex-shrink-0" />
       <div className="min-w-0 flex-1">
-        <span className="block text-[9px] sm:text-[9.5px] text-navy-400 dark:text-slate-400 font-tajawal leading-none mb-0.5 truncate">{label}</span>
-        <span className="block text-[11px] sm:text-xs font-cairo font-bold text-navy-900 dark:text-cream-50 truncate" title={String(value)}>{value}</span>
+        <span className="block text-[9px] sm:text-[9.5px] text-navy-400 dark:text-slate-400 font-tajawal leading-none mb-1 truncate">{label}</span>
+        <span className="block text-[11px] sm:text-xs font-cairo font-bold text-navy-900 dark:text-cream-50 leading-[1.35] line-clamp-2 break-words" title={String(value)}>{value}</span>
       </div>
     </div>
   );
