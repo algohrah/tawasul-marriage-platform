@@ -242,6 +242,12 @@ export interface LocalRequest {
   receiver_paid: boolean;
   sender_paid_at?: string | null;
   receiver_paid_at?: string | null;
+  sender_final_paid?: boolean;
+  receiver_final_paid?: boolean;
+  sender_final_paid_at?: string | null;
+  receiver_final_paid_at?: string | null;
+  sender_stage_confirmed?: boolean;
+  receiver_stage_confirmed?: boolean;
   paid_at?: string | null;
   meeting_date?: string | null;
   meeting_notes?: string | null;
@@ -396,7 +402,7 @@ function seedDB(): DB {
       sender_id: ir.senderId,
       receiver_id: ir.receiverId,
       journey_stage: stage,
-      message: ir.message || 'طلب اهتمام مرسل عبر الإدارة',
+      message: ir.message || 'طلب توافق مرسل عبر الإدارة',
       sender_paid,
       receiver_paid,
       sender_paid_at,
@@ -471,28 +477,9 @@ let db: DB | null = null;
 
 function syncGlobalPayments(d: DB) {
   if (!d || !d.requests) return;
-  
-  // 1. تحديد جميع الأعضاء الذين دفعوا رسوم الجدية فعلياً في أي طلب
-  const paidUsers = new Set<string>();
-  d.requests.forEach((r) => {
-    if (r.sender_paid && r.sender_paid_at) paidUsers.add(r.sender_id);
-    if (r.receiver_paid && r.receiver_paid_at) paidUsers.add(r.receiver_id);
-  });
-  
-  // 2. تطبيق حالة الدفع على جميع الطلبات النشطة الأخرى
+  // العربون مرتبط بطلب التوافق نفسه، ولا ينتقل تلقائياً إلى طلبات أخرى.
   let changed = false;
   d.requests.forEach((r) => {
-    if (paidUsers.has(r.sender_id) && !r.sender_paid) {
-      r.sender_paid = true;
-      r.sender_paid_at = r.sender_paid_at || new Date().toISOString();
-      changed = true;
-    }
-    if (paidUsers.has(r.receiver_id) && !r.receiver_paid) {
-      r.receiver_paid = true;
-      r.receiver_paid_at = r.receiver_paid_at || new Date().toISOString();
-      changed = true;
-    }
-    // إذا دفع الطرفان وكنا في مرحلة الجدية، ننتقل تلقائياً للتنسيق
     if (r.sender_paid && r.receiver_paid && r.journey_stage === 'seriousness') {
       r.journey_stage = 'coordination';
       r.paid_at = r.paid_at || new Date().toISOString();
@@ -838,24 +825,27 @@ export async function getRequest(id: number): Promise<LocalRequest | null> {
 export async function createRequest(senderId: string, receiverId: string, message: string, explicitSourceType?: 'registered' | 'imported') {
   await delay();
   if (senderId === receiverId) {
-    return { ok: false, error: 'لا يمكنك إرسال طلب اهتمام لنفسك' };
+    return { ok: false, error: 'لا يمكنك إرسال طلب توافق لنفسك' };
   }
   const d = load();
   // منع التكرار: أي طلب غير منتهٍ بالرفض/الإلغاء يُعتبر قائماً.
   // المراحل المنتهية التي تسمح بطلب جديد: declined (مرفوض) و cancelled (ملغى).
   const blocking = d.requests.find((r) =>
-    r.sender_id === senderId && r.receiver_id === receiverId &&
+    (
+      (r.sender_id === senderId && r.receiver_id === receiverId) ||
+      (r.sender_id === receiverId && r.receiver_id === senderId)
+    ) &&
     r.journey_stage !== 'declined' && r.journey_stage !== 'cancelled',
   );
   if (blocking) {
     // رسالة دقيقة حسب الحالة
     if (blocking.journey_stage === 'sent') {
-      return { ok: false, error: 'لديك طلب اهتمام مُرسَل لهذا العضو بالفعل ولم يتم الرد عليه بعد.' };
+      return { ok: false, error: 'يوجد طلب توافق قائم بينكما بالفعل. افتح طلباتك لمتابعته.' };
     }
     if (blocking.journey_stage === 'completed') {
       return { ok: false, error: 'لديك رحلة مكتملة مع هذا العضو بالفعل.' };
     }
-    return { ok: false, error: 'لديك طلب اهتمام نشط مع هذا العضو بالفعل.' };
+    return { ok: false, error: 'لديك طلب توافق نشط مع هذا العضو بالفعل.' };
   }
 
   const liveMembers = getLiveMembers(true);
@@ -877,7 +867,7 @@ export async function createRequest(senderId: string, receiverId: string, messag
     sender_id: senderId,
     receiver_id: receiverId,
     journey_stage: 'sent',
-    message: (message || '').trim() || 'طلب اهتمام مرسل عبر الإدارة',
+    message: (message || '').trim() || 'طلب توافق مرسل عبر الإدارة',
     sender_paid: isImported && sender?.sourceType === 'imported' ? true : false,
     receiver_paid: isImported && receiver?.sourceType === 'imported' ? true : false,
     sender_paid_at: isImported && sender?.sourceType === 'imported' ? now : null,
@@ -887,7 +877,7 @@ export async function createRequest(senderId: string, receiverId: string, messag
   };
   d.requests.unshift(req);
   addEvent(d, req.id, senderId, 'sent', 'تم إرسال طلب الاهتمام');
-  addNotification(d, receiverId, req.id, 'request', 'وصلك طلب اهتمام جديد بانتظار قرارك');
+  addNotification(d, receiverId, req.id, 'request', 'وصلك طلب توافق جديد بانتظار قرارك');
   save();
   return { ok: true, data: req };
 }
@@ -1086,10 +1076,22 @@ export async function runRequestAction(
       break;
     }
     case 'advance_viewing':
-      req.journey_stage = 'sharia_viewing';
-      evNote = 'الانتقال لمرحلة النظرة الشرعية';
-      evType = 'sharia_viewing';
+    case 'confirm_advance': {
+      const isSender = actorId === req.sender_id;
+      if (req.journey_stage !== 'coordination') {
+        return { ok: false, error: 'لا يمكن تأكيد الانتقال من هذه المرحلة' };
+      }
+      if (isSender) req.sender_stage_confirmed = true;
+      else req.receiver_stage_confirmed = true;
+      if (req.sender_stage_confirmed && req.receiver_stage_confirmed) {
+        req.journey_stage = 'sharia_viewing';
+        evNote = 'أكد الطرفان الانتقال إلى نتيجة النظرة الشرعية';
+      } else {
+        evNote = 'أكد أحد الطرفين استعداده للانتقال إلى نتيجة النظرة الشرعية';
+      }
+      evType = 'confirm_advance';
       break;
+    }
     case 'record_result': {
       const isSender = actorId === req.sender_id;
       // نتيجة النظرة: توافق -> الملكة، اعتذار -> مرفوض مع السبب
@@ -1122,13 +1124,33 @@ export async function runRequestAction(
       }
       break;
     }
-    case 'complete_engagement':
-      req.journey_stage = 'completed';
-      req.evaluation_result = 'success';
-      if (payload.note) req.evaluation_note = payload.note;
-      evNote = 'تم إتمام الملكة وعقد القران المبارك 🎉';
-      evType = 'completed';
+    case 'pay_final_fee': {
+      if (req.journey_stage !== 'engagement') {
+        return { ok: false, error: 'سداد المتبقي غير متاح في هذه المرحلة' };
+      }
+      const isSender = actorId === req.sender_id;
+      if ((isSender && req.sender_final_paid) || (!isSender && req.receiver_final_paid)) {
+        return { ok: false, error: 'تم سداد المبلغ المتبقي لهذا الطلب مسبقاً' };
+      }
+      if (isSender) {
+        req.sender_final_paid = true;
+        req.sender_final_paid_at = now;
+      } else {
+        req.receiver_final_paid = true;
+        req.receiver_final_paid_at = now;
+      }
+      if (req.sender_final_paid && req.receiver_final_paid) {
+        req.journey_stage = 'completed';
+        req.evaluation_result = 'success';
+        req.evaluation_note = payload.note || 'اكتمل سداد الطرفين بعد تسليم المهر';
+        evNote = 'اكتمل سداد الطرفين وتمت رحلة التوافق بفضل الله';
+        evType = 'completed';
+      } else {
+        evNote = 'تم سداد المبلغ المتبقي بعد تسليم المهر';
+        evType = 'pay_final_fee';
+      }
       break;
+    }
     case 'set_stage':
       if (['sent', 'accepted', 'seriousness', 'coordination', 'sharia_viewing', 'engagement', 'completed', 'declined', 'cancelled'].includes(payload.stage)) {
         req.journey_stage = payload.stage;
@@ -1232,40 +1254,50 @@ export async function runRequestAction(
   const actorName = getLiveMemberById(actorId)?.nickname || 'الطرف الآخر';
   switch (action) {
     case 'accept':
-      notifyOther(d, req, actorId, 'request', `قبِل ${actorName} طلب اهتمامك — تابع رحلتك الآن`);
+      notifyOther(d, req, actorId, 'request', `قبِل ${actorName} طلب توافقك — تابع رحلتك الآن`);
       break;
     case 'decline':
       notifyOther(d, req, actorId, 'system', `اعتذر ${actorName} عن إكمال الطلب`);
       break;
     case 'cancel':
-      notifyOther(d, req, actorId, 'system', `تم إلغاء طلب الاهتمام من ${actorName}`);
+      notifyOther(d, req, actorId, 'system', `تم إلغاء طلب التوافق من ${actorName}`);
       break;
     case 'pay_deposit':
       if (req.journey_stage === 'coordination') {
-        // أكّد الطرفان الجدية — أشعِر كليهما ببدء التنسيق
-        addNotification(d, req.sender_id, req.id, 'match', 'أكّد الطرفان الجدية! بدأت مرحلة تبادل التواصل 🎉');
-        addNotification(d, req.receiver_id, req.id, 'match', 'أكّد الطرفان الجدية! بدأت مرحلة تبادل التواصل 🎉');
+        addNotification(d, req.sender_id, req.id, 'match', 'اكتمل سداد العربون من الطرفين وبدأت مشاركة التواصل');
+        addNotification(d, req.receiver_id, req.id, 'match', 'اكتمل سداد العربون من الطرفين وبدأت مشاركة التواصل');
       } else {
-        notifyOther(d, req, actorId, 'request', `سدّد ${actorName} رسوم الجدية — بانتظار سدادك لبدء التواصل`);
+        notifyOther(d, req, actorId, 'request', `سدّد ${actorName} العربون — بانتظار سدادك لبدء التواصل`);
       }
       break;
     case 'submit_contact':
       notifyOther(d, req, actorId, 'match', 'تمت مشاركة معلومات التواصل — يمكنك المتابعة');
       break;
     case 'advance_viewing':
-      addNotification(d, req.sender_id, req.id, 'match', 'انتقلت رحلتكما إلى مرحلة النظرة الشرعية');
-      addNotification(d, req.receiver_id, req.id, 'match', 'انتقلت رحلتكما إلى مرحلة النظرة الشرعية');
+    case 'confirm_advance':
+      if (req.journey_stage === 'sharia_viewing') {
+        addNotification(d, req.sender_id, req.id, 'match', 'وافق الطرفان على الانتقال إلى نتيجة النظرة الشرعية');
+        addNotification(d, req.receiver_id, req.id, 'match', 'وافق الطرفان على الانتقال إلى نتيجة النظرة الشرعية');
+      } else {
+        notifyOther(d, req, actorId, 'match', 'أكد الطرف الآخر استعداده للانتقال إلى نتيجة النظرة الشرعية');
+      }
       break;
     case 'record_result':
       if (payload.result !== 'failed') {
-        notifyOther(d, req, actorId, 'match', 'توافق مبارك بعد النظرة — الانتقال لمرحلة الملكة 💍');
+        notifyOther(d, req, actorId, 'match', req.journey_stage === 'engagement'
+          ? 'تم القبول من الطرفين بفضل الله'
+          : 'سجّل الطرف الآخر نتيجة النظرة الشرعية');
       } else {
         notifyOther(d, req, actorId, 'system', 'تم الاعتذار بعد النظرة الشرعية');
       }
       break;
-    case 'complete_engagement':
-      addNotification(d, req.sender_id, req.id, 'match', 'مبارك! تم إتمام الملكة وعقد القران 🎉');
-      addNotification(d, req.receiver_id, req.id, 'match', 'مبارك! تم إتمام الملكة وعقد القران 🎉');
+    case 'pay_final_fee':
+      if (req.journey_stage === 'completed') {
+        addNotification(d, req.sender_id, req.id, 'match', 'اكتمل سداد الطرفين وتمت رحلة التوافق بفضل الله');
+        addNotification(d, req.receiver_id, req.id, 'match', 'اكتمل سداد الطرفين وتمت رحلة التوافق بفضل الله');
+      } else {
+        notifyOther(d, req, actorId, 'match', 'سدّد الطرف الآخر المبلغ المتبقي بعد تسليم المهر');
+      }
       break;
     case 'set_stage':
       // إجراء إداري — أشعِر الطرفين بتحديث الإدارة لمرحلة الرحلة

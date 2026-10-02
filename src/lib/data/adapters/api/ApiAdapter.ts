@@ -243,6 +243,9 @@ const LOCAL_ONLY_KEY_PREFIXES = [
   'liked_members_',
   'blocked_members_',
   'user_usage_counters',
+  'user_deposit_quota',
+  'user_extra_interests_count',
+  'user_unlimited_interests_until',
 ];
 
 function isLocalOnlyKey(key: string): boolean {
@@ -681,21 +684,8 @@ export class ApiAdapter extends LocalStorageAdapter {
       this.upsertRequestCache(row);
       return { ok: true, data: normalizeRequest(row) };
     } catch (err: any) {
-      console.warn('API createRequest error, using resilient fallback:', err);
-      // إنشاء محلي احتياطي لضمان عدم توقف العضو أو المشرف عند إرسال اهتمام
-      const fallbackRow = {
-        id: Date.now(),
-        sender_id: senderId,
-        receiver_id: receiverId,
-        message,
-        journey_stage: 'sent',
-        status: 'pending',
-        mediation_stage: 'sent',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-      this.upsertRequestCache(fallbackRow);
-      return { ok: true, data: normalizeRequest(fallbackRow) };
+      console.warn('API createRequest error:', err);
+      return { ok: false, error: err.message || 'تعذر إرسال طلب التوافق. لم يتم إنشاء أي طلب.' };
     }
   };
 
@@ -709,27 +699,21 @@ export class ApiAdapter extends LocalStorageAdapter {
       this.upsertRequestCache(row);
       return { ok: true, data: normalizeRequest(row) };
     } catch (err: any) {
-      console.warn('API runRequestAction error, using resilient fallback:', err);
-      const existing = this.requestCache.find((r) => Number(r.id) === Number(requestId));
-      if (existing) {
-        const updated = { ...existing, status: payload.stage || action, updated_at: new Date().toISOString() };
-        this.upsertRequestCache(updated);
-        return { ok: true, data: updated };
-      }
+      console.warn('API runRequestAction error:', err);
       return { ok: false, error: err.message || 'تعذر تحديث رحلة الطلب' };
     }
   };
 
   getEvents = async (requestId: number): Promise<any[]> => {
     try {
-      const rows = await apiFetch<any[]>(`/api/notifications?requestId=${encodeURIComponent(String(requestId))}`);
-      return rows.map((n) => ({
-        id: Number(n.id),
-        request_id: Number(n.request_id || requestId),
-        actor_id: n.user_id || 'system',
-        type: n.type || 'system',
-        note: n.text || n.title || 'تحديث على الطلب',
-        created_at: n.created_at || new Date().toISOString(),
+      const rows = await apiFetch<any[]>(`/api/interest-requests?id=${encodeURIComponent(String(requestId))}&events=1`);
+      return rows.map((event) => ({
+        id: Number(event.id),
+        request_id: Number(event.request_id || requestId),
+        actor_id: event.actor_id || 'system',
+        type: event.action || event.type || 'system',
+        note: event.payload?.note || event.payload?.reason || event.note || 'تحديث على طلب التوافق',
+        created_at: event.created_at || new Date().toISOString(),
       }));
     } catch { return []; }
   };

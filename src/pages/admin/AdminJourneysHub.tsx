@@ -37,7 +37,7 @@ export default function AdminJourneysHub() {
   const tabs: { key: TabKey; label: string; icon: LucideIcon; badge?: number; badgeColor?: string }[] = [
     {
       key: 'requests',
-      label: 'طلبات الاهتمام المباشرة',
+      label: 'طلبات التوافق المباشرة',
       icon: Heart,
       badge: pendingRequests,
       badgeColor: 'bg-rose-500',

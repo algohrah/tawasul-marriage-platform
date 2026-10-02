@@ -639,7 +639,7 @@ export default function Checkout() {
                   <span className="font-bold text-slate-800">{plan.messagesLimit ? `${plan.messagesLimit} رسالة` : 'غير محدود'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">طلبات الاهتمام المتاحة:</span>
+                  <span className="text-slate-500">طلبات التوافق المتاحة:</span>
                   <span className="font-bold text-slate-800">{plan.requestsLimit ? `${plan.requestsLimit} طلب/يوم` : 'غير محدود'}</span>
                 </div>
                 <div className="flex justify-between">

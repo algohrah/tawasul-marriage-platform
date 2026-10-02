@@ -1,5 +1,7 @@
 import supabase from './db-client.js';
-import { authorizeMemberAction, requireAdmin } from './_auth.js';
+import {
+  authorizeMemberAction, requireAdmin, getAuthUser, getMemberLink, isAdminEmail,
+} from './_auth.js';
 import { writeAuditLog } from './_audit.js';
 import { checkRateLimit } from './_rateLimit.js';
 
@@ -7,6 +9,27 @@ function setCors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+}
+
+async function resolveViewer(req, res) {
+  const user = await getAuthUser(req);
+  if (!user) {
+    res.status(401).json({ error: 'يجب تسجيل الدخول لعرض طلبات التوافق' });
+    return null;
+  }
+  if (await isAdminEmail(user.email)) return { user, memberId: null, isAdmin: true };
+  const link = await getMemberLink(user.id);
+  if (link?.member_id) return { user, memberId: String(link.member_id), isAdmin: false };
+  const { data: member } = await supabase
+    .from('members')
+    .select('id')
+    .or(`id.eq.${user.id},email.eq.${user.email || ''}`)
+    .maybeSingle();
+  if (!member) {
+    res.status(403).json({ error: 'تعذر ربط جلسة الدخول بملف العضو' });
+    return null;
+  }
+  return { user, memberId: String(member.id), isAdmin: false };
 }
 
 // إجراءات لا يجوز تنفيذها إلا من قِبل الإدارة (تدخّل مباشر في مسار الوساطة/المدفوعات)
@@ -112,6 +135,7 @@ async function addNotification(userId, requestId, type, text, title = 'تحدي�
   if (!userId) return;
   const row = {
     user_id: String(userId),
+    request_id: Number(requestId),
     type,
     title,
     message: text,
@@ -119,6 +143,59 @@ async function addNotification(userId, requestId, type, text, title = 'تحدي�
   };
   const { error } = await supabase.from('notifications').insert(row);
   if (error) console.warn('Notification insert skipped:', error.message);
+}
+
+async function requestProgress(request) {
+  const { data, error } = await supabase
+    .from('request_events')
+    .select('actor_id, action, payload, created_at')
+    .eq('request_id', Number(request.id))
+    .in('action', ['confirm_advance', 'pay_final_fee'])
+    .order('created_at', { ascending: true });
+  if (error) {
+    console.warn('Request progress lookup skipped:', error.message);
+    return {};
+  }
+  const events = data || [];
+  const finalPayments = events.filter((event) => event.action === 'pay_final_fee');
+  const stageConfirmations = events.filter((event) =>
+    event.action === 'confirm_advance' &&
+    (event.payload?.fromStage || 'coordination') === 'coordination' &&
+    (event.payload?.nextStage || 'sharia_viewing') === 'sharia_viewing'
+  );
+  const paidAt = (actorId) => finalPayments.find((event) => String(event.actor_id) === String(actorId))?.created_at || null;
+  const confirmed = (actorId) => stageConfirmations.some((event) => String(event.actor_id) === String(actorId));
+  return {
+    sender_final_paid: !!paidAt(request.sender_id),
+    receiver_final_paid: !!paidAt(request.receiver_id),
+    sender_final_paid_at: paidAt(request.sender_id),
+    receiver_final_paid_at: paidAt(request.receiver_id),
+    sender_stage_confirmed: confirmed(request.sender_id),
+    receiver_stage_confirmed: confirmed(request.receiver_id),
+  };
+}
+
+async function withProgress(request) {
+  if (!request) return request;
+  return { ...fromDb(request), ...(await requestProgress(request)) };
+}
+
+function maskPrivateJourneyFields(request, viewer) {
+  if (!request || viewer?.isAdmin) return request;
+  const copy = { ...request };
+  const isSender = String(copy.sender_id) === String(viewer.memberId);
+  const myResult = isSender ? copy.sender_viewing_result : copy.receiver_viewing_result;
+  // لا يرى الطرف قرار الآخر في نتيجة النظرة قبل أن يسجل قراره بنفسه.
+  if (!myResult && (copy.journey_stage || copy.status) === 'sharia_viewing') {
+    if (isSender) {
+      copy.receiver_viewing_result = null;
+      copy.receiver_viewing_note = null;
+    } else {
+      copy.sender_viewing_result = null;
+      copy.sender_viewing_note = null;
+    }
+  }
+  return copy;
 }
 
 async function buildActionUpdate(current, action, actorId, payload = {}) {
@@ -132,6 +209,9 @@ async function buildActionUpdate(current, action, actorId, payload = {}) {
 
   switch (action) {
     case 'accept': {
+      if (String(actorId) !== String(current.receiver_id) || !['sent', 'pending'].includes(current.journey_stage || current.status)) {
+        throw new Error('لا يمكن قبول الطلب من هذه الحالة');
+      }
       setStage('accepted');
       const deadline = new Date();
       deadline.setDate(deadline.getDate() + 15);
@@ -154,6 +234,13 @@ async function buildActionUpdate(current, action, actorId, payload = {}) {
       update.defer_by = actorId;
       break;
     case 'pay_deposit': {
+      if (!['accepted', 'seriousness', 'accepted_pending_payment'].includes(current.journey_stage || current.status)) {
+        throw new Error('العربون غير متاح في هذه المرحلة');
+      }
+      if ((String(actorId) === String(current.sender_id) && current.sender_paid) ||
+          (String(actorId) === String(current.receiver_id) && current.receiver_paid)) {
+        throw new Error('تم سداد عربونك لهذا الطلب مسبقاً');
+      }
       if (actorId === current.sender_id) {
         update.sender_paid = true;
         update.sender_paid_at = now;
@@ -172,12 +259,21 @@ async function buildActionUpdate(current, action, actorId, payload = {}) {
       if (payload.advance) setStage('sharia_viewing');
       else if (!current.journey_stage || current.journey_stage === 'seriousness') setStage('coordination');
       break;
-    case 'submit_contact':
-      ['contact_info', 'contact_by', 'guardian_phone', 'guardian_name', 'guardian_relation', 'contact_time', 'contact_note', 'male_phone', 'male_name', 'male_relation', 'male_contact_time', 'male_contact_note'].forEach((key) => {
+    case 'submit_contact': {
+      if ((current.journey_stage || current.status) !== 'coordination' || !current.sender_paid || !current.receiver_paid) {
+        throw new Error('مشاركة التواصل متاحة بعد سداد العربون من الطرفين');
+      }
+      const { data: actorMember } = await supabase.from('members').select('gender').eq('id', String(actorId)).maybeSingle();
+      const allowedFields = actorMember?.gender === 'female'
+        ? ['guardian_phone', 'guardian_name', 'guardian_relation', 'contact_time', 'contact_note']
+        : ['male_phone', 'male_name', 'male_relation', 'male_contact_time', 'male_contact_note'];
+      allowedFields.forEach((key) => {
         const camel = key.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
         if (payload[key] !== undefined || payload[camel] !== undefined) update[key] = payload[key] ?? payload[camel];
       });
+      update.contact_by = String(actorId);
       break;
+    }
     case 'male_pledge':
       update.male_pledged = true;
       break;
@@ -185,9 +281,29 @@ async function buildActionUpdate(current, action, actorId, payload = {}) {
       update.female_pledged = true;
       break;
     case 'advance_viewing':
-      setStage('sharia_viewing');
+    case 'confirm_advance': {
+      const fromStage = current.journey_stage || current.status;
+      const nextStage = payload.nextStage || 'sharia_viewing';
+      if (fromStage !== 'coordination' || nextStage !== 'sharia_viewing') {
+        throw new Error('لا يمكن تأكيد الانتقال من هذه المرحلة');
+      }
+      const { data: confirmations } = await supabase
+        .from('request_events')
+        .select('actor_id, payload')
+        .eq('request_id', Number(current.id))
+        .eq('action', 'confirm_advance');
+      const otherId = String(actorId) === String(current.sender_id) ? current.receiver_id : current.sender_id;
+      const otherConfirmed = (confirmations || []).some((event) =>
+        String(event.actor_id) === String(otherId) &&
+        (event.payload?.nextStage || 'sharia_viewing') === 'sharia_viewing'
+      );
+      if (otherConfirmed) setStage('sharia_viewing');
       break;
+    }
     case 'record_result': {
+      if ((current.journey_stage || current.status) !== 'sharia_viewing') {
+        throw new Error('تسجيل نتيجة النظرة غير متاح في هذه المرحلة');
+      }
       const isSender = actorId === current.sender_id;
       if (isSender) {
         update.sender_viewing_result = payload.result || null;
@@ -204,11 +320,26 @@ async function buildActionUpdate(current, action, actorId, payload = {}) {
       }
       break;
     }
-    case 'complete_engagement':
-      setStage('completed');
-      update.evaluation_result = 'success';
-      update.evaluation_note = payload.note || null;
+    case 'pay_final_fee': {
+      if ((current.journey_stage || current.status) !== 'engagement') {
+        throw new Error('سداد المتبقي غير متاح في هذه المرحلة');
+      }
+      const { data: finalPayments } = await supabase
+        .from('request_events')
+        .select('actor_id')
+        .eq('request_id', Number(current.id))
+        .eq('action', 'pay_final_fee');
+      const alreadyPaid = (finalPayments || []).some((event) => String(event.actor_id) === String(actorId));
+      if (alreadyPaid) throw new Error('تم سداد المبلغ المتبقي لهذا الطلب مسبقاً');
+      const otherId = String(actorId) === String(current.sender_id) ? current.receiver_id : current.sender_id;
+      const otherPaid = (finalPayments || []).some((event) => String(event.actor_id) === String(otherId));
+      if (otherPaid) {
+        setStage('completed');
+        update.evaluation_result = 'success';
+        update.evaluation_note = payload.note || 'اكتمل سداد الطرفين بعد تسليم المهر';
+      }
       break;
+    }
     case 'set_stage':
       if (payload.stage) setStage(payload.stage);
       if (payload.note && payload.stage === 'cancelled') update.cancel_reason = payload.note;
@@ -273,17 +404,47 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const { id, userId } = req.query;
+      const { id, userId, events } = req.query;
+      const viewer = await resolveViewer(req, res);
+      if (!viewer) return;
+      if (id && events === '1') {
+        const { data: request, error: requestError } = await supabase
+          .from('interest_requests')
+          .select('sender_id, receiver_id')
+          .eq('id', Number(id))
+          .maybeSingle();
+        if (requestError) throw requestError;
+        if (!request) return res.status(404).json({ error: 'طلب التوافق غير موجود' });
+        if (!viewer.isAdmin && ![request.sender_id, request.receiver_id].map(String).includes(String(viewer.memberId))) {
+          return res.status(403).json({ error: 'لا يمكنك عرض سجل طلب لا يخصك' });
+        }
+        const { data, error } = await supabase
+          .from('request_events')
+          .select('*')
+          .eq('request_id', Number(id))
+          .order('created_at', { ascending: true });
+        if (error) throw error;
+        return res.status(200).json(data || []);
+      }
       let query = supabase.from('interest_requests').select('*');
       if (id) query = query.eq('id', Number(id)).maybeSingle();
       else {
-        if (userId) query = query.or(`sender_id.eq.${userId},receiver_id.eq.${userId}`);
+        const scopedUserId = viewer.isAdmin ? userId : viewer.memberId;
+        if (scopedUserId) query = query.or(`sender_id.eq.${scopedUserId},receiver_id.eq.${scopedUserId}`);
         query = query.order('updated_at', { ascending: false });
       }
       const { data, error } = await query;
       if (error) throw error;
-      if (id) return res.status(200).json(fromDb(data));
-      return res.status(200).json((data || []).map(fromDb));
+      if (id) {
+        if (!data) return res.status(404).json({ error: 'طلب التوافق غير موجود' });
+        if (!viewer.isAdmin && ![data.sender_id, data.receiver_id].map(String).includes(String(viewer.memberId))) {
+          return res.status(403).json({ error: 'لا يمكنك عرض طلب لا يخصك' });
+        }
+        return res.status(200).json(await withProgress(maskPrivateJourneyFields(data, viewer)));
+      }
+      return res.status(200).json(await Promise.all(
+        (data || []).map((row) => withProgress(maskPrivateJourneyFields(row, viewer)))
+      ));
     }
 
     if (req.method === 'POST') {
@@ -297,21 +458,26 @@ export default async function handler(req, res) {
       await ensureMemberExists(payload.receiver_id);
 
       const allowed = await checkRateLimit(`ir_create:${payload.sender_id}`, 20, 3600);
-      if (!allowed) return res.status(429).json({ error: 'لقد تجاوزت الحد المسموح من طلبات الاهتمام في الساعة، حاول لاحقاً' });
+      if (!allowed) return res.status(429).json({ error: 'لقد تجاوزت الحد المسموح من طلبات التوافق في الساعة، حاول لاحقاً' });
 
       // منع التكرار: التحقق من وجود طلب نشط لنفس الطرفين قبل الإنشاء
       const TERMINAL_STAGES = ['declined', 'cancelled', 'completed'];
       const { data: existing } = await supabase
         .from('interest_requests')
         .select('id, status, journey_stage')
-        .eq('sender_id', payload.sender_id)
-        .eq('receiver_id', payload.receiver_id);
+        .or(
+          `and(sender_id.eq.${payload.sender_id},receiver_id.eq.${payload.receiver_id}),` +
+          `and(sender_id.eq.${payload.receiver_id},receiver_id.eq.${payload.sender_id})`
+        );
       const activeDuplicate = (existing || []).find((r) => {
         const stage = r.journey_stage || r.status || 'sent';
         return !TERMINAL_STAGES.includes(stage);
       });
       if (activeDuplicate) {
-        return res.status(409).json({ error: 'يوجد طلب اهتمام نشط بالفعل بين هذين العضوين', existingId: activeDuplicate.id });
+        return res.status(409).json({
+          error: 'يوجد طلب توافق قائم بالفعل بينكما. افتح طلباتك لمتابعته.',
+          existingId: activeDuplicate.id,
+        });
       }
 
       let { data, error } = await supabase.from('interest_requests').insert(payload).select().single();
@@ -322,8 +488,14 @@ export default async function handler(req, res) {
         error = fallback.error;
       }
       if (error) throw error;
-      await addNotification(payload.receiver_id, payload.id, 'request', 'لديك طلب اهتمام جديد بانتظار الرد', 'طلب اهتمام جديد');
-      return res.status(201).json(fromDb(data));
+      await supabase.from('request_events').insert({
+        request_id: Number(data.id),
+        actor_id: String(payload.sender_id),
+        action: 'sent',
+        payload: { message: payload.message || '' },
+      }).catch(() => undefined);
+      await addNotification(payload.receiver_id, data.id, 'request', 'لديك طلب توافق جديد بانتظار الرد', 'طلب توافق جديد');
+      return res.status(201).json(await withProgress(data));
     }
 
     if (req.method === 'PUT') {
@@ -355,10 +527,45 @@ export default async function handler(req, res) {
         error = fallback.error;
       }
       if (error) throw error;
-      await addNotification(data.sender_id, data.id, 'match', 'تم تحديث حالة رحلة التوافق الخاصة بك');
-      await addNotification(data.receiver_id, data.id, 'match', 'تم تحديث حالة رحلة التوافق الخاصة بك');
+      await supabase.from('request_events').insert({
+        request_id: Number(id),
+        actor_id: String(actorId),
+        action,
+        payload: { ...payload, resultingStage: data.journey_stage || data.status },
+      }).catch(() => undefined);
+
+      const actionMessages = {
+        accept: ['تم قبول طلب التوافق بفضل الله', 'طلب التوافق مقبول'],
+        decline: ['لم يُكتب النصيب في طلب التوافق', 'تحديث طلب التوافق'],
+        cancel: ['تم إلغاء طلب التوافق', 'تحديث طلب التوافق'],
+        pay_deposit: ['تم تحديث سداد عربون طلب التوافق', 'تحديث السداد'],
+        submit_contact: ['شارك الطرف الآخر معلومات تواصل باختياره', 'معلومات تواصل جديدة'],
+        confirm_advance: [
+          (data.journey_stage || data.status) === 'sharia_viewing'
+            ? 'وافق الطرفان على الانتقال إلى نتيجة النظرة الشرعية'
+            : 'أكد الطرف الآخر استعداده للانتقال إلى نتيجة النظرة الشرعية',
+          'تحديث رحلة التوافق',
+        ],
+        record_result: [
+          (data.journey_stage || data.status) === 'engagement'
+            ? 'تم القبول من الطرفين بفضل الله'
+            : (data.journey_stage || data.status) === 'declined'
+              ? 'لم يُكتب النصيب بعد النظرة الشرعية'
+              : 'سجّل الطرف الآخر نتيجة النظرة الشرعية',
+          'نتيجة النظرة الشرعية',
+        ],
+        pay_final_fee: [
+          (data.journey_stage || data.status) === 'completed'
+            ? 'اكتمل سداد الطرفين وتمت رحلة التوافق بفضل الله'
+            : 'سدّد الطرف الآخر المبلغ المتبقي',
+          'تحديث السداد',
+        ],
+      };
+      const [notificationText, notificationTitle] = actionMessages[action] || ['تم تحديث رحلة التوافق الخاصة بك', 'تحديث رحلة التوافق'];
+      const notifyId = String(actorId) === String(data.sender_id) ? data.receiver_id : data.sender_id;
+      await addNotification(notifyId, data.id, 'match', notificationText, notificationTitle);
       if (isAdminAction) await writeAuditLog(actingAdminEmail || 'admin', `journey_${action}`, 'interest_request', id, {});
-      return res.status(200).json(fromDb(data));
+      return res.status(200).json(await withProgress(data));
     }
 
     if (req.method === 'DELETE') {

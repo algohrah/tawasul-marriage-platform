@@ -114,7 +114,7 @@ export default function AdminPlans() {
                 </div>
                 <div className="flex items-center justify-between text-xs font-tajawal">
                   <span className="text-slate-400 flex items-center gap-1">
-                    <Heart className="w-3.5 h-3.5 text-slate-400" /> حد طلبات الاهتمام:
+                    <Heart className="w-3.5 h-3.5 text-slate-400" /> حد طلبات التوافق:
                   </span>
                   <span className="font-bold text-slate-700">{getRequestText(plan.requestsLimit)}</span>
                 </div>
@@ -226,7 +226,7 @@ export default function AdminPlans() {
       <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 mt-8 space-y-6">
         <div>
           <h3 className="font-cairo font-extrabold text-lg text-slate-900 flex items-center gap-2">
-            <Heart className="w-5 h-5 text-rose-500" /> إعدادات بيع وشراء طلبات الاهتمام الإضافية للأعضاء
+            <Heart className="w-5 h-5 text-rose-500" /> إعدادات بيع وشراء طلبات التوافق الإضافية للأعضاء
           </h3>
           <p className="text-xs text-slate-500 font-tajawal mt-1 font-medium">تحديد ما إذا كان العضو يستطيع بعد نفاد حد باقته شراء اهتمامات إضافية بعدد محدد أو تفعيل فترة كاملة بلا حدود (مثال: 7 أو 30 يوماً).</p>
         </div>
@@ -263,7 +263,7 @@ export default function AdminPlans() {
 
           {interestPurchaseSettings.type === 'count' ? (
             <div>
-              <label className="block text-xs font-cairo font-bold text-slate-700 mb-1.5">عدد طلبات الاهتمام الممنوحة</label>
+              <label className="block text-xs font-cairo font-bold text-slate-700 mb-1.5">عدد طلبات التوافق الممنوحة</label>
               <input
                 type="number"
                 value={interestPurchaseSettings.count}
@@ -429,7 +429,7 @@ function PlanForm({ plan, onSave }: PlanFormProps) {
             <p className="text-[10px] text-slate-400 font-tajawal mt-1">أدخل 999 لباقة بلا حدود</p>
           </div>
           <div>
-            <label className={labelClass}>طلب اهتمام يومياً</label>
+            <label className={labelClass}>طلب توافق يومياً</label>
             <input 
               type="number" 
               value={form.requestsLimit !== undefined ? form.requestsLimit : 1} 

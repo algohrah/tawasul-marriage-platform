@@ -57,9 +57,12 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
 
   const latestRequest = useMemo(() => {
     if (!user?.isLoggedIn || !requests || requests.length === 0 || !member?.id || !currentUserId) return null;
-    const sent = requests.filter(r => r.sender_id === currentUserId && r.receiver_id === member.id);
-    if (sent.length === 0) return null;
-    return [...sent].sort((a, b) => b.id - a.id)[0];
+    const betweenUs = requests.filter(r =>
+      (r.sender_id === currentUserId && r.receiver_id === member.id) ||
+      (r.receiver_id === currentUserId && r.sender_id === member.id)
+    );
+    if (betweenUs.length === 0) return null;
+    return [...betweenUs].sort((a, b) => b.id - a.id)[0];
   }, [requests, currentUserId, member?.id, user?.isLoggedIn]);
 
   useEffect(() => {
@@ -182,7 +185,7 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
 
   const handleSendInterest = async () => {
     if (!limitCheck.allowed) {
-      showToast('لقد وصلت للحد الأقصى لإرسال طلبات الاهتمام اليوم', 'error');
+      showToast('لقد وصلت للحد الأقصى لإرسال طلبات التوافق اليوم', 'error');
       return;
     }
     setSending(true);
@@ -193,7 +196,9 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
         incrementUsage('message');
         setContactOpen(false);
         setContactMsg('');
-        showToast('تم إرسال طلب التوافق بنجاح! سيتم إشعار الطرف الآخر. 💌', 'success');
+        showToast('تم إرسال طلب التوافق. يمكنك متابعة حالته الآن.', 'success');
+        onClose();
+        navigate(`/journey/${res.data.id}`);
       } else {
         showToast(res?.error || 'حدث خطأ أثناء إرسال الطلب', 'error');
       }
@@ -209,7 +214,7 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
       showToast('يرجى كتابة سبب البلاغ', 'error');
       return;
     }
-    submitReport(member.id, reportReason);
+    submitReport(member.id, member.nickname || 'عضو', reportReason);
     setReportOpen(false);
     setReportReason('');
     showToast('تم إرسال بلاغك للإدارة بنجاح، وستتم مراجعته بفحص دقيق.', 'success');
@@ -564,7 +569,7 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                   <button
                     onClick={() => {
                       onClose();
-                      navigate('/requests');
+                      navigate(`/journey/${latestRequest.id}`);
                     }}
                     className="w-full min-h-11 py-2 sm:py-3 px-2.5 sm:px-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-cairo font-black text-[11px] min-[390px]:text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
@@ -585,9 +590,9 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                     className="w-full min-h-11 py-2 sm:py-3 px-2.5 sm:px-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-105 text-white font-cairo font-black text-[11px] min-[390px]:text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                   >
                     <Building2 className="w-4.5 h-4.5 text-white" />
-                    <span className="sm:hidden">طلب التوفيق والوساطة</span>
+                    <span className="sm:hidden">طلب توافق</span>
                     <span className="hidden sm:inline truncate">
-                      طلب التوفيق والوساطة لهذا الملف 💍
+                      طلب توافق لهذا الملف 💍
                     </span>
                   </button>
                 ) : (
@@ -607,15 +612,15 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                 )}
               </div>
 
-              {/* 2. زر الواتساب للتوفيق والوساطة */}
+              {/* واتساب مخصص حصريًا لمراسلة إدارة الموقع */}
               <button
                 onClick={handleShareWhatsApp}
                 className="w-11 h-11 sm:w-auto sm:h-auto sm:py-3 sm:px-4 rounded-xl sm:rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-cairo font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs flex-shrink-0"
-                title="تواصل واتساب للتوفيق والوساطة مع هذا الملف"
-                aria-label="تواصل واتساب للتوفيق والوساطة"
+                title="مراسلة إدارة الموقع عبر واتساب"
+                aria-label="مراسلة إدارة الموقع عبر واتساب"
               >
                 <MessageCircle className="w-4 h-4 fill-white" />
-                <span className="hidden sm:inline">{!user?.isLoggedIn ? 'تواصل واتساب للتوفيق 💬' : 'واتساب للتوفيق 💬'}</span>
+                <span className="hidden sm:inline">واتساب إدارة الموقع</span>
               </button>
 
               {/* 3. زر المفضلة التفاعلي */}
@@ -758,7 +763,7 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                   </div>
                   <div>
                     <h3 className="font-cairo font-black text-sm sm:text-base leading-tight truncate">
-                      {isImported ? 'طلب التوفيق والوساطة لهذا الملف' : 'إرسال طلب توافق للزواج'}
+                      {isImported ? 'طلب توافق لهذا الملف' : 'إرسال طلب توافق للزواج'}
                     </h3>
                     <p className={`text-[11px] font-tajawal ${isImported ? 'text-emerald-100' : 'text-slate-800'}`}>
                       {isImported ? 'إشراف مباشر من إدارة المنصة والخطابات' : 'تواصل شرعي ومباشر بين الطرفين'}
@@ -823,7 +828,7 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                   <div className="grid grid-cols-1 gap-1.5 max-h-36 overflow-y-auto pr-1">
                     {(isImported
                       ? [
-                          'السلام عليكم ورحمة الله، اطلعت على هذا الملف المرفوع عبر الإدارة، وأرغب في التقدم وطلب التوفيق والوساطة للتواصل مع الطرف الآخر/الخطابة لبحث التوافق.',
+                          'السلام عليكم ورحمة الله، اطلعت على هذا الملف المرفوع عبر الإدارة، وأرغب في التقدم وطلب توافق للتواصل مع الطرف الآخر/الخطابة لبحث التوافق.',
                           'السلام عليكم، أرغب في التقدّم الجاد لطلب التوافق مع هذا الملف المبارك عبر وساطة المنصة.',
                           'تحية طيبة، أرجو تزويدي بمزيد من التفاصيل حول هذا الملف لبحث التوافق الشرعي والتنسيق مع الخطابة.',
                         ]
@@ -873,7 +878,7 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                   }`}
                 >
                   {isImported ? <Building2 className="w-4 h-4 text-white" /> : <Send className="w-4 h-4 -scale-x-100" />}
-                  <span>{sending ? 'جاري إرسال الطلب...' : isImported ? 'تأكيد إرسال طلب التوفيق والوساطة 💍' : 'تأكيد إرسال طلب التوافق 💌'}</span>
+                  <span>{sending ? 'جاري إرسال الطلب...' : isImported ? 'تأكيد إرسال طلب توافق 💍' : 'تأكيد إرسال طلب التوافق 💌'}</span>
                 </button>
 
                 {isImported && (
@@ -884,10 +889,10 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                       setWhatsAppModalOpen(true);
                     }}
                     className="py-3 px-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-cairo font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-                    title="تنسيق عبر واتساب"
+                    title="مراسلة إدارة الموقع عبر واتساب"
                   >
                     <MessageCircle className="w-4 h-4 fill-white" />
-                    <span className="hidden sm:inline">واتساب</span>
+                    <span className="hidden sm:inline">واتساب الإدارة</span>
                   </button>
                 )}
 

@@ -12,7 +12,11 @@ export default function AdminPaymentSettings() {
 
   const handleSave = () => {
     updatePaypalSettings(paypalForm);
-    updatePaymentSettings(paymentsForm);
+    const journeyDepositAmount = Math.max(0, Number(paymentsForm.journeyDepositAmount) || 0);
+    const journeyTotalFee = Math.max(journeyDepositAmount, Number(paymentsForm.journeyTotalFee) || 0);
+    const normalizedPayments = { ...paymentsForm, journeyDepositAmount, journeyTotalFee };
+    setPaymentsForm(normalizedPayments);
+    updatePaymentSettings(normalizedPayments);
     setSaved(true);
     showToast('تم حفظ إعدادات الدفع بنجاح', 'success');
     setTimeout(() => setSaved(false), 2500);
@@ -40,6 +44,70 @@ export default function AdminPaymentSettings() {
           </button>
         }
       />
+
+      {/* رسوم رحلة التوافق */}
+      <div className="overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-sm">
+        <div className="border-b border-amber-100 bg-gradient-to-l from-amber-50 to-white p-5">
+          <h3 className="flex items-center gap-2 font-cairo font-bold text-slate-900">
+            <CreditCard className="h-5 w-5 text-amber-600" />
+            رسوم رحلة التوافق لكل طرف
+          </h3>
+          <p className="mt-1 font-tajawal text-xs leading-relaxed text-slate-500">
+            يُدفع العربون بعد قبول الطرف الآخر، ثم يُدفع المتبقي بعد نتيجة النظرة الشرعية وتسليم المهر.
+          </p>
+        </div>
+        <div className="grid gap-4 p-5 sm:grid-cols-3">
+          <div>
+            <label className={labelClass}>إجمالي أتعاب المنصة</label>
+            <div className="relative">
+              <input
+                type="number"
+                min={0}
+                step={50}
+                value={paymentsForm.journeyTotalFee ?? 2500}
+                onChange={(e) => setPaymentsForm({
+                  ...paymentsForm,
+                  journeyTotalFee: Math.max(0, Number(e.target.value) || 0),
+                })}
+                className={`${inputClass} pl-14`}
+              />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 font-cairo text-xs text-slate-400">ريال</span>
+            </div>
+          </div>
+          <div>
+            <label className={labelClass}>العربون بعد القبول</label>
+            <div className="relative">
+              <input
+                type="number"
+                min={0}
+                max={paymentsForm.journeyTotalFee ?? 2500}
+                step={50}
+                value={paymentsForm.journeyDepositAmount ?? 500}
+                onChange={(e) => setPaymentsForm({
+                  ...paymentsForm,
+                  journeyDepositAmount: Math.min(
+                    paymentsForm.journeyTotalFee ?? 2500,
+                    Math.max(0, Number(e.target.value) || 0),
+                  ),
+                })}
+                className={`${inputClass} pl-14`}
+              />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 font-cairo text-xs text-slate-400">ريال</span>
+            </div>
+            <p className="mt-1 font-tajawal text-[11px] text-rose-600">غير مسترد بعد السداد</p>
+          </div>
+          <div>
+            <label className={labelClass}>المتبقي بعد تسليم المهر</label>
+            <div className="flex min-h-11 items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4">
+              <span className="font-cairo text-sm font-black text-emerald-800">
+                {Math.max(0, (paymentsForm.journeyTotalFee ?? 2500) - (paymentsForm.journeyDepositAmount ?? 500))}
+              </span>
+              <span className="font-cairo text-xs text-emerald-600">ريال</span>
+            </div>
+            <p className="mt-1 font-tajawal text-[11px] text-slate-400">يُحسب تلقائيًا</p>
+          </div>
+        </div>
+      </div>
 
       {/* PayPal */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">

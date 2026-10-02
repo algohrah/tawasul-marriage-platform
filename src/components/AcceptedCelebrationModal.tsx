@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { HeartHandshake, ShieldCheck, Sparkles, MessageSquare, ChevronLeft } from 'lucide-react';
-import { INQUIRY_PACKAGE_PRICE, DEPOSIT_AMOUNT } from '../lib/journey';
+import { INQUIRY_PACKAGE_PRICE } from '../lib/journey';
+import { useSettings } from '../lib/useSettings';
 
 // ============================================================
 //  بطاقة احتفالية تظهر فور الضغط على «قبول»
@@ -19,6 +20,7 @@ interface Props {
 export default function AcceptedCelebrationModal({
   open, memberName, onClose, onProceed, onInquiry,
 }: Props) {
+  const { settings } = useSettings();
   return (
     <AnimatePresence>
       {open && (
@@ -55,7 +57,7 @@ export default function AcceptedCelebrationModal({
               >
                 <HeartHandshake className="w-9 h-9 text-emerald-600" />
               </motion.div>
-              <h3 className="font-cairo font-extrabold text-2xl text-white">🎉 تم القبول!</h3>
+              <h3 className="font-cairo font-extrabold text-2xl text-white">تم القبول بفضل الله</h3>
               <p className="text-emerald-50 font-cairo text-sm mt-1">
                 <strong className="text-white">{memberName}</strong> قبِل طلب التوافق للزواج معك
               </p>
@@ -67,7 +69,7 @@ export default function AcceptedCelebrationModal({
                 ما هي خطوتك التالية؟
               </p>
 
-              {/* الخيار الأساسي: سداد رسوم الجدية */}
+              {/* الخيار الأساسي: سداد العربون */}
               <button
                 onClick={onProceed}
                 className="w-full bg-gold-gradient rounded-2xl p-4 flex items-center gap-3 transition-all hover:-translate-y-0.5 shadow-gold text-right"
@@ -76,8 +78,10 @@ export default function AcceptedCelebrationModal({
                   <ShieldCheck className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-cairo font-extrabold text-navy-900">سداد رسوم تأكيد الجدية</h4>
-                  <p className="text-xs text-navy-800/70 font-cairo">{DEPOSIT_AMOUNT} ريال (تُسترد عند عدم التوافق) — الطريق المباشر لتبادل الأرقام</p>
+                  <h4 className="font-cairo font-extrabold text-navy-900">سداد العربون</h4>
+                  <p className="text-xs text-navy-800/70 font-cairo">
+                    {settings.deposit_amount} ريال لكل طرف — غير مسترد بعد السداد
+                  </p>
                 </div>
                 <ChevronLeft className="w-5 h-5 text-navy-900/60 flex-shrink-0" />
               </button>

@@ -16,18 +16,15 @@ export async function getAuthUser(req) {
   const bodyToken = req.body && typeof req.body === 'object' ? req.body._authToken : undefined;
   const token = headerToken || bodyToken;
   if (!token) return null;
-  if (token.startsWith('local-token-') || token === 'demo-admin-token') {
+  if (process.env.NODE_ENV !== 'production' && (token.startsWith('local-token-') || token === 'demo-admin-token')) {
     return { id: 'admin-1', email: 'admin@tawafok.com' };
   }
   try {
     const { data, error } = await supabase.auth.getUser(token);
-    if (error || !data?.user) {
-      if (token) return { id: 'local-user', email: 'admin@tawafok.com' };
-      return null;
-    }
+    if (error || !data?.user) return null;
     return data.user;
   } catch {
-    return { id: 'local-user', email: 'admin@tawafok.com' };
+    return null;
   }
 }
 
@@ -38,9 +35,7 @@ export async function isAdminEmail(email) {
   if (
     clean === 'admin@tawasul.sa' ||
     clean === 'admin@tawafok.com' ||
-    clean === 'demo@tawasul.sa' ||
-    clean === 'algohrah4u@gmail.com' ||
-    clean.startsWith('admin@')
+    clean === 'algohrah4u@gmail.com'
   ) return true;
   try {
     const { data } = await supabase.from('admin_users').select('id').eq('email', clean).maybeSingle();
@@ -61,8 +56,8 @@ export async function getMemberLink(authUserId) {
 export async function requireAdmin(req, res) {
   const user = await getAuthUser(req);
   if (!user) {
-    // في بيئة المعاينة والتطوير المحلي بدون توكن مصادقة
-    return { id: 'admin-1', email: 'admin@tawasul.sa' };
+    res.status(401).json({ error: 'يجب تسجيل الدخول بصلاحية إدارية' });
+    return null;
   }
   const admin = await isAdminEmail(user.email);
   if (!admin) { res.status(403).json({ error: 'لا تملك الصلاحية الإدارية اللازمة لهذا الإجراء' }); return null; }
@@ -79,12 +74,11 @@ export async function requireAdmin(req, res) {
 export async function authorizeMemberAction(req, res, claimedMemberId) {
   const user = await getAuthUser(req);
   if (!user) {
-    // التسامح في البيئة المحلية التجريبية حتى لا تتعطل التحديثات
-    return { user: { id: claimedMemberId, email: 'admin@tawasul.sa' }, memberId: claimedMemberId, isAdmin: true };
+    res.status(401).json({ error: 'يجب تسجيل الدخول لتنفيذ هذا الإجراء' });
+    return null;
   }
-  // إذا شمل الطلب وضع التصفح كـ (Impersonation) الإداري
-  const isImpersonating = req.headers['x-impersonating'] === 'true' || (req.body && req.body._impersonating === true);
-  if (isImpersonating || await isAdminEmail(user.email)) return { user, memberId: claimedMemberId, isAdmin: true };
+  // وضع «التصفح كعضو» لا يمنح صلاحية بحد ذاته؛ يجب أن تكون الجلسة لمشرف حقيقي.
+  if (await isAdminEmail(user.email)) return { user, memberId: claimedMemberId, isAdmin: true };
   const link = await getMemberLink(user.id);
   if (link && String(link.member_id) === String(claimedMemberId)) return { user, memberId: claimedMemberId, isAdmin: false };
   // مطابقة إضافية بالبريد الإلكتروني أو المعرّف المباشر
@@ -94,6 +88,6 @@ export async function authorizeMemberAction(req, res, claimedMemberId) {
       return { user, memberId: claimedMemberId, isAdmin: false };
     }
   } catch { /* ignore */ }
-  // السماح مع تعليم الكائن بالمرونة لضمان عدم تعطل طلبات الاهتمام أثناء التصفح التجريبي
-  return { user, memberId: claimedMemberId, isAdmin: false };
+  res.status(403).json({ error: 'لا تملك صلاحية تنفيذ هذا الإجراء لهذا العضو' });
+  return null;
 }

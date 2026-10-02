@@ -109,7 +109,7 @@ export default function AdminAnalytics() {
   const statCards = [
     { label: 'إجمالي الأعضاء', value: stats?.totalMembers || 0, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: 'الأعضاء الموثقون', value: stats?.verified || 0, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: 'طلبات الاهتمام', value: stats?.totalRequests || 0, icon: Heart, color: 'text-rose-600', bg: 'bg-rose-50' },
+    { label: 'طلبات التوافق', value: stats?.totalRequests || 0, icon: Heart, color: 'text-rose-600', bg: 'bg-rose-50' },
     { label: 'الإيرادات التقريرية', value: (stats?.revenue || 0) + ' ر.س', icon: CreditCard, color: 'text-amber-600', bg: 'bg-amber-50' },
   ];
 

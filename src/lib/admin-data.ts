@@ -107,7 +107,7 @@ export const DASHBOARD_STATS = [
 
 export const RECENT_ACTIVITY = [
   { type: 'member', text: 'عضو جديد: «أم محمد» انضم إلى المنصة', time: 'قبل 5 دقائق', icon: 'user-plus' },
-  { type: 'request', text: 'طلب اهتمام جديد من «أبو عبدالله»', time: 'قبل 12 دقيقة', icon: 'heart' },
+  { type: 'request', text: 'طلب توافق جديد من «أبو عبدالله»', time: 'قبل 12 دقيقة', icon: 'heart' },
   { type: 'payment', text: 'دفعة جديدة: 99 ر.س من «العتيبي» - باقة ذهبية', time: 'قبل 25 دقيقة', icon: 'dollar' },
   { type: 'verification', text: 'طلب توثيق جديد من «بنت الخليج»', time: 'قبل ساعة', icon: 'shield' },
   { type: 'ticket', text: 'تذكرة دعم جديدة: «مشكلة في البحث»', time: 'قبل ساعتين', icon: 'ticket' },

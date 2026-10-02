@@ -12,7 +12,7 @@ import { useApp } from '../lib/AppContext';
 import {
   fetchRequest, fetchRequestEvents, fetchInquiry, buyInquiryPackage, sendInquiryMessage, initializeInquiryPackage,
   fetchMembers, runActionStandalone, simulateInquiryReply, markRequestSeen,
-  markRequestNotificationsRead, getCurrentUserId, hasUserPaidDepositAnywhere, buyMessagePackageCustom,
+  markRequestNotificationsRead, getCurrentUserId, buyMessagePackageCustom,
   updateInquiryMessage, deleteInquiryMessage, type ApiRequest, type RequestEvent, type InquiryState,
 } from '../lib/useInterestRequests';
 import { useSettings } from '../lib/useSettings';
@@ -61,7 +61,11 @@ export default function JourneyPage() {
   };
 
   const load = useCallback(async () => {
-    if (!currentUserId) return;
+    if (!currentUserId || !Number.isFinite(rid) || rid <= 0) {
+      setReq(null);
+      setLoading(false);
+      return;
+    }
     await initializeInquiryPackage(rid, currentUserId);
     const [r, ev, inq, mem] = await Promise.all([
       fetchRequest(rid),
@@ -270,7 +274,7 @@ export default function JourneyPage() {
             <div className="flex items-start gap-2.5 mb-3">
               <Ban className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-navy-500 font-cairo leading-relaxed">
-                يمكنك إلغاء هذا الطلب في أي مرحلة مع ذكر السبب. لا تُسترد رسوم الجدية عند الإلغاء.
+                يمكنك إلغاء هذا الطلب في أي مرحلة مع ذكر السبب. العربون غير مسترد بعد السداد.
               </p>
             </div>
             <button onClick={() => setCancelOpen(true)} disabled={busy}
@@ -370,20 +374,33 @@ function ActiveStagePanel({
     return (
       <HeroCard meta={meta} c={c} Icon={Icon}>
         <p className="text-sm text-navy-600 font-cairo leading-relaxed">{meta.whereYouAre}</p>
-        {/* ===== مشاركة معلومات التواصل (الأنثى تُدخل، الذكر يطّلع بعد القَسَم) ===== */}
+        {/* مشاركة اختيارية وصريحة — لا تُقرأ أي بيانات من ملف الحساب */}
         <ContactExchange req={req} self={self} busy={busy} runAction={runAction} showToast={showToast} />
 
-        {/* المتابعة للنظرة الشرعية بعد اكتمال تبادل التواصل واطّلاع الطرف الآخر */}
-        {(req.guardian_phone || req.contact_info) && req.male_pledged && (
-          <button onClick={() => runAction('advance_viewing')} disabled={busy}
-            className="w-full mt-4 bg-indigo-500 text-white font-cairo font-bold py-3.5 rounded-2xl hover:brightness-105 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
-            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Heart className="w-4 h-4" />} الانتقال للنظرة الشرعية
-          </button>
-        )}
-        {(req.guardian_phone || req.contact_info) && !req.male_pledged && self?.gender === 'female' && (
-          <p className="mt-3 text-center text-[11px] font-cairo text-navy-400">
-            ⏳ بانتظار الطرف الآخر ليقوم بالتعهد ويُطلع على الأرقام. ستُخطرك فور إتمام ذلك.
-          </p>
+        {!!req.guardian_phone && !!req.male_phone && (
+          <div className="mt-4 rounded-3xl border border-indigo-200 bg-indigo-50/60 p-4 text-center">
+            {(isSender ? req.sender_stage_confirmed : req.receiver_stage_confirmed) ? (
+              <>
+                <Check className="mx-auto h-7 w-7 text-indigo-600" />
+                <p className="mt-2 font-cairo text-sm font-extrabold text-indigo-900">تم تسجيل تأكيدك</p>
+                <p className="mt-1 font-cairo text-xs leading-6 text-indigo-700">
+                  بانتظار تأكيد الطرف الآخر. لن تنتقل الرحلة قبل موافقة الطرفين.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="font-cairo text-sm font-extrabold text-indigo-950">هل أنتما مستعدان لتسجيل نتيجة النظرة الشرعية؟</p>
+                <p className="mt-1 font-cairo text-xs leading-6 text-indigo-700">
+                  سيُحفظ تأكيدك أولًا، وتنتقل الرحلة فقط بعد تأكيد الطرف الآخر.
+                </p>
+                <button onClick={() => runAction('confirm_advance', { nextStage: 'sharia_viewing' })} disabled={busy}
+                  className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 font-cairo text-sm font-extrabold text-white transition hover:bg-indigo-700 disabled:opacity-60">
+                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Heart className="h-4 w-4" />}
+                  تأكيد الاستعداد من جانبي
+                </button>
+              </>
+            )}
+          </div>
         )}
       </HeroCard>
     );
@@ -503,415 +520,303 @@ function ActiveStagePanel({
 // ============================================================
 function EngagementPanel({ req, busy, runAction, showToast, meta, c, Icon }: any) {
   const { settings } = useSettings();
-  const [pledge, setPledge] = useState(false);
+  const { user } = useApp();
+  const currentUserId = user?.memberId || getCurrentUserId();
+  const isSender = String(req.sender_id) === String(currentUserId);
+  const selfPaid = isSender ? !!req.sender_final_paid : !!req.receiver_final_paid;
+  const otherPaid = isSender ? !!req.receiver_final_paid : !!req.sender_final_paid;
+  const [mahrConfirmed, setMahrConfirmed] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
 
-  const complete = async () => {
-    if (!pledge) { showToast('يرجى تأكيد إتمام إجراءات العقد والموافقة على سداد الرسوم أولاً', 'error'); return; }
-    // سداد رسوم السعي النهائية عبر بوابة الدفع قبل توثيق الزواج
+  const openPayment = () => {
+    if (!mahrConfirmed) {
+      showToast('أكد تسليم المهر أولًا قبل سداد المبلغ المتبقي', 'error');
+      return;
+    }
     setPayOpen(true);
   };
 
-  // يُنفّذ فعلياً بعد إتمام دفع رسوم السعي النهائية
-  const completeEngagement = async (): Promise<boolean> => {
-    const ok = await runAction('complete_engagement');
-    if (ok) showToast('🎉 مبارك! تم سداد رسوم السعي وتوثيق الزواج بنجاح');
+  const completeFinalPayment = async (): Promise<boolean> => {
+    const ok = await runAction('pay_final_fee', { mahrConfirmed: true });
+    if (ok) showToast(otherPaid ? 'اكتمل سداد الطرفين بفضل الله' : 'تم سداد المبلغ المتبقي، وبانتظار الطرف الآخر');
     return !!ok;
   };
+
   return (
     <HeroCard meta={meta} c={c} Icon={Icon}>
-      <p className="text-sm text-navy-600 font-cairo leading-relaxed mb-4">{meta.whereYouAre}</p>
-      
-      {/* بطاقة عقد القران والرسوم بجمالية فاخرة */}
-      <div className="bg-gradient-to-br from-amber-50/60 to-gold-50/40 border border-amber-200 rounded-3xl p-5 text-right shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-20 h-20 bg-amber-500/5 rounded-full -ml-6 -mt-6" />
-        
-        <div className="flex items-center gap-3 mb-3 border-b border-amber-200/60 pb-3">
-          <div className="w-10 h-10 rounded-xl bg-gold-gradient flex items-center justify-center text-navy-900 shadow-sm">
-            <Gem className="w-5 h-5 text-amber-800" />
+      <p className="mb-4 font-cairo text-sm leading-7 text-navy-600">{meta.whereYouAre}</p>
+
+      <div className="relative overflow-hidden rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-5 shadow-sm">
+        <div className="absolute -left-8 -top-8 h-28 w-28 rounded-full bg-amber-300/15" />
+        <div className="relative flex items-start gap-3">
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-gold-gradient shadow-sm">
+            <Gem className="h-5 w-5 text-amber-900" />
           </div>
           <div>
-            <h4 className="font-cairo font-extrabold text-navy-800 text-sm">رسوم السعي النهائية</h4>
-            <p className="text-[10px] text-navy-400 font-cairo">تُسدّد بعد عقد القران (الملكة)</p>
+            <h4 className="font-cairo text-sm font-extrabold text-navy-900">المتبقي من أتعاب المنصة لكل طرف</h4>
+            <p className="mt-1 font-cairo text-xs leading-5 text-navy-500">يستحق بعد نتيجة النظرة الشرعية وتسليم المهر.</p>
           </div>
         </div>
-        
-        <div className="text-center py-4">
-          <p className="font-mono font-black text-2xl sm:text-4xl text-amber-700">{settings.final_fee_amount || 2000} <span className="text-base font-cairo font-bold">ريال</span></p>
-          <p className="text-[11px] text-navy-500 font-cairo mt-1.5 leading-relaxed">
-            تُسدّد عند إتمام الملكة إبراءً للذمة.
-          </p>
+        <div className="relative mt-5 text-center">
+          <p className="font-mono text-4xl font-black text-amber-700">{settings.final_fee_amount || 2000}</p>
+          <p className="font-cairo text-xs font-bold text-amber-800">ريال لكل طرف</p>
         </div>
-
-        <div className="space-y-2 mt-2 pt-3 border-t border-amber-200/50 text-xs text-navy-700 font-cairo">
-          <p className="flex items-center gap-1.5">
-            <span className="text-amber-600 font-bold">✓</span> توثيق الحالة كـ "متزوج".
-          </p>
-          <p className="flex items-center gap-1.5">
-            <span className="text-amber-600 font-bold">✓</span> أرشفة وحماية بيانات الطرفين.
-          </p>
+        <div className="relative mt-4 grid grid-cols-2 gap-2">
+          <PaymentState label="دفعت أنت" done={selfPaid} />
+          <PaymentState label="دفع الطرف الآخر" done={otherPaid} />
         </div>
       </div>
 
-      <label className="flex items-start gap-3 mt-4 p-3.5 rounded-2xl bg-cream-50/60 border border-cream-200 cursor-pointer select-none">
-        <input type="checkbox" checked={pledge} onChange={(e) => setPledge(e.target.checked)} className="mt-1 accent-gold-500 w-4 h-4 rounded" />
-        <span className="text-xs font-cairo text-navy-700 leading-relaxed font-bold">
-          أقر بإتمام عقد القران وألتزم بسداد رسوم السعي النهائية إبراءً للذمة.
-        </span>
-      </label>
+      {selfPaid ? (
+        <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-center">
+          <Check className="mx-auto h-7 w-7 text-emerald-600" />
+          <p className="mt-2 font-cairo text-sm font-extrabold text-emerald-800">تم سداد المبلغ المتبقي من طرفك</p>
+          <p className="mt-1 font-cairo text-xs leading-6 text-emerald-700">
+            {otherPaid ? 'اكتمل سداد الطرفين، ويتم إكمال الرحلة الآن.' : 'بانتظار سداد الطرف الآخر. سنُخطرك فور اكتمال الرحلة.'}
+          </p>
+        </div>
+      ) : (
+        <>
+          <label className="mt-4 flex cursor-pointer select-none items-start gap-3 rounded-2xl border border-cream-200 bg-cream-50/70 p-4">
+            <input type="checkbox" checked={mahrConfirmed} onChange={(event) => setMahrConfirmed(event.target.checked)} className="mt-1 h-4 w-4 accent-amber-600" />
+            <span className="font-cairo text-xs font-bold leading-6 text-navy-700">
+              أؤكد أن المهر تم تسليمه، وأرغب في سداد المتبقي من أتعاب المنصة من جانبي.
+            </span>
+          </label>
+          <button onClick={openPayment} disabled={!mahrConfirmed || busy}
+            className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gold-gradient px-4 font-cairo text-sm font-extrabold text-navy-900 shadow-gold transition hover:-translate-y-0.5 disabled:translate-y-0 disabled:opacity-50">
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gem className="h-5 w-5 text-amber-800" />}
+            سداد المتبقي من جانبي
+          </button>
+        </>
+      )}
 
-      <button onClick={complete} disabled={!pledge || busy}
-        className="w-full mt-4 bg-gold-gradient text-navy-900 font-cairo font-extrabold py-3.5 rounded-2xl shadow-gold hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 flex items-center justify-center gap-2">
-        {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Gem className="w-5 h-5 text-amber-800" />}
-        سداد رسوم السعي وتوثيق الملكة 🎉
-      </button>
-
-      {/* بوابة دفع رسوم السعي النهائية (بعد التواصل وإتمام الملكة) */}
       <PaymentGateway
         open={payOpen}
         onClose={() => setPayOpen(false)}
         amount={settings.final_fee_amount || 2000}
-        title="رسوم السعي النهائية"
-        description="تُسدّد بعد إتمام عقد القران"
+        title="المتبقي من أتعاب رحلة التوافق"
+        description="يُسدّد بعد تسليم المهر — لكل طرف بصورة مستقلة"
         lineItems={[
-          { label: 'نوع الرسوم', value: 'سعي وتوثيق نهائي' },
-          { label: 'التوثيق', value: 'تحديث الحالة إلى متزوج' },
+          { label: 'المرحلة', value: 'بعد نتيجة النظرة الشرعية وتسليم المهر' },
+          { label: 'المبلغ', value: `${settings.final_fee_amount || 2000} ريال لهذا الطرف` },
         ]}
-        payLabel="سداد رسوم السعي وتوثيق الزواج"
-        onPaid={completeEngagement}
+        payLabel="سداد المبلغ المتبقي"
+        onPaid={completeFinalPayment}
         requestId={req.id}
         requiresOfflineReview
+        applyVat={false}
+        metadata={{ paymentStage: 'final_fee', mahrConfirmed: true }}
       />
     </HeroCard>
   );
 }
 
+function PaymentState({ label, done }: { label: string; done: boolean }) {
+  return (
+    <div className={`rounded-2xl border p-3 text-center ${done ? 'border-emerald-200 bg-emerald-50' : 'border-cream-200 bg-white'}`}>
+      <span className={`font-cairo text-xs font-extrabold ${done ? 'text-emerald-700' : 'text-navy-500'}`}>
+        {done ? 'تم السداد' : 'بانتظار السداد'}
+      </span>
+      <p className="mt-0.5 font-cairo text-[10px] text-navy-400">{label}</p>
+    </div>
+  );
+}
+
 // ============================================================
-//  مشاركة معلومات التواصل
-//  الأنثى تُدخل رقم ولي الأمر → الذكر يراه بعد القَسَم بعدم النشر
+//  مشاركة معلومات التواصل — لا يظهر إلا ما يكتبه العضو ويرسله بنفسه
 // ============================================================
-const GUARDIAN_RELATIONS = ['الأب', 'الأخ', 'العم', 'الخال', 'الجد', 'ولي الأمر'];
 
 function ContactExchange({ req, self, busy, runAction, showToast }: any) {
   const isFemale = self?.gender === 'female';
-  
-  // States for reporting communication issues
-  const [reportOpen, setReportOpen] = useState(false);
-  const [reportReason, setReportReason] = useState('الطرف الآخر لم يتجاوب');
-  const [customReason, setCustomReason] = useState('');
-  const [reporting, setReporting] = useState(false);
+  const ownSubmitted = isFemale ? !!req.guardian_phone : !!req.male_phone;
+  const otherSubmitted = isFemale ? !!req.male_phone : !!req.guardian_phone;
 
-  const handleReport = async () => {
-    setReporting(true);
-    const finalReason = reportReason === 'كتابة سبب مخصص' ? customReason : reportReason;
-    if (!finalReason.trim()) {
-      showToast('يرجى تحديد أو كتابة سبب البلاغ', 'error');
-      setReporting(false);
+  const [phone, setPhone] = useState(isFemale ? (req.guardian_phone || '') : (req.male_phone || ''));
+  const [name, setName] = useState(isFemale ? (req.guardian_name || '') : (req.male_name || ''));
+  const [relation, setRelation] = useState(isFemale ? (req.guardian_relation || '') : (req.male_relation || ''));
+  const [contactTime, setContactTime] = useState(isFemale ? (req.contact_time || '') : (req.male_contact_time || ''));
+  const [note, setNote] = useState(isFemale ? (req.contact_note || '') : (req.male_contact_note || ''));
+  const [confirmed, setConfirmed] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState('تعذر التواصل مع الطرف الآخر');
+
+  const submit = async () => {
+    if (!phone.trim()) {
+      showToast(isFemale ? 'اكتب رقم ولي الأمر أو رقم التواصل الذي اخترت مشاركته' : 'اكتب رقم التواصل الذي اخترت مشاركته', 'error');
       return;
     }
-    const ok = await runAction('report_contact_issue', { reason: finalReason });
-    setReporting(false);
-    if (ok) {
-      showToast('✅ تم إرسال البلاغ للإدارة بنجاح. سيقوم فريق الدعم بالتحقق والتواصل معك خلال ساعات.', 'success');
-      setReportOpen(false);
+    if (!confirmed) {
+      showToast('يرجى تأكيد أنك اخترت مشاركة هذه المعلومات بنفسك', 'error');
+      return;
     }
+    const payload = isFemale
+      ? {
+          guardianPhone: phone.trim(), guardianName: name.trim(), guardianRelation: relation.trim(),
+          contactTime: contactTime.trim(), contactNote: note.trim(),
+        }
+      : {
+          malePhone: phone.trim(), maleName: name.trim(), maleRelation: relation.trim(),
+          maleContactTime: contactTime.trim(), maleContactNote: note.trim(),
+        };
+    const ok = await runAction('submit_contact', payload);
+    if (ok) showToast('تم إرسال معلومات التواصل التي كتبتها للطرف الآخر', 'success');
   };
 
-  // Female states
-  const femaleSubmitted = !!req.guardian_phone;
-  const [fPhone, setFPhone] = useState(req.guardian_phone || '');
-  const [fName, setFName] = useState(req.guardian_name || '');
-  const [fRel, setFRel] = useState(req.guardian_relation || '');
-  const [fTime, setFTime] = useState(req.contact_time || '');
-  const [fNote, setFNote] = useState(req.contact_note || '');
-  const [fPledgedInput, setFPledgedInput] = useState(false);
-
-  // Male states
-  const maleSubmitted = !!req.male_phone;
-  const [mPhone, setMPhone] = useState(req.male_phone || '');
-  const [mName, setMName] = useState(req.male_name || '');
-  const [mRel, setMRel] = useState(req.male_relation || '');
-  const [mTime, setMTime] = useState(req.male_contact_time || '');
-  const [mNote, setMNote] = useState(req.male_contact_note || '');
-  const [mPledgedInput, setMPledgedInput] = useState(false);
-
-  const submitFemale = async () => {
-    if (!fPhone.trim()) { showToast('رقم ولي الأمر مطلوب', 'error'); return; }
-    const ok = await runAction('submit_contact', {
-      guardianPhone: fPhone.trim(), guardianName: fName.trim(),
-      guardianRelation: fRel, contactTime: fTime.trim(), contactNote: fNote.trim(),
-    });
-    if (ok) showToast('تمت مشاركة رقم ولي الأمر بنجاح ✓');
-  };
-
-  const submitMale = async () => {
-    if (!mPhone.trim()) { showToast('رقم جوال التواصل مطلوب', 'error'); return; }
-    const ok = await runAction('submit_contact', {
-      malePhone: mPhone.trim(), maleName: mName.trim(), maleRelation: mRel,
-      maleContactTime: mTime.trim(), maleContactNote: mNote.trim(),
-    });
-    if (ok) showToast('تمت مشاركة بيانات التواصل بنجاح ✓');
-  };
-
-  const doMalePledge = async () => {
-    const ok = await runAction('male_pledge', {});
-    if (ok) showToast('تم تأكيد التعهّد — تظهر لك معلومات ولي الأمر الآن', 'success');
-  };
-
-  const doFemalePledge = async () => {
-    const ok = await runAction('female_pledge', {});
-    if (ok) showToast('تم تأكيد التعهّد — يظهر لك رقم التواصل المباشر الآن', 'success');
-  };
+  const otherContact = isFemale
+    ? {
+        phone: req.male_phone,
+        name: req.male_name,
+        relation: req.male_relation,
+        time: req.male_contact_time,
+        note: req.male_contact_note,
+      }
+    : {
+        phone: req.guardian_phone,
+        name: req.guardian_name,
+        relation: req.guardian_relation,
+        time: req.contact_time,
+        note: req.contact_note,
+      };
 
   return (
-    <div className="space-y-6">
-      <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl">
-        <p className="text-xs font-cairo text-indigo-700 leading-relaxed text-center font-bold">
-          🤝 آن الآوان لتبادل أرقام التواصل! الباحثة عن الستر تُدخل رقم ولي أمرها، والباحث عن الستر يطّلع عليه بعد التعهد بالحفاظ على الخصوصية.
-        </p>
-      </div>
-
-      {/* 1. معلومات الباحثة عن الستر (رقم ولي الأمر - أولوية) */}
-      <div className="rounded-2xl border border-cream-200 bg-white p-4 shadow-sm">
-        <h3 className="font-cairo font-extrabold text-sm text-navy-800 flex items-center gap-1.5 border-b border-cream-100 pb-2 mb-3">
-          <span className="text-lg">🌸</span> بيانات التواصل للباحثة عن الستر
-          <span className="text-[9px] font-normal text-navy-400 bg-cream-100 px-1.5 py-0.5 rounded-full">أولوية رقم ولي الأمر</span>
-        </h3>
-
-        {isFemale ? (
-          // لوحة الأنثى نفسها
-          !femaleSubmitted ? (
-            <div className="space-y-3">
-              <div>
-                <label className="block text-[11px] font-cairo font-bold text-navy-600 mb-1">📱 رقم ولي الأمر <span className="text-rose-500">*</span></label>
-                <input value={fPhone} onChange={(e) => setFPhone(e.target.value)} inputMode="tel" placeholder="مثال: 05xxxxxxxx"
-                  className="w-full bg-cream-50 border border-cream-200 rounded-xl px-3 py-2 text-sm font-cairo focus:outline-none focus:ring-2 focus:ring-indigo-200" />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-[11px] font-cairo font-bold text-navy-600 mb-1">👤 اسم ولي الأمر</label>
-                  <input value={fName} onChange={(e) => setFName(e.target.value)} placeholder="اسم الولي"
-                    className="w-full bg-cream-50 border border-cream-200 rounded-xl px-3 py-2 text-sm font-cairo focus:outline-none focus:ring-2 focus:ring-indigo-200" />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-cairo font-bold text-navy-600 mb-1">صلة القرابة</label>
-                  <input value={fRel} onChange={(e) => setFRel(e.target.value)} placeholder="مثال: أبي، عمي، خالي، أخي الأكبر"
-                    className="w-full bg-cream-50 border border-cream-200 rounded-xl px-3 py-2 text-sm font-cairo focus:outline-none focus:ring-2 focus:ring-indigo-200" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-[11px] font-cairo font-bold text-navy-600 mb-1">⏰ الوقت المناسب للاتصال</label>
-                <input value={fTime} onChange={(e) => setFTime(e.target.value)} placeholder="مثال: من 5 إلى 9 مساءً"
-                  className="w-full bg-cream-50 border border-cream-200 rounded-xl px-3 py-2 text-sm font-cairo focus:outline-none focus:ring-2 focus:ring-indigo-200" />
-              </div>
-              <div>
-                <label className="block text-[11px] font-cairo font-bold text-navy-600 mb-1">📝 ملاحظة (اختياري)</label>
-                <textarea value={fNote} onChange={(e) => setFNote(e.target.value)} rows={2} placeholder="مثال: يرجى الاتصال هاتفياً مباشرة"
-                  className="w-full bg-cream-50 border border-cream-200 rounded-xl px-3 py-2 text-sm font-cairo focus:outline-none focus:ring-2 focus:ring-indigo-200" />
-              </div>
-              <button onClick={submitFemale} disabled={busy || !fPhone.trim()}
-                className="w-full bg-indigo-500 text-white font-cairo font-bold py-3 rounded-xl hover:bg-indigo-600 transition-colors disabled:opacity-50">
-                مشاركة معلومات التواصل لولي الأمر
-              </button>
-            </div>
-          ) : (
-            <div className="bg-emerald-50/50 border border-emerald-100 rounded-xl p-3 space-y-2">
-              <p className="text-xs font-cairo text-emerald-700 font-bold flex items-center gap-1">✓ تمت مشاركة بيانات ولي الأمر بنجاح</p>
-              <div className="text-xs space-y-1 font-cairo text-navy-700">
-                <p><strong>رقم ولي الأمر:</strong> {req.guardian_phone}</p>
-                {req.guardian_name && <p><strong>اسم ولي الأمر:</strong> {req.guardian_name} ({req.guardian_relation || 'غير محدد'})</p>}
-                {req.contact_time && <p><strong>الوقت المناسب:</strong> {req.contact_time}</p>}
-                {req.contact_note && <p><strong>ملاحظات:</strong> {req.contact_note}</p>}
-              </div>
-            </div>
-          )
-        ) : (
-          // لوحة الشريك الذكر لرؤية بيانات الأنثى
-          !femaleSubmitted ? (
-            <p className="text-xs text-navy-500 font-cairo text-center py-4 bg-cream-50/50 rounded-xl">
-              ⏳ بانتظار إدخال الطرف الآخر لرقم ولي الأمر (أولوية تبادل التواصل)
+    <div className="mt-5 space-y-4">
+      <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-4 text-right">
+        <div className="flex items-start gap-3">
+          <ShieldCheck className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-700" />
+          <div>
+            <p className="font-cairo text-sm font-extrabold text-blue-950">خصوصيتك بقرارك</p>
+            <p className="mt-1 font-cairo text-xs leading-6 text-blue-800">
+              لا نعرض رقم هاتفك أو بريدك المحفوظ في الحساب. لن يرى الطرف الآخر إلا المعلومات التي تكتبها هنا ثم تضغط «إرسال معلومات التواصل».
             </p>
-          ) : !req.male_pledged ? (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-3">
-              <p className="text-xs font-cairo font-extrabold text-amber-800 flex items-center gap-1.5">
-                🔒 رقم ولي الأمر جاهز — أكمِل التعهد للاطّلاع عليه
-              </p>
-              <p className="text-[10px] font-cairo text-navy-500 leading-relaxed">
-                الباحثة عن الستر أدخلت رقم ولي أمرها بنجاح. للاطّلاع عليه، يُرجى التعهد بالحفاظ على الخصوصية.
-              </p>
-              <label className="flex items-start gap-2.5 p-3 rounded-lg bg-white border border-amber-200 cursor-pointer">
-                <input type="checkbox" checked={mPledgedInput} onChange={(e) => setMPledgedInput(e.target.checked)} className="mt-0.5 accent-amber-500" />
-                <span className="text-xs font-cairo text-navy-700 leading-relaxed">
-                  أُقسم بالله العظيم أن أحفظ هذه المعلومات ولا أنشرها أبداً، وأن أتواصل بنية الزواج الجاد فقط.
-                </span>
-              </label>
-              <button onClick={doMalePledge} disabled={busy || !mPledgedInput}
-                className="w-full bg-amber-500 text-white font-cairo font-bold py-2.5 rounded-xl hover:bg-amber-600 transition-colors disabled:opacity-50">
-                أتعهّد — أظهر لي الرقم
-              </button>
-            </div>
-          ) : (
-            <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3">
-              <p className="text-xs font-cairo font-bold text-emerald-700 mb-2 flex items-center gap-1">🌸 بيانات التواصل لولي الأمر:</p>
-              <div className="text-xs space-y-1.5 font-cairo text-navy-700">
-                <p><strong>رقم التواصل:</strong> <a href={`tel:${req.guardian_phone}`} className="text-indigo-600 underline font-bold">{req.guardian_phone}</a></p>
-                {req.guardian_name && <p><strong>اسم ولي الأمر:</strong> {req.guardian_name} ({req.guardian_relation || 'غير محدد'})</p>}
-                {req.contact_time && <p><strong>الوقت المناسب للاتصال:</strong> {req.contact_time}</p>}
-                {req.contact_note && <p><strong>ملاحظات الطرف الآخر:</strong> {req.contact_note}</p>}
-              </div>
-            </div>
-          )
-        )}
+          </div>
+        </div>
       </div>
 
-      {/* 2. معلومات الباحث عن الستر (رقم الجوال - اختياري) */}
-      <div className="rounded-2xl border border-cream-200 bg-white p-4 shadow-sm">
-        <h3 className="font-cairo font-extrabold text-sm text-navy-800 flex items-center gap-1.5 border-b border-cream-100 pb-2 mb-3">
-          <span className="text-lg">👔</span> بيانات التواصل للباحث عن الستر
-          <span className="text-[9px] font-normal text-navy-400 bg-cream-100 px-1.5 py-0.5 rounded-full">رقم الجوال المباشر</span>
-        </h3>
-
-        {!isFemale ? (
-          // لوحة الذكر نفسه
-          !maleSubmitted ? (
-            <div className="space-y-3">
-              <div>
-                <label className="block text-[11px] font-cairo font-bold text-navy-600 mb-1">📱 رقم جوال التواصل <span className="text-rose-500">*</span></label>
-                <input value={mPhone} onChange={(e) => setMPhone(e.target.value)} inputMode="tel" placeholder="مثال: 05xxxxxxxx"
-                  className="w-full bg-cream-50 border border-cream-200 rounded-xl px-3 py-2 text-sm font-cairo focus:outline-none focus:ring-2 focus:ring-indigo-200" />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-[11px] font-cairo font-bold text-navy-600 mb-1">👤 اسم شخص التواصل (اختياري)</label>
-                  <input value={mName} onChange={(e) => setMName(e.target.value)} placeholder="مثال: محمد"
-                    className="w-full bg-cream-50 border border-cream-200 rounded-xl px-3 py-2 text-sm font-cairo focus:outline-none focus:ring-2 focus:ring-indigo-200" />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-cairo font-bold text-navy-600 mb-1">صلة القرابة</label>
-                  <input value={mRel} onChange={(e) => setMRel(e.target.value)} placeholder="مثال: أنا، أبي، أمي، أخي..."
-                    className="w-full bg-cream-50 border border-cream-200 rounded-xl px-3 py-2 text-sm font-cairo focus:outline-none focus:ring-2 focus:ring-indigo-200" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-[11px] font-cairo font-bold text-navy-600 mb-1">⏰ الوقت المناسب للاتصال</label>
-                <input value={mTime} onChange={(e) => setMTime(e.target.value)} placeholder="مثال: من 5 إلى 9 مساءً"
-                  className="w-full bg-cream-50 border border-cream-200 rounded-xl px-3 py-2 text-sm font-cairo focus:outline-none focus:ring-2 focus:ring-indigo-200" />
-              </div>
-              <div>
-                <label className="block text-[11px] font-cairo font-bold text-navy-600 mb-1">📝 ملاحظة (اختياري)</label>
-                <textarea value={mNote} onChange={(e) => setMNote(e.target.value)} rows={2} placeholder="مثال: يُفضل التنسيق عبر الواتساب أولاً"
-                  className="w-full bg-cream-50 border border-cream-200 rounded-xl px-3 py-2 text-sm font-cairo focus:outline-none focus:ring-2 focus:ring-indigo-200" />
-              </div>
-              <button onClick={submitMale} disabled={busy || !mPhone.trim()}
-                className="w-full bg-indigo-500 text-white font-cairo font-bold py-3 rounded-xl hover:bg-indigo-600 transition-colors disabled:opacity-50">
-                مشاركة معلومات التواصل للباحث عن الستر
-              </button>
-            </div>
-          ) : (
-            <div className="bg-emerald-50/50 border border-emerald-100 rounded-xl p-3 space-y-2">
-              <p className="text-xs font-cairo text-emerald-700 font-bold flex items-center gap-1">✓ تمت مشاركة بيانات التواصل بنجاح</p>
-              <div className="text-xs space-y-1 font-cairo text-navy-700">
-                <p><strong>رقم التواصل:</strong> {req.male_phone}</p>
-                {req.male_name && <p><strong>اسم شخص التواصل:</strong> {req.male_name} ({req.male_relation || 'غير محدد'})</p>}
-                {req.male_relation && !req.male_name && <p><strong>صلة القرابة:</strong> {req.male_relation}</p>}
-                {req.male_contact_time && <p><strong>الوقت المناسب للاتصال:</strong> {req.male_contact_time}</p>}
-                {req.male_contact_note && <p><strong>ملاحظاتك:</strong> {req.male_contact_note}</p>}
-              </div>
-            </div>
-          )
-        ) : (
-          // لوحة الأنثى لرؤية معلومات الذكر
-          !maleSubmitted ? (
-            <p className="text-xs text-navy-500 font-cairo text-center py-4 bg-cream-50/50 rounded-xl">
-              ⏳ بانتظار إدخال الطرف الآخر لبيانات التواصل الخاصة به
+      <section className="rounded-3xl border border-cream-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="mb-4 flex items-start justify-between gap-3 border-b border-cream-100 pb-3">
+          <div>
+            <h3 className="font-cairo text-sm font-extrabold text-navy-900">معلومات التواصل التي سأشاركها</h3>
+            <p className="mt-1 font-cairo text-[11px] leading-5 text-navy-500">
+              {isFemale ? 'يمكنك مشاركة رقم ولي الأمر أو وسيلة التواصل المناسبة لك.' : 'اكتب وسيلة التواصل التي تريد إظهارها للطرف الآخر.'}
             </p>
-          ) : !req.female_pledged ? (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-3">
-              <p className="text-xs font-cairo font-extrabold text-amber-800 flex items-center gap-1.5">
-                🔒 تعهّد للاطّلاع على معلومات التواصل
-              </p>
-              <label className="flex items-start gap-2.5 p-3 rounded-lg bg-white border border-amber-200 cursor-pointer">
-                <input type="checkbox" checked={fPledgedInput} onChange={(e) => setFPledgedInput(e.target.checked)} className="mt-0.5 accent-amber-500" />
-                <span className="text-xs font-cairo text-navy-700 leading-relaxed">
-                  أتعهد أمام الله بحفظ هذه المعلومات وعدم نشرها، والتواصل بنية الزواج الجاد فقط.
-                </span>
-              </label>
-              <button onClick={doFemalePledge} disabled={busy || !fPledgedInput}
-                className="w-full bg-amber-500 text-white font-cairo font-bold py-2.5 rounded-xl hover:bg-amber-600 transition-colors disabled:opacity-50">
-                أتعهّد والاطّلاع على المعلومات
-              </button>
+          </div>
+          <span className={`rounded-full px-2.5 py-1 font-cairo text-[10px] font-bold ${ownSubmitted ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+            {ownSubmitted ? 'تم الإرسال' : 'مطلوب منك'}
+          </span>
+        </div>
+
+        {ownSubmitted ? (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
+            <p className="font-cairo text-xs font-extrabold text-emerald-800">تمت مشاركة المعلومات التالية باختيارك</p>
+            <div className="mt-3 space-y-1.5 break-words font-cairo text-xs text-navy-700">
+              <p><strong>رقم التواصل:</strong> {phone}</p>
+              {name && <p><strong>الاسم:</strong> {name}</p>}
+              {relation && <p><strong>الصفة أو صلة القرابة:</strong> {relation}</p>}
+              {contactTime && <p><strong>الوقت المناسب:</strong> {contactTime}</p>}
+              {note && <p><strong>ملاحظة:</strong> {note}</p>}
             </div>
-          ) : (
-            <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3">
-              <p className="text-xs font-cairo font-bold text-emerald-700 mb-2 flex items-center gap-1">👔 بيانات التواصل للباحث عن الستر:</p>
-              <div className="text-xs space-y-1.5 font-cairo text-navy-700">
-                <p><strong>رقم التواصل:</strong> <a href={`tel:${req.male_phone}`} className="text-indigo-600 underline font-bold">{req.male_phone}</a></p>
-                {req.male_name && <p><strong>اسم شخص التواصل:</strong> {req.male_name} ({req.male_relation || 'غير محدد'})</p>}
-                {req.male_relation && !req.male_name && <p><strong>صلة القرابة:</strong> {req.male_relation}</p>}
-                {req.male_contact_time && <p><strong>الوقت المناسب للاتصال:</strong> {req.male_contact_time}</p>}
-                {req.male_contact_note && <p><strong>ملاحظات الطرف الآخر:</strong> {req.male_contact_note}</p>}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div>
+              <label className="mb-1.5 block font-cairo text-xs font-bold text-navy-700">
+                {isFemale ? 'رقم ولي الأمر أو رقم التواصل' : 'رقم التواصل'} <span className="text-rose-500">*</span>
+              </label>
+              <input
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                inputMode="tel"
+                autoComplete="off"
+                placeholder="اكتب الرقم الذي اخترت مشاركته"
+                className="min-h-12 w-full rounded-xl border border-cream-200 bg-cream-50 px-4 font-cairo text-sm text-navy-900 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+              />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="mb-1.5 block font-cairo text-xs font-bold text-navy-700">اسم شخص التواصل (اختياري)</label>
+                <input value={name} onChange={(event) => setName(event.target.value)} autoComplete="off" placeholder="الاسم الذي تريد إظهاره"
+                  className="min-h-12 w-full rounded-xl border border-cream-200 bg-cream-50 px-4 font-cairo text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
+              </div>
+              <div>
+                <label className="mb-1.5 block font-cairo text-xs font-bold text-navy-700">الصفة أو صلة القرابة (اختياري)</label>
+                <input value={relation} onChange={(event) => setRelation(event.target.value)} autoComplete="off" placeholder="مثال: ولي الأمر، صاحب الرقم"
+                  className="min-h-12 w-full rounded-xl border border-cream-200 bg-cream-50 px-4 font-cairo text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
               </div>
             </div>
-          )
+            <div>
+              <label className="mb-1.5 block font-cairo text-xs font-bold text-navy-700">الوقت المناسب للتواصل (اختياري)</label>
+              <input value={contactTime} onChange={(event) => setContactTime(event.target.value)} autoComplete="off" placeholder="مثال: من ٥ إلى ٩ مساءً"
+                className="min-h-12 w-full rounded-xl border border-cream-200 bg-cream-50 px-4 font-cairo text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
+            </div>
+            <div>
+              <label className="mb-1.5 block font-cairo text-xs font-bold text-navy-700">ملاحظة للطرف الآخر (اختياري)</label>
+              <textarea value={note} onChange={(event) => setNote(event.target.value)} rows={3} placeholder="اكتب تعليمات قصيرة وواضحة للتواصل"
+                className="w-full resize-none rounded-xl border border-cream-200 bg-cream-50 px-4 py-3 font-cairo text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
+            </div>
+            <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50/70 p-3.5">
+              <input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} className="mt-1 h-4 w-4 accent-amber-600" />
+              <span className="font-cairo text-xs leading-6 text-navy-700">
+                راجعت المعلومات وأفهم أنها ستظهر للطرف الآخر في طلب التوافق بعد الضغط على الإرسال.
+              </span>
+            </label>
+            <button onClick={submit} disabled={busy || !phone.trim() || !confirmed}
+              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 font-cairo text-sm font-extrabold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <SendIcon className="h-4 w-4" />}
+              إرسال معلومات التواصل
+            </button>
+          </div>
         )}
-      </div>
+      </section>
 
-      {/* قسم الإبلاغ والدعم عند تعذر التواصل */}
-      <div className="bg-rose-50/30 border border-rose-100 rounded-2xl p-3 text-center">
-        <p className="text-[11px] font-cairo text-navy-500 mb-2 leading-relaxed">
-          هل واجهت مشكلة في التواصل مع الطرف الآخر؟ (رقم خاطئ، لا يتجاوب، إلخ)
-        </p>
-        <button onClick={() => setReportOpen(true)}
-          className="text-rose-700 hover:bg-rose-50 font-cairo font-bold text-[11px] py-2 px-4 rounded-xl border border-rose-200 transition-colors inline-flex items-center gap-1.5">
-          ⚠️ إبلاغ الإدارة للمساعدة
+      <section className="rounded-3xl border border-cream-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h3 className="font-cairo text-sm font-extrabold text-navy-900">معلومات الطرف الآخر</h3>
+          <span className={`rounded-full px-2.5 py-1 font-cairo text-[10px] font-bold ${otherSubmitted ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+            {otherSubmitted ? 'تمت المشاركة' : 'بانتظار الإرسال'}
+          </span>
+        </div>
+        {otherSubmitted ? (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
+            <p className="font-cairo text-[11px] leading-5 text-emerald-800">كتب الطرف الآخر هذه المعلومات وأرسلها لك باختياره:</p>
+            <div className="mt-3 space-y-2 break-words font-cairo text-xs text-navy-800">
+              <p><strong>رقم التواصل:</strong> <a href={`tel:${otherContact.phone}`} className="font-extrabold text-blue-700 underline">{otherContact.phone}</a></p>
+              {otherContact.name && <p><strong>الاسم:</strong> {otherContact.name}</p>}
+              {otherContact.relation && <p><strong>الصفة أو صلة القرابة:</strong> {otherContact.relation}</p>}
+              {otherContact.time && <p><strong>الوقت المناسب:</strong> {otherContact.time}</p>}
+              {otherContact.note && <p><strong>ملاحظة:</strong> {otherContact.note}</p>}
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-cream-300 bg-cream-50 p-5 text-center">
+            <Clock className="mx-auto h-6 w-6 text-navy-300" />
+            <p className="mt-2 font-cairo text-xs font-bold text-navy-600">بانتظار الطرف الآخر ليكتب معلوماته ويضغط إرسال</p>
+            <p className="mt-1 font-cairo text-[11px] text-navy-400">لن تعرض المنصة أي بيانات محفوظة في حسابه تلقائيًا.</p>
+          </div>
+        )}
+      </section>
+
+      <div className="rounded-2xl border border-rose-100 bg-rose-50/40 p-3 text-center">
+        <p className="font-cairo text-[11px] leading-5 text-navy-500">إذا كانت المعلومات غير صحيحة أو تعذر التواصل، أخبر إدارة الموقع.</p>
+        <button onClick={() => setReportOpen(true)} className="mt-2 min-h-11 rounded-xl border border-rose-200 px-4 font-cairo text-xs font-bold text-rose-700 hover:bg-rose-50">
+          إبلاغ الإدارة للمساعدة
         </button>
       </div>
 
-      {req.contact_issue_reported && (
-        <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-center mt-3 animate-pulse">
-          <p className="text-xs font-cairo text-rose-700 font-bold">
-            ⚠️ تم تقديم بلاغ للإدارة بنجاح: ({req.contact_issue_reason})
-          </p>
-          <p className="text-[10px] text-navy-500 font-cairo mt-0.5">
-            يقوم فريق الدعم والوساطة بالتحقق والاتصال بالطرف الآخر الآن لمتابعة الجدية ومساعدتك.
-          </p>
-        </div>
-      )}
-
-      <DialogShell open={reportOpen} onClose={() => setReportOpen(false)} title="الدعم والتحقق — الإبلاغ عن مشكلة">
-        <p className="text-xs font-cairo text-navy-600 leading-relaxed mb-4">
-          يرجى تحديد المشكلة التي تواجهها مع الطرف الآخر. سيقوم فريق الإدارة والوساطة بالاتصال بالطرف الآخر للتحقق والمساعدة فوراً ومتابعة جدية الطلب.
-        </p>
-        <div className="space-y-2.5 mb-4">
-          {[
-            'الطرف الآخر لم يتجاوب',
-            'رقم التواصل خاطئ',
-            'واجهتني مشكلة أخرى',
-            'كتابة سبب مخصص'
-          ].map((r) => (
-            <label key={r} className={`flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer transition-all ${reportReason === r ? 'border-rose-300 bg-rose-50' : 'border-cream-200 bg-white'}`}>
-              <input type="radio" checked={reportReason === r} onChange={() => setReportReason(r)} className="accent-rose-500" />
-              <span className="text-xs font-cairo font-bold text-navy-700">{r}</span>
-            </label>
-          ))}
-        </div>
-
-        {reportReason === 'كتابة سبب مخصص' && (
-          <textarea value={customReason} onChange={(e) => setCustomReason(e.target.value)} rows={3}
-            placeholder="اكتب تفاصيل المشكلة هنا لتطلع عليها الإدارة..."
-            className="w-full bg-white border border-cream-200 rounded-xl p-3 text-xs font-cairo focus:outline-none focus:ring-2 focus:ring-rose-200" />
-        )}
-
-        <button onClick={handleReport} disabled={reporting || (reportReason === 'كتابة سبب مخصص' && !customReason.trim())}
-          className="w-full mt-4 bg-rose-600 hover:bg-rose-700 text-white font-cairo font-bold py-3 rounded-xl hover:brightness-105 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
-          {reporting ? <Loader2 className="w-4 h-4 animate-spin" /> : null} إرسال البلاغ للتحقق والدعم
+      <DialogShell open={reportOpen} onClose={() => setReportOpen(false)} title="إبلاغ إدارة الموقع">
+        <p className="mb-3 font-cairo text-xs leading-6 text-navy-600">اكتب سببًا مختصرًا ليساعد فريق الإدارة على متابعة المشكلة.</p>
+        <textarea value={reportReason} onChange={(event) => setReportReason(event.target.value)} rows={4}
+          className="w-full resize-none rounded-xl border border-cream-200 bg-white p-3 font-cairo text-sm outline-none focus:border-rose-300" />
+        <button disabled={busy || !reportReason.trim()} onClick={async () => {
+          const ok = await runAction('report_contact_issue', { reason: reportReason.trim() });
+          if (ok) { showToast('تم إرسال البلاغ إلى إدارة الموقع', 'success'); setReportOpen(false); }
+        }} className="mt-3 min-h-12 w-full rounded-xl bg-navy-900 font-cairo text-sm font-bold text-white disabled:opacity-50">
+          إرسال البلاغ
         </button>
       </DialogShell>
     </div>
   );
 }
-
-// بطاقة Hero عامة
 
 function HeroCard({ meta, c, Icon, children }: any) {
   return (
@@ -931,10 +836,10 @@ function HeroCard({ meta, c, Icon, children }: any) {
 }
 
 // ============================================================
-//  مركز "مقبول" — الاستفسار + رسوم الجدية في صفحة واحدة
+//  مركز "مقبول" — الاستفسار + العربون في صفحة واحدة
 // ============================================================
 // ============================================================
-//  مركز "مقبول" — الاستفسار + رسوم الجدية في صفحة واحدة
+//  مركز "مقبول" — الاستفسار + العربون في صفحة واحدة
 // ============================================================
 function AcceptedHub({ req, other, busy, inquiry, setInquiry, reload, showToast, runAction, initialTab }: any) {
   const { user } = useApp();
@@ -974,7 +879,7 @@ function AcceptedHub({ req, other, busy, inquiry, setInquiry, reload, showToast,
             ${tab === 'deposit' 
               ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 border-amber-400 shadow-[0_4px_12px_rgba(245,158,11,0.2)]' 
               : 'bg-white border-cream-200 text-navy-500 hover:border-amber-300'}`}>
-          <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-current" /> سداد رسوم الجدية</span>
+          <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-current" /> سداد العربون</span>
           <span className={`text-[9px] font-bold ${tab === 'deposit' ? 'text-navy-950/80' : 'text-navy-400'}`}>
             {selfPaid ? 'تم تأكيد جديتك بنجاح ✓' : 'الطريق المباشر للتوافق للزواج'}
           </span>
@@ -1199,7 +1104,7 @@ function InquiryRoom({ req, other, inquiry, setInquiry, showToast, onProceedDepo
         </button>
         <button onClick={onProceedDeposit}
           className="w-full mt-2 text-navy-500 font-cairo font-bold text-sm py-2 hover:text-navy-700">
-          تخطّي الاستفسار وسداد رسوم الجدية ←
+          تخطّي الاستفسار وسداد العربون ←
         </button>
 
         <PaymentGateway
@@ -1416,7 +1321,7 @@ function InquiryRoom({ req, other, inquiry, setInquiry, showToast, onProceedDepo
         <div className="mt-3 space-y-3">
           <div className="bg-rose-50 border border-rose-200 rounded-2xl p-3 text-center">
             <p className="text-sm font-cairo font-bold text-rose-600 mb-1">نفد رصيد الرسائل.</p>
-            <p className="text-xs font-cairo text-navy-500 leading-relaxed">يمكنك شراء باقة جديدة أو الانتقال لسداد رسوم الجدية وتبادل التواصل.</p>
+            <p className="text-xs font-cairo text-navy-500 leading-relaxed">يمكنك شراء باقة جديدة أو الانتقال لسداد العربون وتبادل التواصل.</p>
           </div>
           <button onClick={handleBuy} disabled={buying}
             className="w-full bg-amber-500 text-white font-cairo font-extrabold py-3.5 rounded-2xl hover:brightness-105 transition-all disabled:opacity-60 flex items-center justify-center gap-2 shadow-sm">
@@ -1426,10 +1331,10 @@ function InquiryRoom({ req, other, inquiry, setInquiry, showToast, onProceedDepo
         </div>
       )}
 
-      {/* الانتقال لرسوم الجدية */}
+      {/* الانتقال لالعربون */}
       <button onClick={onProceedDeposit}
         className="w-full mt-4 bg-gold-gradient text-navy-900 font-cairo font-extrabold py-3.5 rounded-2xl shadow-gold hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
-        <ShieldCheck className="w-5 h-5" /> انتهيت — سداد رسوم الجدية
+        <ShieldCheck className="w-5 h-5" /> انتهيت — سداد العربون
       </button>
 
       <PaymentGateway
@@ -1453,7 +1358,7 @@ function InquiryRoom({ req, other, inquiry, setInquiry, showToast, onProceedDepo
 }
 
 // ============================================================
-//  لوحة رسوم الجدية (داخل مركز مقبول)
+//  لوحة العربون (داخل مركز مقبول)
 // ============================================================
 function DepositInline({ req, busy, runAction, showToast }: any) {
   const { settings } = useSettings();
@@ -1467,7 +1372,6 @@ function DepositInline({ req, busy, runAction, showToast }: any) {
   const isSender = req.sender_id === currentUserId;
   const selfPaid = isSender ? req.sender_paid : req.receiver_paid;
   const otherPaid = isSender ? req.receiver_paid : req.sender_paid;
-  const hasPreviouslyPaid = hasUserPaidDepositAnywhere(currentUserId);
 
   // حساب الشهرين القادمين ديناميكياً لتأجيل السداد لمدة شهرين كحد أقصى
   const nextMonths = useMemo(() => {
@@ -1524,20 +1428,13 @@ function DepositInline({ req, busy, runAction, showToast }: any) {
 
   const pay = async () => {
     if (!pledge) { showToast('يرجى الموافقة على عهد وقسم الجدية', 'error'); return; }
-    // العضو الذي سدّد رسوم الجدية سابقاً يُفعّل الطلب مجاناً دون بوابة دفع
-    if (hasPreviouslyPaid) {
-      const ok = await runAction('pay_deposit');
-      if (ok) showToast('✅ تم تفعيل الطلب مجاناً (سددت الرسوم مسبقاً)');
-      return;
-    }
-    // غير ذلك: نفتح بوابة الدفع لسداد رسوم الجدية
     setPayOpen(true);
   };
 
   // يُنفّذ فعلياً بعد نجاح الدفع
   const completeDeposit = async (): Promise<boolean> => {
     const ok = await runAction('pay_deposit');
-    if (ok) showToast('✅ تم تأكيد وتفعيل رسوم الجدية بنجاح');
+    if (ok) showToast('تم سداد العربون من طرفك بنجاح');
     return !!ok;
   };
 
@@ -1564,7 +1461,7 @@ function DepositInline({ req, busy, runAction, showToast }: any) {
         <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-right flex items-start gap-3 shadow-sm">
           <span className="text-xl">🌸</span>
           <div className="space-y-1">
-            <p className="text-xs font-cairo font-extrabold text-emerald-800">الطرف الآخر سدّد رسوم الجدية!</p>
+            <p className="text-xs font-cairo font-extrabold text-emerald-800">الطرف الآخر سدّد العربون!</p>
             <p className="text-[11px] font-cairo text-navy-600 leading-relaxed">
               أكمل الطرف الآخر السداد، وبانتظار سدادك لتبادل التواصل والبدء في التنسيق.
             </p>
@@ -1576,56 +1473,23 @@ function DepositInline({ req, busy, runAction, showToast }: any) {
         <WaitingOther />
       ) : (
         <>
-          {/* 1. حالة الجدية المسبقة */}
-          {hasPreviouslyPaid ? (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 text-center shadow-sm">
-              <Sparkles className="w-9 h-9 text-emerald-600 mx-auto mb-2 animate-pulse" />
-              <p className="font-cairo font-extrabold text-lg text-emerald-700">الرسوم مدفوعة مسبقاً! ✓</p>
-              <p className="text-xs text-navy-600 font-cairo mt-1.5 leading-relaxed">
-                لقد أثبتّ جديتك بسداد رسوم الجدية في طلب سابق. يمكنك المتابعة وتبادل التواصل مجاناً دون دفع مجدداً!
-              </p>
-            </div>
-          ) : (
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50/50 border border-amber-200 rounded-[2rem] p-6 shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-24 h-24 bg-amber-500/5 rounded-full -translate-x-6 -translate-y-6" />
-              <div className="text-center relative z-10">
-                <ShieldCheck className="w-12 h-12 text-amber-600 mx-auto mb-2" />
-                <p className="font-cairo font-black text-2xl sm:text-4xl text-amber-700">{settings.deposit_amount || 500} <span className="text-lg font-bold">ريال</span></p>
-                <p className="text-xs text-navy-600 font-cairo mt-1.5 font-bold">
-                  رسوم الجدية وتأكيد رغبة الزواج
-                </p>
-                
-                {/* شارة الضمان والاطمئنان والشفافية الشرعية */}
-                <div className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-200/60 px-3.5 py-1.5 rounded-full text-[10px] font-cairo font-extrabold mt-3 shadow-inner">
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                  🔐 تنبيه هام: جميع الرسوم المدفوعة للمنصة غير مستردة نهائياً تحت أي ظرف بعد السداد
-                </div>
-              </div>
-              
-              {/* المزايا باختصار */}
-              <div className="mt-5 pt-4 border-t border-amber-200/60 text-right space-y-3.5">
-                <div className="flex items-start gap-3">
-                  <span className="text-emerald-600 font-extrabold text-base mt-0.5">✓</span>
-                  <div>
-                    <p className="text-xs font-cairo font-bold text-navy-800">سداد لمرة واحدة فقط</p>
-                    <p className="text-[11px] font-cairo text-navy-600 leading-relaxed mt-0.5">
-                      تُدفع مرة واحدة طوال اشتراكك بالمنصة. في حال لم يكتب الله بينكما نصيباً، يحق لك تبادل التواصل مع أعضاء آخرين مجاناً ودون دفع أي رسوم إضافية.
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <span className="text-amber-600 font-extrabold text-base mt-0.5">🏆</span>
-                  <div>
-                    <p className="text-xs font-cairo font-bold text-navy-800">وسام الجدية الدائم</p>
-                    <p className="text-[11px] font-cairo text-navy-600 leading-relaxed mt-0.5">
-                      فور السداد يحصل ملفك على وسام الجدية الذهبي، مما يثبت صدق رغبتك ويضاعف فرصة قبول طلباتك ومباركة زواجك.
-                    </p>
-                  </div>
-                </div>
+          {/* قيمة العربون واضحة قبل الانتقال إلى الدفع */}
+          <div className="relative overflow-hidden rounded-[2rem] border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50/50 p-5 shadow-sm sm:p-6">
+            <div className="absolute -left-6 -top-6 h-24 w-24 rounded-full bg-amber-500/5" />
+            <div className="relative z-10 text-center">
+              <ShieldCheck className="mx-auto mb-2 h-11 w-11 text-amber-600" />
+              <p className="font-cairo text-3xl font-black text-amber-700">{settings.deposit_amount || 500} <span className="text-base font-bold">ريال</span></p>
+              <p className="mt-1.5 font-cairo text-xs font-bold text-navy-700">عربون المنصة لكل طرف في طلب التوافق</p>
+              <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 font-cairo text-[10px] font-extrabold text-rose-700">
+                العربون غير مسترد بعد السداد
               </div>
             </div>
-          )}
+            <div className="relative mt-5 space-y-2 border-t border-amber-200/60 pt-4 font-cairo text-xs leading-6 text-navy-700">
+              <p><strong>مقابل:</strong> خدمات المنصة وجهود التنسيق لهذا الطلب.</p>
+              <p><strong>بعد سداد الطرفين:</strong> يمكن لكل طرف مشاركة معلومات التواصل التي يختارها بنفسه.</p>
+              <p><strong>إجمالي أتعاب كل طرف:</strong> ٢٥٠٠ ريال؛ المتبقي ٢٠٠٠ ريال بعد نتيجة النظرة الشرعية وتسليم المهر.</p>
+            </div>
+          </div>
 
           {/* 2. تنبيه المهلة أو التأجيل */}
           {req.defer_date ? (
@@ -1646,7 +1510,7 @@ function DepositInline({ req, busy, runAction, showToast }: any) {
             deadlineDiffDays > 0 && (
               <div className="bg-rose-50 border border-rose-200 rounded-xl p-3.5 text-center">
                 <p className="text-xs font-cairo text-rose-700 font-bold flex items-center justify-center gap-1">
-                  <span>⏳</span> مهلة سداد رسوم الجدية: متبقي {deadlineDiffDays} أيام
+                  <span>⏳</span> مهلة سداد العربون: متبقي {deadlineDiffDays} أيام
                 </p>
                 <p className="text-[10px] text-navy-500 font-cairo mt-0.5">يرجى السداد قبل انتهاء المهلة (١٥ يوماً من القبول) لتجنب الإلغاء التلقائي.</p>
               </div>
@@ -1672,7 +1536,7 @@ function DepositInline({ req, busy, runAction, showToast }: any) {
             <button onClick={pay} disabled={!pledge || busy}
               className="w-full bg-gold-gradient text-navy-900 font-cairo font-extrabold py-3.5 rounded-2xl shadow-gold hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 flex items-center justify-center gap-2">
               {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
-              {hasPreviouslyPaid ? 'تأكيد تفعيل الطلب مجاناً' : 'سداد رسوم الجدية'}
+              سداد العربون
             </button>
 
             <div className="flex gap-2">
@@ -1692,7 +1556,7 @@ function DepositInline({ req, busy, runAction, showToast }: any) {
       )}
 
       {/* حوار تأجيل السداد بتجربة مستخدم ذكية وسهلة */}
-      <DialogShell open={deferOpen} onClose={() => setDeferOpen(false)} title="تأجيل سداد رسوم الجدية">
+      <DialogShell open={deferOpen} onClose={() => setDeferOpen(false)} title="تأجيل سداد العربون">
         <p className="text-xs font-cairo text-navy-600 leading-relaxed mb-4">
           تسهيلاً لتحديد الموعد المناسب لظروفك، يرجى اختيار الشهر واليوم المناسبين لك من التقويم التفاعلي أدناه:
         </p>
@@ -1781,7 +1645,7 @@ function DepositInline({ req, busy, runAction, showToast }: any) {
             )}
 
             <div className="bg-emerald-50 text-emerald-800 p-2.5 rounded-lg font-bold text-xs">
-              💰 رسوم الجدية المطلوبة: {settings?.deposit_amount || 500} ريال سعودي (أو ما يعادله)
+              💰 العربون المطلوبة: {settings?.deposit_amount || 500} ريال سعودي (أو ما يعادله)
             </div>
           </div>
 
@@ -1801,27 +1665,29 @@ function DepositInline({ req, busy, runAction, showToast }: any) {
         </div>
       </DialogShell>
 
-      {/* بوابة دفع رسوم الجدية — المدفوعات اليدوية (بنكي/عملات رقمية) تمر عبر مراجعة إدارية قبل التفعيل */}
+      {/* بوابة دفع العربون — المدفوعات اليدوية (بنكي/عملات رقمية) تمر عبر مراجعة إدارية قبل التفعيل */}
       <PaymentGateway
         open={payOpen}
         onClose={() => setPayOpen(false)}
         amount={settings.deposit_amount || 500}
-        title="رسوم الجدية"
+        title="العربون"
         description="سداد لمرة واحدة — يتيح تبادل التواصل"
         lineItems={[
-          { label: 'نوع الرسوم', value: 'رسوم الجدية' },
-          { label: 'السداد', value: 'مرة واحدة طوال الاشتراك' },
+          { label: 'نوع الرسوم', value: 'العربون' },
+          { label: 'السداد', value: 'مرة واحدة لهذا الطرف في الطلب' },
         ]}
-        payLabel="سداد رسوم الجدية"
+        payLabel="سداد العربون"
         onPaid={completeDeposit}
         requestId={req.id}
         requiresOfflineReview
+        applyVat={false}
+        metadata={{ paymentStage: 'deposit' }}
       />
     </div>
   );
 }
 
-// لوحة رسوم الجدية المستقلة (لمرحلة seriousness)
+// لوحة العربون المستقلة (لمرحلة seriousness)
 function DepositPanel({ req, isSender, busy, runAction, showToast }: any) {
   const selfPaid = isSender ? req.sender_paid : req.receiver_paid;
   const otherPaid = isSender ? req.receiver_paid : req.sender_paid;
@@ -1851,18 +1717,18 @@ function RecordResultButton({ req, busy, runAction }: any) {
           <button onClick={() => setChoice('success')}
             className={`p-4 rounded-2xl border-2 text-center transition-all ${choice === 'success' ? 'border-emerald-400 bg-emerald-50' : 'border-cream-200 bg-white'}`}>
             <span className="text-2xl block mb-1">💚</span>
-            <span className="font-cairo font-extrabold text-xs text-emerald-700 block">تم التوافق بفضل الله</span>
+            <span className="font-cairo font-extrabold text-xs text-emerald-700 block">تم القبول بفضل الله</span>
           </button>
           <button onClick={() => setChoice('failed')}
             className={`p-4 rounded-2xl border-2 text-center transition-all ${choice === 'failed' ? 'border-amber-400 bg-amber-50/50' : 'border-cream-200 bg-white'}`}>
             <span className="text-2xl block mb-1">🕊️</span>
-            <span className="font-cairo font-extrabold text-xs text-amber-800 block">لم يحدث نصيب (الاعتذار بلطف)</span>
+            <span className="font-cairo font-extrabold text-xs text-amber-800 block">لم يُكتب النصيب</span>
           </button>
         </div>
 
         {choice === 'success' && (
           <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5 mb-3 text-right space-y-1.5 shadow-sm animate-fade-in">
-            <p className="text-xs font-cairo font-extrabold text-emerald-800">✨ تم التوافق بفضل الله ✨</p>
+            <p className="text-xs font-cairo font-extrabold text-emerald-800">تم القبول بفضل الله</p>
             <p className="text-[11px] font-cairo text-navy-600 leading-relaxed">
               الحمد لله الذي بنعمته تتم الصالحات. نسأل الله أن يبارك لكما ويتمم على خير.
             </p>
@@ -1871,12 +1737,12 @@ function RecordResultButton({ req, busy, runAction }: any) {
 
         {choice === 'failed' && (
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 mb-3 text-right text-[11px] font-cairo text-amber-800 leading-relaxed shadow-sm">
-            🕊️ <strong>الاعتذار بلطف:</strong> الزواج قسمة ونصيب، والاعتذار الراقي يحفظ الكرامة والود.
+            <strong>لم يُكتب النصيب:</strong> الزواج قسمة ونصيب، وسيُنهي اختيارك الرحلة باحترام وخصوصية.
           </div>
         )}
 
         <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3}
-          placeholder={choice === 'failed' ? 'يرجى كتابة كلمة اعتذار لطيفة للطرف الآخر (إلزامي)...' : 'ملاحظة مباركة أو تفاصيل إضافية (اختياري)...'}
+          placeholder={choice === 'failed' ? 'اكتب رسالة اعتذار لطيفة للطرف الآخر (إلزامي)' : 'ملاحظة اختيارية'}
           className="w-full bg-white border border-cream-200 rounded-xl p-3 text-sm font-cairo focus:outline-none focus:ring-2 focus:ring-gold-200" />
         {choice === 'failed' && !note.trim() && (
           <p className="text-[11px] text-rose-500 font-cairo mt-1">يرجى كتابة رسالة الاعتذار بلطف لإرسالها للطرف الآخر.</p>
@@ -1885,7 +1751,7 @@ function RecordResultButton({ req, busy, runAction }: any) {
           disabled={choice === 'failed' && !note.trim()}
           onClick={async () => { await runAction('record_result', { result: choice, note }); setOpen(false); }}
           className="w-full mt-4 bg-navy-900 text-white font-cairo font-bold py-3.5 rounded-2xl disabled:opacity-50 hover:bg-navy-800 transition-colors">
-          {choice === 'success' ? 'تأكيد التوافق والمضي للملكة والقران 🎉' : 'تأكيد الاعتذار بلطف وسلام 🕊️'}
+          {choice === 'success' ? 'تأكيد: تم القبول بفضل الله' : 'تأكيد: لم يُكتب النصيب'}
         </button>
       </DialogShell>
     </>

@@ -407,6 +407,14 @@ export interface JourneyRequest {
   receiver_paid: boolean;
   sender_paid_at?: string | null;
   receiver_paid_at?: string | null;
+  /** سداد المتبقي بعد نتيجة النظرة الشرعية — يُستنتج من سجل أحداث الطلب */
+  sender_final_paid?: boolean;
+  receiver_final_paid?: boolean;
+  sender_final_paid_at?: string | null;
+  receiver_final_paid_at?: string | null;
+  /** تأكيد الطرفين للانتقال من مشاركة التواصل إلى نتيجة النظرة */
+  sender_stage_confirmed?: boolean;
+  receiver_stage_confirmed?: boolean;
   paid_at?: string | null;
   meeting_date?: string | null;
   meeting_notes?: string | null;

@@ -54,6 +54,8 @@ export default function PaymentGateway({
       cryptoWalletAddress: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F (USDT ERC20)',
       bankDetails: 'مصرف الراجحي - رقم الحساب: SA8980000012345678901234',
       forceSingleMethod: 'none' as const,
+      journeyTotalFee: 2500,
+      journeyDepositAmount: 500,
     },
     showToast,
   } = useApp();
@@ -119,7 +121,13 @@ export default function PaymentGateway({
     }
   }, [open]);
 
-  const txType = title.includes('استفسار') ? 'inquiry' : title.includes('جدية') ? 'deposit' : title.includes('سعي') ? 'final' : 'subscription';
+  const txType = metadata?.paymentStage === 'deposit' || title.includes('عربون') || title.includes('جدية')
+    ? 'deposit'
+    : metadata?.paymentStage === 'final_fee' || title.includes('المتبقي') || title.includes('سعي')
+      ? 'final'
+      : title.includes('استفسار')
+        ? 'inquiry'
+        : 'subscription';
   // المدفوعات اليدوية (بنكي/عملات رقمية) تمر عبر مراجعة إدارية قبل التفعيل الفعلي لمنع التفعيل الوهمي الفوري
   const isOfflineMethod = method === 'crypto' || method === 'bank';
   const needsReview = requiresOfflineReview && isOfflineMethod;

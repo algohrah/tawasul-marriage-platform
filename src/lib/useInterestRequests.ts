@@ -66,7 +66,9 @@ export interface ApiMember {
 
 export function useInterestRequests(userId?: string) {
   const currentActiveId = getCurrentUserId();
-  const effectiveUserId = (userId && userId.trim()) ? userId.trim() : currentActiveId;
+  // إذا مررت الواجهة قيمة فارغة صراحةً فهذا يعني أن الزائر غير مسجل؛
+  // لا نستخدم هوية تجريبية افتراضية ولا نجلب طلبات عضو آخر.
+  const effectiveUserId = userId !== undefined ? userId.trim() : currentActiveId;
 
   const [requests, setRequests] = useState<ApiRequest[]>([]);
   const [members, setMembers] = useState<ApiMember[]>([]);
@@ -189,7 +191,7 @@ export async function simulateInquiryReply(requestId: number, replierId: string,
   return simulateReply(requestId, replierId, text);
 }
 
-// إنشاء طلب اهتمام جديد (تستخدمه صفحة الملف الشخصي)
+// إنشاء طلب توافق جديد (تستخدمه صفحة الملف الشخصي)
 export async function createInterestRequest(senderId: string, receiverId: string, message: string) {
   return createRequest(senderId, receiverId, message);
 }

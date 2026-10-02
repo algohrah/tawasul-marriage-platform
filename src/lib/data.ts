@@ -55,7 +55,7 @@ export const PLANS: Plan[] = [
     period: 'شهريًا',
     description: 'أرقى ميزات المنصة مع شارة نجمة مميز وظهور أول بالبحث',
     features: [
-      'إرسال حتى 20 طلب اهتمام يومياً لتوافق فوري وجاد',
+      'إرسال حتى 20 طلب توافق يومياً لتوافق فوري وجاد',
       'رصيد 10 رسائل استفسار مجانية إضافية في غرفة التوافق',
       'شارة نجمة مميز لزيادة الثقة والجدية',
       'أولوية الظهور كملف أول في نتائج البحث',
@@ -157,7 +157,7 @@ export function getNotificationMember(notif: Notification) {
   return notif.memberId ? getMemberById(notif.memberId) : undefined;
 }
 
-// طلبات الاهتمام (تُرسل عبر الإدارة)
+// طلبات التوافق (تُرسل عبر الإدارة)
 // ===== حالات الطلب الموسّعة (7 مراحل) =====
 export type RequestStatus =
   | 'pending'                    // ⏱️ الطلب مرسل، في انتظار رد الطرف الآخر
@@ -267,7 +267,7 @@ export const INTEREST_REQUESTS: InterestRequest[] = [
     senderId: 'm1',      // أبو عبدالله رسل لسارة
     receiverId: 'm2',    // سارة
     status: 'pending', 
-    message: 'يسرني التقدم بطلب اهتمام ومستعد للتنسيق مع الإدارة والوسيطة للاستفسار عن بقية التفاصيل.', 
+    message: 'يسرني التقدم بطلب توافق ومستعد للتنسيق مع الإدارة والوسيطة للاستفسار عن بقية التفاصيل.',
     time: 'أمس',
     createdAt: Date.now() - 86400000,
   },
@@ -288,7 +288,7 @@ export const INTEREST_REQUESTS: InterestRequest[] = [
     senderId: 'm2',      // سارة رسلت للعتيبي
     receiverId: 'm5', 
     status: 'pending', 
-    message: 'طلب اهتمام مبدئي للاستفسار عن السكن المستقبلي والخدمة العسكرية.', 
+    message: 'طلب توافق مبدئي للاستفسار عن السكن المستقبلي والخدمة العسكرية.',
     time: 'منذ 3 أيام',
     createdAt: Date.now() - 259200000,
   },
@@ -297,7 +297,7 @@ export const INTEREST_REQUESTS: InterestRequest[] = [
     senderId: 'm2',      // سارة رسلت لأبو عبدالله
     receiverId: 'm1', 
     status: 'declined', 
-    message: 'طلب اهتمام للاطلاع على التوافق الديني والاجتماعي.', 
+    message: 'طلب توافق للاطلاع على التوافق الديني والاجتماعي.',
     time: 'منذ أسبوع',
     declineReason: 'عدم توافق في المواصفات الأساسية المطلوبة.',
     createdAt: Date.now() - 604800000,
@@ -329,7 +329,7 @@ export const INTEREST_REQUESTS: InterestRequest[] = [
     senderId: 'm4',      // أم محمد رسلت للعتيبي
     receiverId: 'm5', 
     status: 'declined', 
-    message: 'طلب اهتمام لمعرفة التفاصيل أكثر.', 
+    message: 'طلب توافق لمعرفة التفاصيل أكثر.',
     time: 'منذ 4 أيام',
     declineReason: 'المسافة بين المدن كبيرة والظروف لا تسمح بالتنقل حالياً.',
     createdAt: Date.now() - 345600000,
