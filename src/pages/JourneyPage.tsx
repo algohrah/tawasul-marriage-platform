@@ -54,6 +54,7 @@ export default function JourneyPage() {
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<{ text: string; type: string } | null>(null);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [showJourneyMap, setShowJourneyMap] = useState(false);
 
   const showToast = (text: string, type = 'success') => {
     setToast({ text, type });
@@ -157,7 +158,7 @@ export default function JourneyPage() {
 
   const colors = other ? getGenderColors(other.gender) : getGenderColors('male');
   const currentIdx = isTerminal(stage) ? -1 : STAGE_INDEX[stage as keyof typeof STAGE_INDEX];
-  const progress = isTerminal(stage) ? 0 : Math.round(((currentIdx) / (JOURNEY_STAGES.length - 1)) * 100);
+  const progress = isTerminal(stage) ? 100 : Math.round(((currentIdx + 1) / JOURNEY_STAGES.length) * 100);
   const statusSummary = getJourneyStatusSummary(req, currentUserId, other?.nickname || 'الطرف الآخر');
 
   return (
@@ -197,6 +198,9 @@ export default function JourneyPage() {
                   <span className="text-[11px] text-navy-400 font-cairo flex items-center gap-1">
                     <MapPin className="w-3 h-3" />{other.city}
                   </span>
+                  <span className="text-[10px] font-cairo font-bold text-navy-500">
+                    {isSender ? 'طلب أرسلته' : 'طلب استقبلته'}
+                  </span>
                 </div>
               </Link>
             )}
@@ -209,7 +213,7 @@ export default function JourneyPage() {
             <div className="mt-2.5">
               <div className="flex items-center justify-between text-[11px] font-cairo font-bold text-navy-400 mb-1">
                 <span>المرحلة {currentIdx + 1} من {JOURNEY_STAGES.length}</span>
-                <span>{progress}% من الرحلة</span>
+                <span>{progress}%</span>
               </div>
               <div className="h-1.5 bg-cream-200 rounded-full overflow-hidden">
                 <motion.div className="h-full bg-gold-gradient rounded-full"
@@ -224,6 +228,7 @@ export default function JourneyPage() {
         {/* ===== الطبقة 2: المرحلة النشطة (Hero) ===== */}
         <div className="mt-5">
           <div className="mb-4">
+            <p className="mb-2 font-cairo text-xs font-black text-navy-500">المطلوب منك الآن</p>
             <RequestStatusPanel summary={statusSummary} />
           </div>
 
@@ -256,16 +261,36 @@ export default function JourneyPage() {
             inquiry={inquiry} setInquiry={setInquiry} reload={load} showToast={showToast}
             runAction={runAction} initialTab={initialTab}
           />
-          {/* #7 معاينة المرحلة القادمة */}
-          <NextStepHint stage={stage} />
         </div>
 
-        {/* ===== الطبقة 3: خريطة الرحلة الكاملة (عمودية) ===== */}
-        <div className="mt-6">
-          <h3 className="font-cairo font-extrabold text-navy-800 mb-3 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-gold-500" /> خريطة رحلتك الكاملة
-          </h3>
-          <VerticalJourney req={req} stage={stage} events={events} />
+        {/* ===== خريطة الرحلة — مخفية افتراضياً حتى لا تزاحم الإجراء الحالي ===== */}
+        <div className="mt-6 rounded-2xl border border-cream-200 bg-white overflow-hidden">
+          <button
+            onClick={() => setShowJourneyMap((open) => !open)}
+            className="w-full flex items-center justify-between gap-3 px-4 py-4 text-right"
+          >
+            <span className="flex items-center gap-2 font-cairo font-extrabold text-navy-800">
+              <Sparkles className="w-5 h-5 text-gold-500" />
+              جميع مراحل الرحلة
+            </span>
+            <span className="font-cairo text-xs font-bold text-navy-500">
+              {showJourneyMap ? 'إخفاء' : 'عرض المراحل السبع'}
+            </span>
+          </button>
+          <AnimatePresence initial={false}>
+            {showJourneyMap && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="border-t border-cream-200 p-4">
+                  <VerticalJourney req={req} stage={stage} events={events} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* ===== إلغاء الطلب — متاح في أي مرحلة نشطة ===== */}
@@ -304,7 +329,7 @@ export default function JourneyPage() {
         {toast && (
           <motion.div
             initial={{ opacity: 0, y: 50, x: '-50%' }} animate={{ opacity: 1, y: 0, x: '-50%' }} exit={{ opacity: 0, y: 50, x: '-50%' }}
-            className={`fixed bottom-6 left-1/2 z-[100] px-5 py-3 rounded-2xl shadow-2xl font-cairo font-bold text-sm text-white max-w-[90%]
+            className={`fixed top-[max(1rem,env(safe-area-inset-top))] left-1/2 z-[2147483647] px-5 py-3 rounded-2xl shadow-2xl font-cairo font-bold text-sm text-white max-w-[90%]
               ${toast.type === 'success' ? 'bg-emerald-600' : toast.type === 'error' ? 'bg-rose-deep' : 'bg-navy-800'}`}>
             {toast.text}
           </motion.div>
