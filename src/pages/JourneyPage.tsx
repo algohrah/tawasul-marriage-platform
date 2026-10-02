@@ -376,17 +376,9 @@ function ActiveStagePanel({
       // المستقبِل يرى قرار القبول/الإلغاء
       return <DecisionPanel req={req} other={other} busy={busy} runAction={runAction} showToast={showToast} mode="incoming" />;
     }
-    return (
-      <HeroCard meta={meta} c={c} Icon={Icon}>
-        <p className="text-sm text-navy-600 font-cairo leading-relaxed">{meta.whatToDo}</p>
-        <div className="mt-3 bg-cream-50 rounded-xl p-3 text-center text-sm font-cairo font-bold text-navy-500">
-          ⏳ بانتظار رد {other?.nickname || 'الطرف الآخر'}...
-        </div>
-        <p className="mt-2 text-[11px] text-navy-400 font-cairo text-center">
-          سنُخطرك فوراً عند الرد. لا تحتاج لفعل أي شيء حالياً.
-        </p>
-      </HeroCard>
-    );
+    // ملخص «المطلوب منك الآن» في أعلى الصفحة يوضح حالة الانتظار بالكامل.
+    // لا نكرر الصياغة نفسها داخل بطاقة ثانية.
+    return null;
   }
 
   // المرحلة: مقبول أو تأكيد الجدية -> مركز الخطوة التالية لكلا الطرفين (الاستفسار والرسوم) طالما لم يكتمل سداد الطرفين معاً للانتقال لمرحلة التنسيق
