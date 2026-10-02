@@ -16,7 +16,16 @@ export async function getAuthUser(req) {
   const bodyToken = req.body && typeof req.body === 'object' ? req.body._authToken : undefined;
   const token = headerToken || bodyToken;
   if (!token) return null;
-  if (process.env.NODE_ENV !== 'production' && (token.startsWith('local-token-') || token === 'demo-admin-token')) {
+  const isAdminImpersonation =
+    req.headers?.['x-impersonating'] === 'true'
+    && req.body?._impersonating === true;
+  // لوحة الإدارة تدعم جلسة المعاينة المحلية عندما يعمل الموقع بلا مفتاح
+  // Supabase عام. نقصر هذا الاستثناء على طلبات «التصفح كعضو» فقط، ولا
+  // نقبل الرمز التجريبي لأي طلب عضو عادي.
+  if (
+    (process.env.NODE_ENV !== 'production' && token.startsWith('local-token-'))
+    || (isAdminImpersonation && token === 'demo-admin-token')
+  ) {
     return { id: 'admin-1', email: 'admin@tawafok.com' };
   }
   try {

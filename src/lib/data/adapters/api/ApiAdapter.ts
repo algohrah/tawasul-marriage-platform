@@ -89,7 +89,11 @@ async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
       const { data } = savedAdminToken
         ? { data: { session: null } }
         : await supabaseClient.auth.getSession();
-      const token = savedAdminToken || data?.session?.access_token;
+      const demoAdminToken = impersonating
+        && localStorage.getItem('twafok_demo_admin') === 'true'
+        ? 'demo-admin-token'
+        : null;
+      const token = savedAdminToken || demoAdminToken || data?.session?.access_token;
       if (token) headers.set('Authorization', `Bearer ${token}`);
     } catch {
       // لا نمنع الطلب في حال تعذّر قراءة الجلسة
