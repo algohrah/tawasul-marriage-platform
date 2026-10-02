@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircle2, XCircle, Info, AlertTriangle, X } from 'lucide-react';
 import { subscribeToasts, dismissToastById, type ToastItem } from '../../lib/toastBus';
@@ -21,8 +22,14 @@ export default function ToastContainer() {
 
   useEffect(() => subscribeToasts(setToasts), []);
 
-  return (
-    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] w-[92%] max-w-sm flex flex-col gap-2 pointer-events-none">
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div
+      className="fixed top-[max(1rem,env(safe-area-inset-top))] left-1/2 -translate-x-1/2 z-[2147483647] w-[92%] max-w-sm flex flex-col gap-2 pointer-events-none"
+      role="region"
+      aria-label="إشعارات النظام"
+    >
       <AnimatePresence>
         {toasts.map((toast) => {
           const c = config[toast.type] || defaultConfig;
@@ -44,6 +51,7 @@ export default function ToastContainer() {
           );
         })}
       </AnimatePresence>
-    </div>
+    </div>,
+    document.body,
   );
 }
