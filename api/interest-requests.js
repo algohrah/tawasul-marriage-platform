@@ -488,14 +488,30 @@ export default async function handler(req, res) {
         error = fallback.error;
       }
       if (error) throw error;
-      await supabase.from('request_events').insert({
-        request_id: Number(data.id),
-        actor_id: String(payload.sender_id),
-        action: 'sent',
-        payload: { message: payload.message || '' },
-      }).catch(() => undefined);
-      await addNotification(payload.receiver_id, data.id, 'request', 'لديك طلب توافق جديد بانتظار الرد', 'طلب توافق جديد');
-      return res.status(201).json(await withProgress(data));
+      // الطلب الأساسي تم حفظه بالفعل؛ لا نجعل الخدمات الثانوية الاختيارية
+      // (سجل الأحداث/الإشعار/حساب التقدم) تحول النجاح إلى خطأ 500.
+      try {
+        const { error: eventError } = await supabase.from('request_events').insert({
+          request_id: Number(data.id),
+          actor_id: String(payload.sender_id),
+          action: 'sent',
+          payload: { message: payload.message || '' },
+        });
+        if (eventError) console.warn('Request event insert skipped:', eventError.message);
+      } catch (eventError) {
+        console.warn('Request event insert skipped:', eventError?.message || eventError);
+      }
+      try {
+        await addNotification(payload.receiver_id, data.id, 'request', 'لديك طلب توافق جديد بانتظار الرد', 'طلب توافق جديد');
+      } catch (notificationError) {
+        console.warn('Request notification skipped:', notificationError?.message || notificationError);
+      }
+      try {
+        return res.status(201).json(await withProgress(data));
+      } catch (progressError) {
+        console.warn('Request progress response fallback:', progressError?.message || progressError);
+        return res.status(201).json(fromDb(data));
+      }
     }
 
     if (req.method === 'PUT') {
