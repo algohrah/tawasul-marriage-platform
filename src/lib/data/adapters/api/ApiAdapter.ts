@@ -86,14 +86,19 @@ async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
       const savedAdminToken = impersonating
         ? localStorage.getItem('twafok_admin_access_token')
         : null;
-      const { data } = savedAdminToken
-        ? { data: { session: null } }
-        : await supabaseClient.auth.getSession();
+      // لا نعتمد على النسخة المحفوظة وحدها: رمز Supabase قصير العمر وقد
+      // يتجدد تلقائياً أثناء بقاء المدير داخل حساب العضو. تفضيل الجلسة
+      // الحالية يمنع إرسال رمز إداري منتهي الصلاحية بعد التحديث.
+      const { data } = await supabaseClient.auth.getSession();
+      const currentSessionToken = data?.session?.access_token || null;
+      if (impersonating && currentSessionToken && currentSessionToken !== savedAdminToken) {
+        localStorage.setItem('twafok_admin_access_token', currentSessionToken);
+      }
       const demoAdminToken = impersonating
         && localStorage.getItem('twafok_demo_admin') === 'true'
         ? 'demo-admin-token'
         : null;
-      const token = savedAdminToken || demoAdminToken || data?.session?.access_token;
+      const token = currentSessionToken || savedAdminToken || demoAdminToken;
       if (token) headers.set('Authorization', `Bearer ${token}`);
     } catch {
       // لا نمنع الطلب في حال تعذّر قراءة الجلسة
