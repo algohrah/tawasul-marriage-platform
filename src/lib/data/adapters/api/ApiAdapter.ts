@@ -75,12 +75,12 @@ function writeCache(key: string, value: any) {
 async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers || {});
   if (!headers.has('Content-Type') && init.body) headers.set('Content-Type', 'application/json');
+  const impersonating = isBrowser() && localStorage.getItem('impersonating') === 'true';
 
   // نُرفق تلقائياً رمز جلسة Supabase Auth الحالية (إن وُجدت) مع كل طلب،
   // ليتحقق الخادم من صلاحية المستخدم/المشرف الحقيقية بدل الاعتماد على أي بيانات من العميل.
   if (!headers.has('Authorization')) {
     try {
-      const impersonating = isBrowser() && localStorage.getItem('impersonating') === 'true';
       // أثناء «التصفح كعضو» تبقى صلاحية التنفيذ هي صلاحية المدير الحقيقية،
       // بينما actorId يحدد العضو الذي ينفذ الإجراء في سجل الرحلة.
       const savedAdminToken = impersonating
@@ -105,7 +105,18 @@ async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
     }
   }
 
-  if (isBrowser() && localStorage.getItem('impersonating') === 'true') {
+  // في الدخول الإداري السريع قد لا تكون هناك جلسة Supabase في المتصفح.
+  // أضف رمز المعاينة حتى لو تعذرت قراءة الجلسة؛ يتحقق الخادم أيضاً من
+  // X-Impersonating و _impersonating قبل قبوله.
+  if (
+    !headers.has('Authorization')
+    && impersonating
+    && localStorage.getItem('twafok_demo_admin') === 'true'
+  ) {
+    headers.set('Authorization', 'Bearer demo-admin-token');
+  }
+
+  if (impersonating) {
     headers.set('X-Impersonating', 'true');
   }
 
