@@ -319,16 +319,16 @@ export function getJourneyStatusSummary(
     if (role === 'receiver') {
       return {
         actor: 'me', actorLabel: '🔔 الدور عليك الآن', tone: 'urgent',
-        title: `${otherName} يريد التوافق معك للزواج!`,
-        description: `وصلك طلب توافق للزواج من ${otherName}. اقرأ الملف الشخصي ثم اقبل أو اعتذر بلطف.`,
-        nextHint: 'عند قبولك، ينتقل الطرفان لمرحلة تأكيد الجدية والقبول.',
+        title: `وصلك طلب توافق من ${otherName}`,
+        description: 'راجع الملف الشخصي، ثم اختر قبول الطلب أو الاعتذار باحترام.',
+        nextHint: 'عند القبول تبدأ خطوة تأكيد الجدية للطرفين.',
       };
     }
     return {
-      actor: 'other', actorLabel: '⏳ بانتظار الرد', tone: 'waiting',
-      title: 'تم تقديم طلبك بنجاح وبانتظار القبول',
-      description: `${otherName} يستلم إشعاراً بطلبك الآن وبانتظار قبوله. لا تحتاج لفعل أي شيء حالياً.`,
-      nextHint: 'سنُخطرك فوراً عند الرد والقبول.',
+      actor: 'other', actorLabel: '⏳ بانتظار الطرف الآخر', tone: 'waiting',
+      title: 'تم إرسال طلبك بنجاح',
+      description: `بانتظار رد ${otherName}. لا يوجد إجراء مطلوب منك الآن.`,
+      nextHint: 'سنرسل لك إشعاراً فور الرد.',
     };
   }
 
@@ -336,7 +336,7 @@ export function getJourneyStatusSummary(
     return {
       actor: 'both', actorLabel: '🎉 الخطوة التالية', tone: 'urgent',
       title: 'تم القبول بفضل الله',
-      description: 'خطوتك التالية هي سداد عربون المنصة بقيمة ٥٠٠ ريال. العربون غير مسترد بعد السداد.',
+      description: 'الخطوة التالية: يسدّد كل طرف عربون الجدية بقيمة ٥٠٠ ريال.',
       nextHint: 'بعد سداد الطرفين، تبدأ مشاركة معلومات التواصل باختيار كل طرف.',
     };
   }
@@ -368,8 +368,8 @@ export function getJourneyStatusSummary(
     if (!femaleContactReady || !maleContactReady) {
       return {
         actor: 'both', actorLabel: 'معلومات التواصل', tone: 'urgent',
-        title: 'شارك ما تختاره فقط',
-        description: 'لن نعرض أي رقم من حسابك تلقائياً. اكتب معلومات التواصل التي تريد إرسالها للطرف الآخر.',
+        title: 'أضف معلومات التواصل التي تختارها',
+        description: 'اكتب فقط المعلومات التي تريد مشاركتها. لن نعرض أي رقم من حسابك تلقائياً.',
         nextHint: 'بعد مشاركة الطرفين، يؤكد كل طرف الانتقال إلى نتيجة النظرة الشرعية.',
       };
     }
@@ -402,8 +402,8 @@ export function getJourneyStatusSummary(
     }
     return {
       actor: 'me', actorLabel: '📝 سجّل نتيجتك', tone: 'urgent',
-      title: 'سجّل نتيجة النظرة الشرعية',
-      description: 'اختر النتيجة التي تعبّر عن قرارك: تم القبول بفضل الله، أو لم يُكتب النصيب.',
+      title: 'سجّل قرارك بعد النظرة الشرعية',
+      description: 'اختر «تم القبول بفضل الله» أو «لم يُكتب النصيب».',
       nextHint: 'لن تُعرض نتيجتك للطرف الآخر قبل أن يسجّل نتيجته.',
     };
   }

@@ -21,7 +21,6 @@ import {
   DECLINE_REASONS, CANCEL_REASONS, type JourneyState, type RequestRole,
 } from '../lib/journey';
 import { useSettings } from '../lib/useSettings';
-import { JourneyTimeline } from '../components/JourneyTimeline';
 import AcceptedCelebrationModal from '../components/AcceptedCelebrationModal';
 import Modal from '../components/ui/Modal';
 import RequestStatusPanel from '../components/requests/RequestStatusPanel';
@@ -42,7 +41,7 @@ export default function InterestRequests() {
   } = useInterestRequests(activeId);
 
   const navigate = useNavigate();
-  const [tab, setTab] = useState<Tab>('active');
+  const [tab, setTab] = useState<Tab>('incoming');
   const [query, setQuery] = useState('');
   const [subFilter, setSubFilter] = useState<'all' | 'sent' | 'received'>('all');
 
@@ -74,20 +73,6 @@ export default function InterestRequests() {
     setTimeout(() => setToast(null), 3200);
   };
 
-  const buckets = useMemo(() => {
-    const active: ApiRequest[] = [];
-    const incoming: ApiRequest[] = [];
-    const archive: ApiRequest[] = [];
-    for (const r of requests) {
-      const stage = stageOf(r, activeId);
-      if (isTerminal(stage)) { archive.push(r); continue; }
-      if (stage === 'completed') { archive.push(r); continue; }
-      if (stage === 'sent' && r.receiver_id === activeId) { incoming.push(r); continue; }
-      active.push(r);
-    }
-    return { active, incoming, archive };
-  }, [requests, activeId]);
-
   const needsAction = (r: ApiRequest): boolean => {
     const stage = stageOf(r, activeId);
     const isSender = r.sender_id === activeId;
@@ -96,6 +81,26 @@ export default function InterestRequests() {
     const otherPaid = isSender ? r.receiver_paid : r.sender_paid;
     return requiresMyAction(stage, role, { selfPaid, otherPaid });
   };
+
+  const buckets = useMemo(() => {
+    const active: ApiRequest[] = [];
+    const incoming: ApiRequest[] = [];
+    const archive: ApiRequest[] = [];
+    for (const r of requests) {
+      const stage = stageOf(r, activeId);
+      if (isTerminal(stage)) { archive.push(r); continue; }
+      if (stage === 'completed') { archive.push(r); continue; }
+      if (needsAction(r)) { incoming.push(r); continue; }
+      active.push(r);
+    }
+    return { active, incoming, archive };
+  }, [requests, activeId]);
+
+  useEffect(() => {
+    if (!loading && tab === 'incoming' && buckets.incoming.length === 0 && buckets.active.length > 0) {
+      setTab('active');
+    }
+  }, [loading, tab, buckets]);
 
   const list = useMemo(() => {
     let arr = tab === 'active' ? buckets.active : tab === 'incoming' ? buckets.incoming : buckets.archive;
@@ -239,8 +244,8 @@ export default function InterestRequests() {
   };
 
   const tabs: { key: Tab; label: string; icon: typeof Send; count: number }[] = [
-    { key: 'active', label: 'الجارية', icon: Heart, count: buckets.active.length },
-    { key: 'incoming', label: 'طلبات واردة', icon: Inbox, count: buckets.incoming.length },
+    { key: 'incoming', label: 'تحتاج إجراء منك', icon: Inbox, count: buckets.incoming.length },
+    { key: 'active', label: 'قيد المتابعة', icon: Heart, count: buckets.active.length },
     { key: 'archive', label: 'المنتهية', icon: Archive, count: buckets.archive.length },
   ];
 
@@ -259,13 +264,13 @@ export default function InterestRequests() {
               </div>
               <div>
                 <span className="text-amber-400 text-[10px] sm:text-xs font-semibold tracking-wider font-cairo block mb-1">منصة توافق الوطنية</span>
-                <h1 className="font-cairo font-extrabold text-lg sm:text-3xl text-white tracking-tight drop-shadow-sm">طلبات التوافق للزواج</h1>
+                <h1 className="font-cairo font-extrabold text-lg sm:text-3xl text-white tracking-tight drop-shadow-sm">طلباتي</h1>
                 <p className="text-slate-300 text-[11px] sm:text-sm font-cairo mt-1">
                   {(() => {
                     const me = getMember(activeId);
                     return me
-                      ? <>مرحباً بك، <span className="text-amber-400 font-bold">{me.nickname}</span> · تابع خطوات رحلتك الجادة بدقة وسرية تامة</>
-                      : 'تابع جميع رحلات التوافق للزواج من الطلب حتى الزواج';
+                      ? <>مرحباً <span className="text-amber-400 font-bold">{me.nickname}</span> · اعرف ما المطلوب منك وتابع كل طلب بسهولة</>
+                      : 'تابع طلباتك واعرف الخطوة المطلوبة منك الآن';
                   })()}
                 </p>
               </div>
@@ -283,13 +288,13 @@ export default function InterestRequests() {
                 active={stats.respond > 0}
                 value={stats.respond} label="تحتاج ردّك الفوري"
                 icon={UserCheck} tone="gold"
-                onClick={() => { setTab('active'); setSubFilter('all'); }}
+                onClick={() => { setTab('incoming'); setSubFilter('all'); }}
               />
               <StatChip
                 active={stats.pay > 0}
                 value={stats.pay} label="تحتاج سداد جدية"
                 icon={CreditCard} tone="rose"
-                onClick={() => { setTab('active'); setSubFilter('all'); }}
+                onClick={() => { setTab('incoming'); setSubFilter('all'); }}
               />
               <StatChip
                 active={false}
@@ -335,8 +340,8 @@ export default function InterestRequests() {
             <div className="flex gap-1.5 bg-slate-100/60 dark:bg-navy-900/60 p-1 rounded-xl border border-slate-200/50 dark:border-navy-800 self-start overflow-x-auto max-w-full">
               {([
                 { key: 'all', label: 'الكل' },
-                { key: 'sent', label: 'طلبات أرسلتها' },
-                { key: 'received', label: 'طلبات وردتني' },
+                { key: 'sent', label: 'أرسلتها' },
+                { key: 'received', label: 'استقبلتها' },
               ] as const).map((chip) => (
                 <button
                   key={chip.key}
@@ -357,7 +362,7 @@ export default function InterestRequests() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="ابحث باسم الشريك أو المدينة..."
+              placeholder="ابحث بالاسم أو المدينة..."
               className="w-full bg-white dark:bg-navy-900 border border-slate-200/80 dark:border-navy-800 rounded-2xl py-2.5 pr-10 pl-10 text-xs sm:text-sm font-cairo focus:outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10 dark:focus:ring-amber-400/5 placeholder-slate-400 dark:placeholder-slate-500 text-slate-900 dark:text-cream-50 transition-all shadow-sm"
             />
             {query && (
@@ -386,7 +391,7 @@ export default function InterestRequests() {
               }`}
             >
               <CheckSquare className="w-4 h-4" />
-              <span>{isSelectionMode ? 'إلغاء وضع التحديد' : 'تحديد متعدد'}</span>
+              <span>{isSelectionMode ? 'إنهاء التحديد' : 'إدارة الطلبات'}</span>
             </button>
 
             {isSelectionMode && list.length > 0 && (
@@ -933,7 +938,7 @@ function RequestCard({
           <div className="relative bg-amber-50/40 dark:bg-amber-950/10 border border-amber-200/40 dark:border-amber-900/20 rounded-2xl p-4 shadow-inner">
             <div className="absolute right-3.5 -top-2.5 bg-white dark:bg-navy-950 px-2.5 py-0.5 rounded-full border border-amber-200/50 dark:border-amber-900/40 text-[9px] font-bold text-amber-800 dark:text-amber-400 font-cairo flex items-center gap-1">
               <Sparkles className="w-2.5 h-2.5 text-amber-500" />
-              رسالة الاهتمام من الشريك
+              {isSender ? 'رسالتك المرفقة مع الطلب' : 'رسالة الطرف الآخر لك'}
             </div>
             <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 font-cairo leading-relaxed italic">
               " {req.message} "
@@ -946,12 +951,24 @@ function RequestCard({
         <RequestStatusPanel summary={summary} compact />
       </div>
 
-      <div className="px-4 sm:px-6 pb-4">
-        <JourneyTimeline
-          stage={stage}
-          isSender={isSender}
-        />
-      </div>
+      {!isTerminal(stage) && (
+        <div className="px-4 sm:px-6 pb-4">
+          <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 px-4 py-3">
+            <div className="flex items-center justify-between gap-3 font-cairo">
+              <span className="text-xs font-extrabold text-slate-800">المرحلة الحالية: {meta.title}</span>
+              <span className="text-[10px] font-bold text-slate-500">
+                {Math.max(1, STAGE_META[stage].step)} من 7
+              </span>
+            </div>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-200">
+              <div
+                className="h-full rounded-full bg-gradient-to-l from-amber-400 to-amber-600 transition-all"
+                style={{ width: `${Math.max(1, STAGE_META[stage].step) / 7 * 100}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {stage === 'declined' && req.decline_reason && (
         <div className="mx-4 sm:mx-6 mb-4 text-xs font-cairo text-rose-700 bg-rose-50/50 border border-rose-100 rounded-xl p-3 flex items-start gap-1.5">
@@ -1051,14 +1068,14 @@ function RequestCard({
           {!isTerminal(stage) && action.type !== 'accept_decline' && (
             <button onClick={onCancel} disabled={busy}
               className="flex-1 flex items-center justify-center gap-1.5 text-[10px] sm:text-xs font-cairo font-bold text-rose-500 hover:text-rose-600 hover:bg-rose-50/50 rounded-xl py-2.5 sm:py-3 transition-all disabled:opacity-60 cursor-pointer border border-rose-100/40 shadow-sm">
-              <Ban className="w-3.5 h-3.5" /> إلغاء الطلب والاعتذار
+              <Ban className="w-3.5 h-3.5" /> {isSender ? 'إلغاء طلبي' : 'الاعتذار عن الطلب'}
             </button>
           )}
         </div>
 
         <button onClick={loadTimeline}
           className="mt-3 w-full flex items-center justify-center gap-1.5 text-[10px] font-cairo font-bold text-slate-400 hover:text-slate-600 transition-colors py-1 cursor-pointer">
-          {showTimeline ? 'إخفاء السجل الزمني للرحلة' : 'عرض السجل الزمني للتواصل والأحداث'}
+          {showTimeline ? 'إخفاء سجل التحديثات' : 'عرض سجل التحديثات'}
           <ChevronLeft className={`w-3.5 h-3.5 transition-transform duration-300 ${showTimeline ? '-rotate-90' : ''}`} />
         </button>
         
@@ -1262,15 +1279,15 @@ function EmptyState({ tab }: { tab: Tab }) {
   const config = {
     active: {
       icon: Compass,
-      title: 'رحلتك المباركة بانتظار خطوتك الأولى',
-      desc: 'سجل التواصل الآمن لا يحتوي على طلبات نشطة حالياً. تصفّح الأعضاء الموثقين الآن، وأرسل طلب توافق جاد لبدء المسار.',
-      cta: '🔍 تصفّح الأعضاء وابحث عن نصفك الآخر', link: '/search',
+      title: 'لا توجد طلبات قيد المتابعة',
+      desc: 'الطلبات التي تنتظر رد الطرف الآخر أو تستكمل مراحل التوافق ستظهر هنا.',
+      cta: 'تصفّح الأعضاء', link: '/search',
     },
     incoming: {
       icon: Mail,
-      title: 'صندوق الوارد آمن وبانتظار الفرص',
-      desc: 'لم تتلقَ أي طلبات اهتمام جديدة حتى الآن. نوصيك بإكمال ملفك الشخصي بنسبة ١٠٠٪ ورفع مستوى الجدية لزيادة فرص التواصل.',
-      cta: '✨ تحسين وإكمال ملفي الشخصي الموحد', link: '/profile',
+      title: 'أنت على المسار الصحيح',
+      desc: 'لا يوجد إجراء مطلوب منك الآن. سنضع هنا أي طلب يحتاج ردك أو سدادك أو قرارك.',
+      cta: 'تصفّح أعضاء جدد', link: '/search',
     },
     archive: {
       icon: Archive,

@@ -84,14 +84,19 @@ export default async function handler(req, res) {
       if (error) throw error;
       const otherId = String(senderId) === String(request.sender_id) ? request.receiver_id : request.sender_id;
       if (senderId !== 'admin') {
-        await supabase.from('notifications').insert({
-          user_id: String(otherId),
-          request_id: Number(request.id),
-          type: 'message',
-          title: 'رسالة جديدة في طلب التوافق',
-          message: 'لديك رسالة جديدة مرتبطة بطلب التوافق.',
-          read: false,
-        }).catch(() => undefined);
+        try {
+          const { error: notificationError } = await supabase.from('notifications').insert({
+            user_id: String(otherId),
+            request_id: Number(request.id),
+            type: 'message',
+            title: 'رسالة جديدة في طلب التوافق',
+            message: 'لديك رسالة جديدة مرتبطة بطلب التوافق.',
+            read: false,
+          });
+          if (notificationError) console.warn('Inquiry notification skipped:', notificationError.message);
+        } catch (notificationError) {
+          console.warn('Inquiry notification skipped:', notificationError?.message || notificationError);
+        }
       }
       return res.status(201).json(data);
     }
