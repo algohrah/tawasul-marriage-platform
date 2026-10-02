@@ -25,7 +25,7 @@ export async function getUnifiedNotifications(userId: string): Promise<UnifiedNo
   return items.map((item) => ({
     ...item,
     href: item.request_id ? `/journey/${item.request_id}${item.type === 'inquiry' ? '?tab=inquiry' : ''}` : '/notifications',
-    title: item.title || (item.type === 'admin' ? 'رسالة من الإدارة' : 'تحديث في رحلة طلب اهتمام'),
+    title: item.title || (item.type === 'admin' ? 'رسالة من الإدارة' : 'تحديث في رحلة طلب توافق'),
     isJourney: (item.request_id ?? 0) > 0,
   }));
 }

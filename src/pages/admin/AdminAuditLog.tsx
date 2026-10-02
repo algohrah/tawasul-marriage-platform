@@ -23,7 +23,7 @@ const actionConfig: Record<string, { label: string; icon: any; color: string }> 
   update_report: { label: 'معالجة بلاغ', icon: Flag, color: 'text-purple-600 bg-purple-50' },
   exemption_approved: { label: 'اعتماد إعفاء', icon: CheckCircle2, color: 'text-emerald-600 bg-emerald-50' },
   exemption_rejected: { label: 'رفض إعفاء', icon: ShieldCheck, color: 'text-rose-600 bg-rose-50' },
-  delete_request: { label: 'حذف طلب اهتمام', icon: Trash2, color: 'text-red-600 bg-red-50' },
+  delete_request: { label: 'حذف طلب توافق', icon: Trash2, color: 'text-red-600 bg-red-50' },
   report: { label: 'معالجة بلاغ (قديم)', icon: Flag, color: 'text-purple-600 bg-purple-50' },
   admin_action: { label: 'إجراء إداري', icon: ShieldCheck, color: 'text-blue-600 bg-blue-50' },
 };

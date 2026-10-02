@@ -74,7 +74,7 @@ export default function AdminDashboard() {
     );
   }
 
-  // بطاقات النظرة السريعة الرئيسية في الأعلى (تتضمن الأعضاء مع عددهم وطلبات الاهتمام وروابط الدخول المباشرة)
+  // بطاقات النظرة السريعة الرئيسية في الأعلى (تتضمن الأعضاء مع عددهم وطلبات التوافق وروابط الدخول المباشرة)
   const quickOverviewCards = [
     {
       label: 'الأعضاء',
@@ -86,7 +86,7 @@ export default function AdminDashboard() {
       actionText: 'إدارة الأعضاء',
     },
     {
-      label: 'طلبات الاهتمام',
+      label: 'طلبات التوافق',
       value: displayStats.totalRequests || (displayStats.pendingRequests + displayStats.activeJourneys),
       subtext: `${displayStats.pendingRequests} معلّق · ${displayStats.activeJourneys} رحلة نشطة`,
       to: '/admin/journeys?tab=requests',

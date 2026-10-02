@@ -118,7 +118,6 @@ export default function WhatsAppShareModal({
   });
 
   const [includeProfileDetails, setIncludeProfileDetails] = useState<boolean>(true);
-  const [targetRecipient, setTargetRecipient] = useState<'admin' | 'share'>('admin');
   const [copied, setCopied] = useState<boolean>(false);
 
   const isMale = member?.gender === 'male';
@@ -214,14 +213,10 @@ export default function WhatsAppShareModal({
 
   const handleSendWhatsApp = () => {
     const encoded = encodeURIComponent(fullMessage);
-    let waUrl = `https://wa.me/?text=${encoded}`;
-    
-    // الإرسال لرقم إدارة المنصة المعتمد
-    const targetPhone = member?.khataabaPhone || member?.khataaba_phone || platformWhatsApp || ADMIN_WHATSAPP_NUMBER;
-    if (targetRecipient === 'admin' && targetPhone) {
-      const cleanPhone = (targetPhone as string).replace(/[^\d]/g, '');
-      waUrl = `https://wa.me/${cleanPhone}?text=${encoded}`;
-    }
+    // هذا الزر مخصص حصرياً لمراسلة إدارة الموقع، ولا يفتح رقم العضو أو الخطابة.
+    const targetPhone = platformWhatsApp || ADMIN_WHATSAPP_NUMBER;
+    const cleanPhone = String(targetPhone).replace(/[^\d]/g, '');
+    const waUrl = `https://wa.me/${cleanPhone}?text=${encoded}`;
 
     window.open(waUrl, '_blank', 'noopener,noreferrer');
     onClose();
@@ -233,7 +228,7 @@ export default function WhatsAppShareModal({
     <Modal
       open={open}
       onClose={onClose}
-      title="طلب التوفيق والوساطة عبر واتساب 💬"
+      title="مراسلة إدارة الموقع عبر واتساب"
       size="md"
     >
       <div className="space-y-4 text-right" dir="rtl">
@@ -347,31 +342,9 @@ export default function WhatsAppShareModal({
             </span>
           </label>
 
-          {/* خيار جهة الإرسال */}
-          <div className="pt-2 border-t border-slate-200/60 flex items-center gap-4 text-xs font-cairo">
-            <span className="text-slate-500 font-bold">طريقة الإرسال:</span>
-            <label className="flex items-center gap-1.5 cursor-pointer">
-              <input
-                type="radio"
-                name="targetRecipient"
-                value="admin"
-                checked={targetRecipient === 'admin'}
-                onChange={() => setTargetRecipient('admin')}
-                className="accent-emerald-600 cursor-pointer"
-              />
-              <span className="text-slate-900 font-bold">مباشرة لواتساب إدارة المنصة ({ADMIN_WHATSAPP_DISPLAY})</span>
-            </label>
-            <label className="flex items-center gap-1.5 cursor-pointer">
-              <input
-                type="radio"
-                name="targetRecipient"
-                value="share"
-                checked={targetRecipient === 'share'}
-                onChange={() => setTargetRecipient('share')}
-                className="accent-emerald-600 cursor-pointer"
-              />
-              <span className="text-slate-700">مشاركة حرة</span>
-            </label>
+          <div className="pt-2 border-t border-slate-200/60 text-xs font-cairo text-slate-700">
+            ستُرسل الرسالة إلى <strong>واتساب إدارة الموقع فقط</strong> ({ADMIN_WHATSAPP_DISPLAY}).
+            لا يتيح هذا الزر الوصول إلى رقم أي عضو.
           </div>
         </div>
 

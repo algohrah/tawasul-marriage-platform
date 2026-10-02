@@ -164,9 +164,12 @@ export default function MemberProfile() {
 
   const latestRequest = useMemo(() => {
     if (!user?.isLoggedIn || !requests || requests.length === 0 || !member?.id || !currentUserId) return null;
-    const sent = requests.filter(r => r.sender_id === currentUserId && r.receiver_id === member.id);
-    if (sent.length === 0) return null;
-    return [...sent].sort((a, b) => b.id - a.id)[0];
+    const betweenUs = requests.filter(r =>
+      (r.sender_id === currentUserId && r.receiver_id === member.id) ||
+      (r.receiver_id === currentUserId && r.sender_id === member.id)
+    );
+    if (betweenUs.length === 0) return null;
+    return [...betweenUs].sort((a, b) => b.id - a.id)[0];
   }, [requests, currentUserId, member?.id, user?.isLoggedIn]);
 
   if (!member) {
@@ -291,7 +294,7 @@ export default function MemberProfile() {
             <ArrowRight className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <button onClick={handleShareWhatsApp} className="h-9 w-9 rounded-xl bg-white flex items-center justify-center text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 transition-all border border-slate-200 shadow-sm" title="مشاركة واتساب">
+            <button onClick={handleShareWhatsApp} className="h-9 w-9 rounded-xl bg-white flex items-center justify-center text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 transition-all border border-slate-200 shadow-sm" title="مراسلة إدارة الموقع عبر واتساب">
               <Share2 className="w-4 h-4" />
             </button>
             <button onClick={handleCopyLink} className="h-9 w-9 rounded-xl bg-white flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-all border border-slate-200 shadow-sm" title="نسخ الرابط">
@@ -404,7 +407,7 @@ export default function MemberProfile() {
                   </button>
                 ) : latestRequest && latestRequest.journey_stage !== 'declined' && latestRequest.journey_stage !== 'cancelled' ? (
                   <button
-                    onClick={() => navigate('/requests')}
+                    onClick={() => navigate(`/journey/${latestRequest.id}`)}
                     className="w-full py-3 sm:py-3.5 px-2.5 sm:px-4 rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-cairo font-black text-[11px] sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer"
                   >
                     <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
@@ -420,7 +423,7 @@ export default function MemberProfile() {
                     className="w-full py-3 sm:py-3.5 px-2.5 sm:px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-105 text-white font-cairo font-black text-[11px] sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer"
                   >
                     <Building2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-white flex-shrink-0" />
-                    <span className="truncate">طلب التوفيق والوساطة لهذا الملف 💍</span>
+                    <span className="truncate">طلب توافق لهذا الملف 💍</span>
                   </button>
                 ) : (
                   <button
@@ -435,14 +438,14 @@ export default function MemberProfile() {
                 )}
               </div>
 
-              {/* 2. زر الواتساب للمشاركة والاستفسار */}
+              {/* واتساب مخصص حصريًا لمراسلة إدارة الموقع */}
               <button
                 onClick={handleShareWhatsApp}
                 className="py-2.5 sm:py-3.5 px-2 sm:px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-cairo font-bold text-[10px] sm:text-sm transition-colors flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer shadow-xs flex-shrink-0"
-                title="تواصل واتساب للتوفيق مع هذا الملف"
+                title="مراسلة إدارة الموقع عبر واتساب"
               >
                 <MessageCircle className="w-4 h-4 fill-white flex-shrink-0" />
-                <span className="hidden sm:inline">{!user.isLoggedIn ? 'تواصل واتساب للتوفيق 💬' : 'واتساب للتوفيق 💬'}</span>
+                <span className="hidden sm:inline">واتساب إدارة الموقع</span>
               </button>
 
               {/* 3. زر المفضلة التفاعلي */}
@@ -692,7 +695,7 @@ export default function MemberProfile() {
             <div>
               <h3 className="font-cairo font-bold text-slate-900 text-sm mb-1">وساطة احترافية وسرية تامة</h3>
               <p className="text-xs text-slate-600 font-tajawal leading-relaxed">
-                التواصل يتم حصريًا عبر فريق الإدارة لضمان الخصوصية والجدية. عند إرسال طلب اهتمام، ستتولى الإدارة التنسيق والربط بين الطرفين وفق ضوابط التوافق الشرعي.
+                التواصل يتم حصريًا عبر فريق الإدارة لضمان الخصوصية والجدية. عند إرسال طلب توافق، ستتولى الإدارة التنسيق والربط بين الطرفين وفق ضوابط التوافق الشرعي.
               </p>
             </div>
           </div>
@@ -742,7 +745,7 @@ export default function MemberProfile() {
               <h3 className="font-cairo font-bold text-sm">خصوصية تامة</h3>
             </div>
             <p className="text-xs font-tajawal leading-relaxed text-slate-300">
-              لا تظهر معلومات التواصل للأعضاء. عبر <strong className="text-amber-400">«طلب اهتمام»</strong> تتولى الإدارة التواصل مع الطرف الآخر بسرية كاملة.
+              لا تظهر معلومات التواصل للأعضاء. عبر <strong className="text-amber-400">«طلب توافق»</strong> تتولى الإدارة التواصل مع الطرف الآخر بسرية كاملة.
             </p>
             <div className="mt-3 pt-3 border-t border-white/10">
               <p className="text-[10px] text-slate-400 font-tajawal flex items-center gap-1.5">
@@ -760,7 +763,7 @@ export default function MemberProfile() {
             <div className="space-y-2">
               <div className="grid grid-cols-2 gap-2">
                 <button onClick={handleShareWhatsApp} className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-50 text-emerald-600 font-cairo font-bold text-xs hover:bg-emerald-100 transition-colors cursor-pointer">
-                  <MessageCircle className="w-4 h-4" /> واتساب
+                  <MessageCircle className="w-4 h-4" /> واتساب الإدارة
                 </button>
                 <button onClick={handleCopyLink} className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-cairo font-bold text-xs hover:bg-slate-200 transition-colors cursor-pointer">
                   <Copy className="w-4 h-4" /> نسخ الرابط
@@ -824,11 +827,11 @@ export default function MemberProfile() {
                       </button>
                     ) : isImported ? (
                       <button
-                        onClick={handleShareWhatsApp}
-                        className="w-full sm:w-auto py-2 px-2.5 sm:px-5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-cairo font-extrabold text-[10px] sm:text-sm shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        onClick={() => setContactOpen(true)}
+                        className="w-full sm:w-auto py-2 px-2.5 sm:px-5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-cairo font-extrabold text-[10px] sm:text-sm shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        <MessageCircle className="w-3.5 h-3.5 fill-white flex-shrink-0" />
-                        <span className="truncate">طلب التوفيق والوساطة 💬</span>
+                        <Send className="w-3.5 h-3.5 -scale-x-100 flex-shrink-0" />
+                        <span className="truncate">طلب توافق</span>
                       </button>
                     ) : latestRequest ? (
                       latestRequest.journey_stage === 'declined' || latestRequest.journey_stage === 'cancelled' ? (
@@ -841,7 +844,7 @@ export default function MemberProfile() {
                         </button>
                       ) : (
                         <button
-                          onClick={() => navigate('/requests')}
+                          onClick={() => navigate(`/journey/${latestRequest.id}`)}
                           className="w-full sm:w-auto py-2 px-2.5 sm:px-5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-cairo font-extrabold text-[10px] sm:text-sm shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
@@ -863,11 +866,11 @@ export default function MemberProfile() {
                     )}
                   </div>
 
-                  {/* 2. زر الواتساب للتوافق */}
+                  {/* واتساب إدارة الموقع */}
                   <button
                     onClick={handleShareWhatsApp}
                     className="h-9 sm:h-10 rounded-xl px-2 sm:px-3 bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-1 transition-all font-cairo font-bold text-xs cursor-pointer shadow-xs flex-shrink-0"
-                    title="تواصل واتساب للتوفيق مع هذا الملف"
+                    title="مراسلة إدارة الموقع عبر واتساب"
                   >
                     <MessageCircle className="w-3.5 h-3.5 fill-white" />
                   </button>
@@ -1058,8 +1061,10 @@ export default function MemberProfile() {
                   incrementUsage('message');
                   setContactOpen(false);
                   setContactMsg('');
-                  showToast('تم إرسال طلب التوافق بنجاح! سيتم إشعار الطرف الآخر.', 'success');
-                  setTimeout(() => navigate('/requests'), 600);
+                  showToast('تم إرسال طلب التوافق. يمكنك متابعة حالته الآن.', 'success');
+                  setTimeout(() => navigate(`/journey/${res.data.id}`), 450);
+                } else {
+                  showToast(res?.error || 'تعذر إرسال طلب التوافق', 'error');
                 }
               }}
               className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 text-slate-950 font-cairo font-extrabold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"

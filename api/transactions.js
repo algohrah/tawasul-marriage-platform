@@ -18,10 +18,10 @@ function isSchemaCacheError(error) {
 
 const TX_TYPE_LABELS = {
   subscription: 'ترقية الباقة',
-  deposit: 'رسوم الجدية',
+  deposit: 'عربون طلب التوافق',
   inquiry: 'باقة رسائل الاستفسار',
   inquiry_package: 'باقة رسائل الاستفسار',
-  final: 'رسوم السعي النهائية',
+  final: 'المتبقي من أتعاب رحلة التوافق',
 };
 
 /** إشعار العضو فور اعتماد/رفض المشرف لمعاملته المعلّقة — بدل انتظار زيارة الصفحة يدوياً */
@@ -62,10 +62,39 @@ async function grantEntitlement(tx) {
     }
   }
   if (tx.type === 'final' && tx.request_id) {
-    await supabase.from('interest_requests').update({
-      journey_stage: 'completed', status: 'completed', mediation_stage: 'completed',
-      evaluation_result: 'success', updated_at: new Date().toISOString(),
-    }).eq('id', tx.request_id);
+    const actorId = String(memberId);
+    const now = new Date().toISOString();
+    const { data: request } = await supabase
+      .from('interest_requests')
+      .select('sender_id, receiver_id, journey_stage, status')
+      .eq('id', tx.request_id)
+      .maybeSingle();
+    if (request && ['engagement', 'completed'].includes(request.journey_stage || request.status)) {
+      const { data: previous } = await supabase
+        .from('request_events')
+        .select('actor_id')
+        .eq('request_id', tx.request_id)
+        .eq('action', 'pay_final_fee');
+      const alreadyRecorded = (previous || []).some((event) => String(event.actor_id) === actorId);
+      if (!alreadyRecorded) {
+        await supabase.from('request_events').insert({
+          request_id: tx.request_id,
+          actor_id: actorId,
+          action: 'pay_final_fee',
+          payload: { transactionId: tx.id, approvedByAdmin: true },
+          created_at: now,
+        });
+      }
+      const otherId = actorId === String(request.sender_id) ? request.receiver_id : request.sender_id;
+      const otherPaid = (previous || []).some((event) => String(event.actor_id) === String(otherId));
+      if (otherPaid) {
+        await supabase.from('interest_requests').update({
+          journey_stage: 'completed', status: 'completed', mediation_stage: 'completed',
+          evaluation_result: 'success', evaluation_note: 'اكتمل سداد الطرفين بعد تسليم المهر',
+          updated_at: now,
+        }).eq('id', tx.request_id);
+      }
+    }
   }
   if (tx.type === 'deposit' && tx.request_id) {
     const { data: request } = await supabase.from('interest_requests').select('*').eq('id', tx.request_id).maybeSingle();

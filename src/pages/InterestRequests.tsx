@@ -18,8 +18,9 @@ import {
   STAGE_META, ACCENT_CLASSES, getPrimaryAction, isTerminal,
   requiresMyAction, actionUrgency,
   getJourneyStage, getJourneyStatusSummary,
-  DECLINE_REASONS, CANCEL_REASONS, DEPOSIT_AMOUNT, type JourneyState, type RequestRole,
+  DECLINE_REASONS, CANCEL_REASONS, type JourneyState, type RequestRole,
 } from '../lib/journey';
+import { useSettings } from '../lib/useSettings';
 import { JourneyTimeline } from '../components/JourneyTimeline';
 import AcceptedCelebrationModal from '../components/AcceptedCelebrationModal';
 import Modal from '../components/ui/Modal';
@@ -33,6 +34,7 @@ function stageOf(r: ApiRequest, userId: string): JourneyState {
 
 export default function InterestRequests() {
   const { user } = useApp();
+  const { settings } = useSettings();
   const activeId = user?.memberId || getCurrentUserId();
   const {
     requests, loading, error, actionLoading,
@@ -121,7 +123,7 @@ export default function InterestRequests() {
   const stats = useMemo(() => {
     let respond = 0, pay = 0, active = 0;
     for (const r of requests) {
-      const stage = stageOf(r);
+      const stage = stageOf(r, activeId);
       if (isTerminal(stage) || stage === 'completed') continue;
       const isSender = r.sender_id === activeId;
       const role: RequestRole = isSender ? 'sender' : 'receiver';
@@ -154,22 +156,25 @@ export default function InterestRequests() {
 
   const onPay = async () => {
     if (!payModal || !pledge) { showToast('يرجى الموافقة على عهد الجدية', 'error'); return; }
-    const res = await runAction(payModal.id, 'pay_deposit');
+    const requestId = payModal.id;
     setPayModal(null); setPledge(false);
-    showToast(res.ok ? '✅ تم سداد رسوم الجدية بنجاح' : (res.error || 'خطأ'), res.ok ? 'success' : 'error');
+    navigate(`/journey/${requestId}?tab=deposit`);
   };
 
   const onRecordResult = async () => {
     if (!resultModal) return;
     const res = await runAction(resultModal.id, 'record_result', { result: resultChoice, note: resultNote });
     setResultModal(null); setResultNote('');
-    showToast(res.ok ? 'تم تسجيل نتيجة التوافق' : (res.error || 'خطأ'), res.ok ? 'success' : 'error');
+    showToast(res.ok ? 'تم حفظ نتيجة النظرة الشرعية' : (res.error || 'خطأ'), res.ok ? 'success' : 'error');
   };
 
   const onAdvanceIntro = async (req: ApiRequest) => {
-    const res = await runAction(req.id, 'advance_viewing');
+    const res = await runAction(req.id, 'confirm_advance', { nextStage: 'sharia_viewing' });
     setCoordModal(null);
-    showToast(res.ok ? 'تم الانتقال للنظرة الشرعية' : (res.error || 'خطأ'), res.ok ? 'success' : 'error');
+    showToast(
+      res.ok ? 'تم تسجيل تأكيدك. تنتقل الرحلة بعد تأكيد الطرف الآخر.' : (res.error || 'خطأ'),
+      res.ok ? 'success' : 'error',
+    );
   };
 
   const onCancel = async () => {
@@ -547,7 +552,7 @@ export default function InterestRequests() {
           <div>
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4 text-center">
               <ShieldCheck className="w-8 h-8 text-amber-600 mx-auto mb-2" />
-              <p className="font-cairo font-extrabold text-2xl text-amber-700">{DEPOSIT_AMOUNT} <span className="text-sm">ريال</span></p>
+              <p className="font-cairo font-extrabold text-2xl text-amber-700">{settings.deposit_amount} <span className="text-sm">ريال</span></p>
               <p className="text-xs text-navy-500 font-cairo mt-1">رسوم تأكيد الجدية — تُدفع مرة واحدة فقط</p>
               <p className="text-[10px] text-rose-600 font-cairo mt-1 font-bold">⚠️ تنبيه: جميع الرسوم المدفوعة للمنصة غير مستردة نهائياً تحت أي ظرف</p>
             </div>
@@ -561,7 +566,7 @@ export default function InterestRequests() {
             <button onClick={onPay} disabled={!pledge || actionLoading !== null}
               className="w-full mt-4 bg-gold-gradient text-navy-900 font-cairo font-extrabold py-3.5 rounded-2xl shadow-gold hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 flex items-center justify-center gap-2">
               {actionLoading !== null ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
-              سداد رسوم الجدية
+              الانتقال إلى الدفع الآمن
             </button>
           </div>
         )}
@@ -589,28 +594,28 @@ export default function InterestRequests() {
               <Info className="w-4 h-4 text-indigo-500 inline ml-1" />
               عند تأكيد الموعد وإتمام التوافق الأولي، انتقل لمرحلة تبادل القنوات الرسمية.
             </div>
-            {stageOf(coordModal) === 'coordination' && coordModal.meeting_date && (
+            {stageOf(coordModal, activeId) === 'coordination' && coordModal.guardian_phone && coordModal.male_phone && (
               <button onClick={() => onAdvanceIntro(coordModal)} disabled={actionLoading !== null}
                 className="w-full bg-indigo-500 text-white font-cairo font-bold py-3.5 rounded-2xl hover:brightness-105 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
                 {actionLoading !== null ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                المتابعة لمرحلة التوافق
+                تأكيد الاستعداد من جانبي
               </button>
             )}
           </div>
         )}
       </Modal>
 
-      <Modal open={!!resultModal} onClose={() => setResultModal(null)} title="تسجيل نتيجة التوافق">
+      <Modal open={!!resultModal} onClose={() => setResultModal(null)} title="نتيجة النظرة الشرعية">
         <div className="grid grid-cols-2 gap-3 mb-4">
           <button onClick={() => setResultChoice('success')}
             className={`p-4 rounded-2xl border-2 text-center transition-all ${resultChoice === 'success' ? 'border-emerald-400 bg-emerald-50' : 'border-cream-200'}`}>
             <span className="text-2xl block mb-1">💚</span>
-            <span className="font-cairo font-bold text-sm text-emerald-700">توافق مبارك</span>
+            <span className="font-cairo font-bold text-sm text-emerald-700">تم القبول بفضل الله</span>
           </button>
           <button onClick={() => setResultChoice('failed')}
             className={`p-4 rounded-2xl border-2 text-center transition-all ${resultChoice === 'failed' ? 'border-slate-400 bg-slate-50' : 'border-cream-200'}`}>
             <span className="text-2xl block mb-1">🤝</span>
-            <span className="font-cairo font-bold text-sm text-slate-600">لم يكتمل</span>
+            <span className="font-cairo font-bold text-sm text-slate-600">لم يُكتب النصيب</span>
           </button>
         </div>
         <textarea value={resultNote} onChange={(e) => setResultNote(e.target.value)} rows={3} placeholder="ملاحظة (اختياري)..."
@@ -618,7 +623,7 @@ export default function InterestRequests() {
         <button onClick={onRecordResult} disabled={actionLoading !== null}
           className="w-full mt-4 bg-navy-900 text-white font-cairo font-bold py-3.5 rounded-2xl hover:bg-navy-800 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
           {actionLoading !== null ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-          تسجيل النتيجة وإنهاء الرحلة
+          حفظ نتيجة النظرة الشرعية
         </button>
       </Modal>
 
@@ -1025,13 +1030,13 @@ function RequestCard({
         {action.type === 'pay_deposit' && (
           <p className="text-[10px] text-rose-700 font-cairo text-center mt-2.5 leading-relaxed font-bold bg-rose-50 border border-rose-200/40 rounded-xl py-1.5 px-3 flex items-center justify-center gap-1.5">
             <Info className="w-3.5 h-3.5 text-rose-500 flex-shrink-0" />
-            <span>تنبيه هام: رسوم تأكيد الجدية وجميع الرسوم المدفوعة غير مستردة نهائياً تحت أي ظرف.</span>
+            <span>العربون غير مسترد بعد السداد، ويُدفع لكل طرف بصورة مستقلة.</span>
           </p>
         )}
         {stage === 'sharia_viewing' && (
           <p className="text-[10px] text-indigo-700 font-cairo text-center mt-2.5 leading-relaxed bg-indigo-50 border border-indigo-100/50 rounded-xl py-1.5 px-3 flex items-center justify-center gap-1.5">
             <CalendarClock className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
-            <span>بعد اللقاء الشرعي، حدد "توافق مبارك" لتوثيق الملكة أو "لم يكتمل" للاعتذار وإغلاق الطلب بلطف.</span>
+            <span>بعد النظرة الشرعية اختر «تم القبول بفضل الله» أو «لم يُكتب النصيب».</span>
           </p>
         )}
 
@@ -1258,7 +1263,7 @@ function EmptyState({ tab }: { tab: Tab }) {
     active: {
       icon: Compass,
       title: 'رحلتك المباركة بانتظار خطوتك الأولى',
-      desc: 'سجل التواصل الآمن لا يحتوي على طلبات نشطة حالياً. تصفّح الأعضاء الموثقين الآن، وأرسل طلب اهتمام جاد لبدء المسار.',
+      desc: 'سجل التواصل الآمن لا يحتوي على طلبات نشطة حالياً. تصفّح الأعضاء الموثقين الآن، وأرسل طلب توافق جاد لبدء المسار.',
       cta: '🔍 تصفّح الأعضاء وابحث عن نصفك الآخر', link: '/search',
     },
     incoming: {

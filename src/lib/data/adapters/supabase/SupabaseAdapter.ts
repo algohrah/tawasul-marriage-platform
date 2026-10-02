@@ -897,7 +897,7 @@ export class SupabaseAdapter implements IDatabaseAdapter {
         status: 'pending',
         journey_stage: 'sent',
         mediation_stage: 'none',
-        message: message || 'طلب اهتمام جديد',
+        message: message || 'طلب توافق جديد',
         created_at: new Date().toISOString(),
       };
       
@@ -908,8 +908,8 @@ export class SupabaseAdapter implements IDatabaseAdapter {
         user_id: receiverId,
         request_id: id,
         type: 'request',
-        text: 'وصلك طلب اهتمام جديد بانتظار قرارك',
-        title: 'طلب اهتمام جديد 💌',
+        text: 'وصلك طلب توافق جديد بانتظار قرارك',
+        title: 'طلب توافق جديد 💌',
         read: false,
         created_at: new Date().toISOString(),
       }).catch(() => {});

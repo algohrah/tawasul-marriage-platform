@@ -338,7 +338,7 @@ export default function AdminChat() {
                 <HeartHandshake className="w-12 h-12 text-slate-300 dark:text-navy-600 mx-auto mb-3" />
                 <h3 className="font-cairo font-bold text-base text-navy-900 dark:text-cream-50 mb-1">لا توجد طلبات توافق نشطة حالياً</h3>
                 <p className="font-cairo text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-5 leading-relaxed">
-                  يمكنك استعراض الأعضاء المتوافقين معك وإرسال طلب اهتمام، وسيظهر هنا مسار التنسيق وتوجيهات الإدارة لطلبك.
+                  يمكنك استعراض الأعضاء المتوافقين معك وإرسال طلب توافق، وسيظهر هنا مسار التنسيق وتوجيهات الإدارة لطلبك.
                 </p>
                 <button
                   onClick={() => navigate('/search')}

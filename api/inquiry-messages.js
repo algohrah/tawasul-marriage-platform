@@ -1,11 +1,33 @@
 import supabase from './db-client.js';
-import { authorizeMemberAction, requireAdmin } from './_auth.js';
+import {
+  authorizeMemberAction, requireAdmin, getAuthUser, getMemberLink, isAdminEmail,
+} from './_auth.js';
 import { checkRateLimit } from './_rateLimit.js';
 
 function setCors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+}
+
+async function getRequest(requestId) {
+  const { data, error } = await supabase
+    .from('interest_requests')
+    .select('id, sender_id, receiver_id')
+    .eq('id', Number(requestId))
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+async function resolveMemberId(req) {
+  const user = await getAuthUser(req);
+  if (!user) return null;
+  if (await isAdminEmail(user.email)) return 'admin';
+  const link = await getMemberLink(user.id);
+  if (link?.member_id) return String(link.member_id);
+  const { data: member } = await supabase.from('members').select('id').eq('email', user.email || '').maybeSingle();
+  return member?.id ? String(member.id) : null;
 }
 
 export default async function handler(req, res) {
@@ -15,6 +37,17 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const { requestId } = req.query;
+      if (!requestId) {
+        const admin = await requireAdmin(req, res);
+        if (!admin) return;
+      } else {
+        const [request, memberId] = await Promise.all([getRequest(requestId), resolveMemberId(req)]);
+        if (!request) return res.status(404).json({ error: 'طلب التوافق غير موجود' });
+        if (!memberId) return res.status(401).json({ error: 'يجب تسجيل الدخول لعرض المحادثة' });
+        if (memberId !== 'admin' && ![request.sender_id, request.receiver_id].map(String).includes(memberId)) {
+          return res.status(403).json({ error: 'هذه المحادثة تخص طلب توافق آخر' });
+        }
+      }
       let query = supabase.from('inquiry_messages').select('*');
       if (requestId) query = query.eq('request_id', String(requestId));
       query = query.order('created_at', { ascending: true });
@@ -42,8 +75,24 @@ export default async function handler(req, res) {
         message: body.text || body.message || '',
       };
       if (!row.request_id || !row.message) return res.status(400).json({ error: 'requestId and text are required' });
+      const request = await getRequest(row.request_id);
+      if (!request) return res.status(404).json({ error: 'طلب التوافق غير موجود' });
+      if (senderId !== 'admin' && ![request.sender_id, request.receiver_id].map(String).includes(String(senderId))) {
+        return res.status(403).json({ error: 'لا يمكنك إرسال رسالة في طلب لا يخصك' });
+      }
       const { data, error } = await supabase.from('inquiry_messages').insert(row).select().single();
       if (error) throw error;
+      const otherId = String(senderId) === String(request.sender_id) ? request.receiver_id : request.sender_id;
+      if (senderId !== 'admin') {
+        await supabase.from('notifications').insert({
+          user_id: String(otherId),
+          request_id: Number(request.id),
+          type: 'message',
+          title: 'رسالة جديدة في طلب التوافق',
+          message: 'لديك رسالة جديدة مرتبطة بطلب التوافق.',
+          read: false,
+        }).catch(() => undefined);
+      }
       return res.status(201).json(data);
     }
 

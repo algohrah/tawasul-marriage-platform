@@ -226,7 +226,7 @@ export default function AdminImportedCoordination() {
                 receiverId: r.receiver_id,
                 status,
                 journeyStage: st,
-                message: r.message || 'طلب اهتمام مرسل عبر الإدارة',
+                message: r.message || 'طلب توافق مرسل عبر الإدارة',
                 time: new Date(r.created_at).toLocaleDateString('ar-SA'),
                 createdAt: new Date(r.created_at).getTime(),
                 paymentStatus: (r.sender_paid && r.receiver_paid) ? 'paid' : 'waiting_for_payment',

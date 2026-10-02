@@ -115,6 +115,10 @@ export interface PaymentSettings {
   cryptoWalletAddress: string;
   bankDetails: string;
   forceSingleMethod: 'none' | 'paypal' | 'crypto' | 'bank';
+  /** أتعاب رحلة التوافق لكل طرف */
+  journeyTotalFee: number;
+  /** الدفعة الأولى بعد قبول الطرف الآخر */
+  journeyDepositAmount: number;
 }
 
 export interface SocialSettings {
@@ -415,7 +419,9 @@ const DEFAULT_PAYMENTS_CONFIG: PaymentSettings = {
   bankActive: true,
   cryptoWalletAddress: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F (USDT ERC20)',
   bankDetails: 'مصرف الراجحي - رقم الحساب: SA8980000012345678901234 - باسم شركة توافق المحدودة',
-  forceSingleMethod: 'none'
+  forceSingleMethod: 'none',
+  journeyTotalFee: 2500,
+  journeyDepositAmount: 500,
 };
 
 const DEFAULT_SOCIALS: SocialSettings = {
@@ -691,7 +697,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
               senderId: r.sender_id,
               receiverId: r.receiver_id,
               status: status,
-              message: r.message || 'طلب اهتمام مرسل عبر الإدارة',
+              message: r.message || 'طلب توافق مرسل عبر الإدارة',
               time: new Date(r.created_at).toLocaleDateString('ar-SA'),
               createdAt: new Date(r.created_at).getTime(),
               paymentStatus: (r.sender_paid && r.receiver_paid) ? 'paid' : 'waiting_for_payment',
@@ -749,7 +755,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 senderId: r.sender_id,
                 receiverId: r.receiver_id,
                 status: status,
-                message: r.message || 'طلب اهتمام مرسل عبر الإدارة',
+                message: r.message || 'طلب توافق مرسل عبر الإدارة',
                 time: new Date(r.created_at).toLocaleDateString('ar-SA'),
                 createdAt: new Date(r.created_at).getTime(),
                 paymentStatus: (r.sender_paid && r.receiver_paid) ? 'paid' : 'waiting_for_payment',
@@ -799,7 +805,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             senderId: r.sender_id,
             receiverId: r.receiver_id,
             status: status,
-            message: r.message || 'طلب اهتمام مرسل عبر الإدارة',
+            message: r.message || 'طلب توافق مرسل عبر الإدارة',
             time: r.created_at ? new Date(r.created_at).toLocaleDateString('ar-SA') : 'الآن',
             createdAt: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
             paymentStatus: (r.sender_paid && r.receiver_paid) ? 'paid' : 'waiting_for_payment',
@@ -879,6 +885,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // جلب التذاكر من جدول support_tickets الحقيقي عند الإقلاع (المصدر الوحيد للحقيقة)
   useEffect(() => {
+    if (typeof window === 'undefined' || !window.location.pathname.startsWith('/admin')) return;
     let mounted = true;
     fetch('/api/support-tickets')
       .then((r) => (r.ok ? r.json() : null))
@@ -1076,7 +1083,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const saved = dataService.db.settings.get('payment_settings');
       if (saved) {
         try {
-          return JSON.parse(saved);
+          return { ...DEFAULT_PAYMENTS_CONFIG, ...JSON.parse(saved) };
         } catch {
           // fail safe fallback
         }
@@ -1862,6 +1869,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // جلب البلاغات من جدول member_reports الحقيقي عند الإقلاع
   useEffect(() => {
+    if (typeof window === 'undefined' || !window.location.pathname.startsWith('/admin')) return;
     let mounted = true;
     fetch('/api/member-reports')
       .then((r) => (r.ok ? r.json() : null))
@@ -1953,6 +1961,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // جلب طلبات الإعفاء من جدول exemption_requests الحقيقي عند الإقلاع
   useEffect(() => {
+    if (typeof window === 'undefined' || !window.location.pathname.startsWith('/admin')) return;
     let mounted = true;
     fetch('/api/exemptions')
       .then((r) => (r.ok ? r.json() : null))
@@ -3029,7 +3038,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       max,
       error: allowed
         ? undefined
-        : `لقد استنفدت حد باقتك لطلبات الاهتمام المساعدة والربط المباشر (${max}/${max}). يمكنك ترقية باقتك أو شراء باقات طلبات اهتمام إضافية فورياً لمواصلة التواصل مع شريك حياتك المنشود.`,
+        : `لقد استنفدت حد باقتك لطلبات التوافق المساعدة والربط المباشر (${max}/${max}). يمكنك ترقية باقتك أو شراء باقات طلبات اهتمام إضافية فورياً لمواصلة التواصل مع شريك حياتك المنشود.`,
     };
   }, [user.profile.plan, plans, usage, extraInterestsCount, unlimitedInterestsUntil]);
 
@@ -3470,20 +3479,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const isAdminImpersonating = typeof window !== 'undefined' && dataService.db.settings.get('impersonating') === 'true';
 
     if (!user.isLoggedIn || !activeUserId) {
-      showToast('يرجى تسجيل الدخول أو إنشاء حساب أولاً لإرسال طلب اهتمام', 'info');
+      showToast('يرجى تسجيل الدخول أو إنشاء حساب أولاً لإرسال طلب توافق', 'info');
       return { ok: false, error: 'غير مسجل الدخول' };
     }
 
     if (activeUserId === memberId) {
-      showToast('لا يمكنك إرسال طلب اهتمام لنفسك', 'error');
-      return { ok: false, error: 'لا يمكنك إرسال طلب اهتمام لنفسك' };
+      showToast('لا يمكنك إرسال طلب توافق لنفسك', 'error');
+      return { ok: false, error: 'لا يمكنك إرسال طلب توافق لنفسك' };
     }
 
     // 1. التحقق من شرط التوثيق في حال تفعيله من الإدارة
     if (requireVerificationForRequests && !isAdminImpersonating) {
       const activeMember = members.find(m => m.id === activeUserId) || adminMembers.find(m => m.id === activeUserId);
       if (activeMember && !activeMember.verified) {
-        showToast('عذراً، يجب توثيق حسابك بالهوية الوطنية أولاً لتتمكن من إرسال طلبات الاهتمام.', 'error');
+        showToast('عذراً، يجب توثيق حسابك بالهوية الوطنية أولاً لتتمكن من إرسال طلبات التوافق.', 'error');
         return { ok: false, error: 'يجب توثيق الحساب بالهوية الوطنية' };
       }
     }
@@ -3510,7 +3519,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return { ok: false, error: 'لديك طلب نشط لدى هذا العضو بالفعل' };
     }
 
-    const res = await dataService.db.createRequest(activeUserId, memberId, messageText.trim() || 'طلب اهتمام مرسل عبر الإدارة');
+    const res = await dataService.db.createRequest(activeUserId, memberId, messageText.trim() || 'طلب توافق مرسل عبر الإدارة');
     if (res && res.ok) {
       showToast('تم إرسال طلب الاهتمام بنجاح! 💌', 'success');
       await refreshInterestRequests();

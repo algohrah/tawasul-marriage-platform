@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { dataService } from './data/DataService';
 
 // ============================================================
 //  الإعدادات المالية للرحلة — محلية بالكامل داخل المشروع
@@ -31,12 +32,29 @@ export const DEFAULT_SETTINGS: JourneySettings = {
   refund_after_meeting: 0,
 };
 
+function readJourneySettings(): JourneySettings {
+  try {
+    const raw = dataService.db.settings.get('payment_settings');
+    if (!raw) return DEFAULT_SETTINGS;
+    const payment = JSON.parse(raw);
+    const deposit = Math.max(0, Number(payment.journeyDepositAmount) || DEFAULT_SETTINGS.deposit_amount);
+    const total = Math.max(deposit, Number(payment.journeyTotalFee) || 2500);
+    return {
+      ...DEFAULT_SETTINGS,
+      deposit_amount: deposit,
+      final_fee_amount: Math.max(0, total - deposit),
+    };
+  } catch {
+    return DEFAULT_SETTINGS;
+  }
+}
+
 export function useSettings() {
-  const [settings] = useState<JourneySettings>(DEFAULT_SETTINGS);
+  const [settings] = useState<JourneySettings>(readJourneySettings);
   return { settings, loaded: true };
 }
 
 // جلب الإعدادات مرة واحدة (للاستخدام خارج React عند الحاجة)
 export async function fetchSettings(): Promise<JourneySettings> {
-  return DEFAULT_SETTINGS;
+  return readJourneySettings();
 }

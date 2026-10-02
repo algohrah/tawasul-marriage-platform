@@ -21,13 +21,13 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const { userId } = req.query;
-      if (userId) {
-        const authz = await authorizeMemberAction(req, res, userId);
-        if (!authz) return;
-      }
+      const { userId, requestId } = req.query;
+      if (!userId) return res.status(400).json({ error: 'userId is required' });
+      const authz = await authorizeMemberAction(req, res, userId);
+      if (!authz) return;
       let query = supabase.from('notifications').select('*');
-      if (userId) query = query.in('user_id', [String(userId), 'all']);
+      query = query.in('user_id', [String(userId), 'all']);
+      if (requestId) query = query.eq('request_id', Number(requestId));
       query = query.order('created_at', { ascending: false });
       const { data, error } = await query;
       if (error) throw error;
@@ -52,15 +52,29 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      const { id, userId, read = true } = req.body || {};
-      if (userId) {
-        const authz = await authorizeMemberAction(req, res, userId);
-        if (!authz) return;
+      const { id, userId, requestId, read = true } = req.body || {};
+      let ownerId = userId;
+      if (id) {
+        const { data: notification, error: lookupError } = await supabase
+          .from('notifications')
+          .select('user_id')
+          .eq('id', String(id))
+          .maybeSingle();
+        if (lookupError) throw lookupError;
+        if (!notification || notification.user_id === 'all') {
+          return res.status(403).json({ error: 'لا يمكن تعديل هذا الإشعار العام' });
+        }
+        ownerId = notification.user_id;
       }
+      if (!ownerId) return res.status(400).json({ error: 'userId is required' });
+      const authz = await authorizeMemberAction(req, res, ownerId);
+      if (!authz) return;
       let query = supabase.from('notifications').update({ read: !!read });
       if (id) query = query.eq('id', String(id));
-      else if (userId) query = query.eq('user_id', String(userId));
-      else return res.status(400).json({ error: 'id or userId is required' });
+      else {
+        query = query.eq('user_id', String(ownerId));
+        if (requestId) query = query.eq('request_id', Number(requestId));
+      }
       const { data, error } = await query.select();
       if (error) throw error;
       return res.status(200).json(data || []);
@@ -69,7 +83,18 @@ export default async function handler(req, res) {
     if (req.method === 'DELETE') {
       const { id } = req.body || {};
       if (!id) return res.status(400).json({ error: 'id is required' });
-      const { error } = await supabase.from('notifications').delete().eq('id', String(id));
+      const { data: notification, error: lookupError } = await supabase
+        .from('notifications')
+        .select('user_id')
+        .eq('id', String(id))
+        .maybeSingle();
+      if (lookupError) throw lookupError;
+      if (!notification || notification.user_id === 'all') {
+        return res.status(403).json({ error: 'لا يمكن حذف هذا الإشعار العام' });
+      }
+      const authz = await authorizeMemberAction(req, res, notification.user_id);
+      if (!authz) return;
+      const { error } = await supabase.from('notifications').delete().eq('id', String(id)).eq('user_id', String(notification.user_id));
       if (error) throw error;
       return res.status(200).json({ ok: true });
     }

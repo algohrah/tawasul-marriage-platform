@@ -237,7 +237,7 @@ export default function AdminLayout() {
             items: [
               {
                 to: '/admin/journeys?tab=requests',
-                label: 'طلبات الاهتمام المباشرة',
+                label: 'طلبات التوافق المباشرة',
                 icon: Heart,
                 end: false,
                 badge: pendingRequests,

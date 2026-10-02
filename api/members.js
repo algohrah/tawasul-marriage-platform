@@ -247,7 +247,7 @@ export default async function handler(req, res) {
 
       // تحديد هوية الطالب (اختياري) لتقرير ما إذا كان يحق له رؤية الحقول الحسّاسة
       const viewer = await getAuthUser(req);
-      const viewerIsAdmin = viewer ? await isAdminEmail(viewer.email) : true;
+      const viewerIsAdmin = viewer ? await isAdminEmail(viewer.email) : false;
       const viewerLink = viewer && !viewerIsAdmin ? await getMemberLink(viewer.id) : null;
 
       let query = supabase.from('members').select('*');
