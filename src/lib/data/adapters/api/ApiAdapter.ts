@@ -80,8 +80,16 @@ async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   // ليتحقق الخادم من صلاحية المستخدم/المشرف الحقيقية بدل الاعتماد على أي بيانات من العميل.
   if (!headers.has('Authorization')) {
     try {
-      const { data } = await supabaseClient.auth.getSession();
-      const token = data?.session?.access_token;
+      const impersonating = isBrowser() && localStorage.getItem('impersonating') === 'true';
+      // أثناء «التصفح كعضو» تبقى صلاحية التنفيذ هي صلاحية المدير الحقيقية،
+      // بينما actorId يحدد العضو الذي ينفذ الإجراء في سجل الرحلة.
+      const savedAdminToken = impersonating
+        ? localStorage.getItem('twafok_admin_access_token')
+        : null;
+      const { data } = savedAdminToken
+        ? { data: { session: null } }
+        : await supabaseClient.auth.getSession();
+      const token = savedAdminToken || data?.session?.access_token;
       if (token) headers.set('Authorization', `Bearer ${token}`);
     } catch {
       // لا نمنع الطلب في حال تعذّر قراءة الجلسة

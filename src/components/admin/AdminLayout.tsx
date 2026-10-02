@@ -53,40 +53,24 @@ function isNavItemActive(item: NavItem, location: ReturnType<typeof useLocation>
 /** يتحقق من صلاحية الإدارة عبر الجلسة أو التحقق من الخادم أو بيانات الدخول المعتمدة */
 async function verifyAdminSession(): Promise<boolean> {
   try {
-    if (typeof window !== 'undefined' && localStorage.getItem('twafok_demo_admin') === 'true') {
-      return true;
-    }
     const { data: { session } } = await supabaseClient.auth.getSession();
-    const sessionEmail = session?.user?.email?.toLowerCase().trim();
-    if (
-      sessionEmail === 'admin@tawafok.com' ||
-      sessionEmail === 'admin@tawasul.sa' ||
-      sessionEmail === 'demo@tawasul.sa' ||
-      sessionEmail === 'algohrah4u@gmail.com' ||
-      sessionEmail?.startsWith('admin@')
-    ) {
-      if (typeof window !== 'undefined') localStorage.setItem('twafok_demo_admin', 'true');
-      return true;
-    }
-    // التحقق من المشرفين المحفوظين في التخزين المحلي
-    if (typeof window !== 'undefined' && sessionEmail) {
-      try {
-        const savedUsers = JSON.parse(localStorage.getItem('saved_admin_users') || '[]');
-        if (Array.isArray(savedUsers) && savedUsers.some((u: any) => u.email?.toLowerCase().trim() === sessionEmail && u.status !== 'suspended')) {
-          localStorage.setItem('twafok_demo_admin', 'true');
-          return true;
-        }
-      } catch { /* ignore */ }
-    }
     if (session?.access_token) {
       const res = await fetch('/api/whoami', { headers: { Authorization: `Bearer ${session.access_token}` } }).catch(() => null);
       if (res && res.ok) {
         const who = await res.json().catch(() => null);
         if (who?.isAdmin) {
-          if (typeof window !== 'undefined') localStorage.setItem('twafok_demo_admin', 'true');
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('twafok_demo_admin', 'true');
+            localStorage.setItem('twafok_admin_access_token', session.access_token);
+            localStorage.setItem('twafok_active_admin_email', who.authUser?.email || session.user?.email || '');
+          }
           return true;
         }
       }
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('twafok_demo_admin');
+      localStorage.removeItem('twafok_admin_access_token');
     }
     return false;
   } catch {
@@ -109,6 +93,7 @@ export default function AdminLayout() {
   const handleAdminLogout = () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('twafok_demo_admin');
+      localStorage.removeItem('twafok_admin_access_token');
       localStorage.removeItem('twafok_active_admin_email');
       localStorage.removeItem('twafok_current_admin_user');
     }
@@ -791,12 +776,39 @@ function AdminLoginScreen({ onLoginSuccess }: { onLoginSuccess: () => void }) {
     return str.replace(/[٠-٩]/g, (w) => arabicDigits.indexOf(w).toString());
   };
 
-  const handleQuickDemoLogin = () => {
+  const establishAdminSession = async (adminEmail: string, adminPassword: string) => {
+    const response = await fetch('/api/admin-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: adminEmail, password: adminPassword }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.accessToken) {
+      throw new Error(result.error || 'تعذّر تسجيل الدخول بصلاحية الإدارة');
+    }
+    const { error: sessionError } = await supabaseClient.auth.setSession({
+      access_token: result.accessToken,
+      refresh_token: result.refreshToken,
+    });
+    if (sessionError) throw sessionError;
     if (typeof window !== 'undefined') {
       localStorage.setItem('twafok_demo_admin', 'true');
-      localStorage.setItem('twafok_active_admin_email', 'admin@tawafok.com');
+      localStorage.setItem('twafok_admin_access_token', result.accessToken);
+      localStorage.setItem('twafok_active_admin_email', result.admin?.email || adminEmail);
     }
-    onLoginSuccess();
+  };
+
+  const handleQuickDemoLogin = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      await establishAdminSession('admin@tawafok.com', 'Pass@1234');
+      onLoginSuccess();
+    } catch (err: any) {
+      setError(err?.message || 'تعذّر تسجيل الدخول الإداري');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -814,63 +826,10 @@ function AdminLoginScreen({ onLoginSuccess }: { onLoginSuccess: () => void }) {
         return;
       }
 
-      // 1. التحقق من قائمة المشرفين المسجلة محلياً في saved_admin_users
-      let isLocalAdminMatch = false;
-      let matchedAdminUser: any = null;
-      if (typeof window !== 'undefined') {
-        try {
-          const savedUsers = JSON.parse(localStorage.getItem('saved_admin_users') || '[]');
-          if (Array.isArray(savedUsers)) {
-            matchedAdminUser = savedUsers.find((u: any) => u.email?.toLowerCase().trim() === cleanEmail && u.status !== 'suspended');
-            if (matchedAdminUser) {
-              isLocalAdminMatch = true;
-            }
-          }
-        } catch { /* ignore */ }
-      }
-
-      const isAdminEmailPattern =
-        cleanEmail === 'admin@tawafok.com' ||
-        cleanEmail === 'admin@tawasul.sa' ||
-        cleanEmail === 'demo@tawasul.sa' ||
-        cleanEmail === 'algohrah4u@gmail.com' ||
-        cleanEmail.startsWith('admin@') ||
-        isLocalAdminMatch;
-
-      if (!isAdminEmailPattern) {
-        setError('البريد الإلكتروني غير مخوّل كمدير نظام. استخدم البريد الإداري المعتمد أو زر الدخول المباشر بالأسفل.');
-        setLoading(false);
-        return;
-      }
-
-      // 2. تسجيل الجلسة الإدارية وتفعيل الوصول
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('twafok_demo_admin', 'true');
-        localStorage.setItem('twafok_active_admin_email', cleanEmail);
-        if (matchedAdminUser) {
-          localStorage.setItem('twafok_current_admin_user', JSON.stringify(matchedAdminUser));
-        }
-      }
-
-      // 3. محاولة مزامنة الجلسة مع Supabase Auth في الخلفية إن أمكن
-      try {
-        const { error: signInError } = await supabaseClient.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword });
-        if (signInError) {
-          const { error: signUpError } = await supabaseClient.auth.signUp({ email: cleanEmail, password: cleanPassword });
-          if (!signUpError) {
-            await supabaseClient.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword }).catch(() => null);
-          }
-        }
-      } catch {
-        // لا نحجب الدخول إذا كان Supabase غير متصل
-      }
-
+      await establishAdminSession(cleanEmail, cleanPassword);
       onLoginSuccess();
     } catch (err: any) {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('twafok_demo_admin', 'true');
-      }
-      onLoginSuccess();
+      setError(err?.message || 'تعذّر تسجيل الدخول الإداري');
     } finally {
       setLoading(false);
     }

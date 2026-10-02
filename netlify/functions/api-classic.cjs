@@ -40,6 +40,7 @@ function createExpressResponse() {
 // API handler and its dependencies in the deployed function bundle.
 async function loadRouteHandler(route) {
   switch (route) {
+    case 'admin-auth': return (await import('../../api/admin-auth.js')).default;
     case 'admin-users': return (await import('../../api/admin-users.js')).default;
     case 'audit-log': return (await import('../../api/audit-log.js')).default;
     case 'batch-geo': return (await import('../../api/batch-geo.js')).default;
