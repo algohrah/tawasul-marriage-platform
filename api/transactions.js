@@ -41,7 +41,12 @@ async function notifyMemberOfReview(tx, approved) {
   const { error } = await supabase.from('notifications').insert(row);
   if (isSchemaCacheError(error)) {
     const { request_id, ...minimalRow } = row;
-    await supabase.from('notifications').insert(minimalRow).catch(() => undefined);
+    try {
+      const { error: fallbackError } = await supabase.from('notifications').insert(minimalRow);
+      if (fallbackError) console.warn('Transaction notification fallback skipped:', fallbackError.message);
+    } catch (fallbackError) {
+      console.warn('Transaction notification fallback skipped:', fallbackError?.message || fallbackError);
+    }
   }
 }
 

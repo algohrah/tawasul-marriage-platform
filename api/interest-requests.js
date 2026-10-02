@@ -116,7 +116,7 @@ async function ensureMemberExists(memberId) {
   try {
     const { data } = await supabase.from('members').select('id').eq('id', String(memberId)).maybeSingle();
     if (!data) {
-      await supabase.from('members').insert({
+      const { error } = await supabase.from('members').insert({
         id: String(memberId),
         nickname: `عضو ${memberId}`,
         gender: 'female',
@@ -124,7 +124,8 @@ async function ensureMemberExists(memberId) {
         city: 'الرياض',
         status: 'active',
         created_at: new Date().toISOString(),
-      }).catch(() => undefined);
+      });
+      if (error) console.warn('Placeholder member insert skipped:', error.message);
     }
   } catch {
     // ignore DB error
@@ -543,12 +544,17 @@ export default async function handler(req, res) {
         error = fallback.error;
       }
       if (error) throw error;
-      await supabase.from('request_events').insert({
-        request_id: Number(id),
-        actor_id: String(actorId),
-        action,
-        payload: { ...payload, resultingStage: data.journey_stage || data.status },
-      }).catch(() => undefined);
+      try {
+        const { error: eventError } = await supabase.from('request_events').insert({
+          request_id: Number(id),
+          actor_id: String(actorId),
+          action,
+          payload: { ...payload, resultingStage: data.journey_stage || data.status },
+        });
+        if (eventError) console.warn('Request action event skipped:', eventError.message);
+      } catch (eventError) {
+        console.warn('Request action event skipped:', eventError?.message || eventError);
+      }
 
       const actionMessages = {
         accept: ['تم قبول طلب التوافق بفضل الله', 'طلب التوافق مقبول'],
