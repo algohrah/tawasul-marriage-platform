@@ -1,0 +1,12 @@
+export type MembershipPlan = 'free' | 'featured';
+export const FEATURED_PLAN: 'featured';
+export const FEATURED_NAME: string;
+export const FEATURED_PRICE: number;
+export const FREE_FILTERS: string[];
+export function normalizePlan(plan?: string | null, premium?: boolean): MembershipPlan;
+export function memberPlan(member?: any): MembershipPlan;
+export function isFeatured(member?: any): boolean;
+export function dailyRequestLimit(member?: any): number;
+export function canUseFilter(member: any, filter: string): boolean;
+export function requestDay(now?: Date | string | number): { key: string; start: string; end: string };
+export function compareMemberPriority(a: any, b: any, scoreA?: number, scoreB?: number): number;
