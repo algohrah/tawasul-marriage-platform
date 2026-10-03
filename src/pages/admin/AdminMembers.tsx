@@ -1391,7 +1391,7 @@ export default function AdminMembers() {
           { label: 'نشط', value: stats.active, icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50/50 border-emerald-100 hover:bg-emerald-50', onClick: () => setFilterStatus('active') },
           { label: 'مراجعة', value: stats.pending, icon: Loader2, color: 'text-amber-600', bg: 'bg-amber-50/50 border-amber-100 hover:bg-amber-50', onClick: () => setFilterStatus('pending') },
           { label: 'موثق', value: stats.verified, icon: BadgeCheck, color: 'text-sky-600', bg: 'bg-sky-50/50 border-sky-100 hover:bg-sky-50', onClick: () => {} },
-          { label: 'مميّز', value: stats.premium, icon: Crown, color: 'text-indigo-600', bg: 'bg-indigo-50/50 border-indigo-100 hover:bg-indigo-50', onClick: () => setFilterPlan('gold') },
+          { label: 'مميّز', value: stats.premium, icon: Crown, color: 'text-indigo-600', bg: 'bg-indigo-50/50 border-indigo-100 hover:bg-indigo-50', onClick: () => setFilterPlan('featured') },
           { label: 'معلّم', value: stats.flagged, icon: Flag, color: 'text-rose-600', bg: 'bg-rose-50/50 border-rose-100 hover:bg-rose-50', onClick: () => setOnlyFlagged(true) },
         ].map((s) => {
           const Icon = s.icon;
@@ -1437,7 +1437,7 @@ export default function AdminMembers() {
               label="الباقة:"
               value={filterPlan}
               onChange={(v) => setFilterPlan(v as typeof filterPlan)}
-              options={(['all', 'free', 'gold', 'elite'] as const).map((p) => ({
+              options={(['all', 'free', 'featured'] as const).map((p) => ({
                 value: p,
                 label: p === 'all' ? 'كل الباقات' : getPlanCfg(p).label,
               }))}
@@ -4184,8 +4184,7 @@ export default function AdminMembers() {
                 className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 focus:border-amber-400 focus:outline-none font-tajawal text-xs"
               >
                 <option value="free">مجاني</option>
-                <option value="gold">ذهبي</option>
-                <option value="elite">نخبة</option>
+                <option value="featured">توافق مميز</option>
               </select>
             </div>
 
