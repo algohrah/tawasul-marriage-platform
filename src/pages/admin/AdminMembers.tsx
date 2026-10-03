@@ -3209,7 +3209,7 @@ export default function AdminMembers() {
                         onChange={(e) => setEditForm(prev => ({ 
                           ...prev, 
                           plan: e.target.value, 
-                          premium: e.target.value === 'featured' 
+                          premium: e.target.value === 'featured'
                         }))}
                         className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:border-amber-400 font-cairo"
                       >

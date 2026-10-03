@@ -344,7 +344,7 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                         🏅 جاد
                       </span>
                     )}
-                    
+
                     {isFeatured(member) && <FeaturedBadge />}
                   </div>
 

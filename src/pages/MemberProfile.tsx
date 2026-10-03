@@ -328,7 +328,7 @@ export default function MemberProfile() {
               <div className="flex items-center gap-2 justify-start mb-1 flex-wrap">
                 <h1 className="font-cairo font-extrabold text-lg sm:text-2xl text-slate-900 leading-none">{member.nickname}</h1>
                 {isFeatured(member) && <FeaturedBadge />}
-                
+
               </div>
 
               {member.username && (
@@ -712,10 +712,10 @@ export default function MemberProfile() {
                   { icon: ShieldCheck, iconColor: 'text-emerald-500', label: 'التوثيق', value: member.verified ? 'موثّق ✓' : 'غير موثّق', valueColor: member.verified ? 'text-emerald-600' : 'text-slate-400' },
                   { 
                     icon: Crown, 
-                    iconColor: isFeatured(member) ? 'text-amber-500' : 'text-slate-400', 
+                    iconColor: isFeatured(member) ? 'text-amber-500' : 'text-slate-400',
                     label: 'العضوية', 
-                    value: isFeatured(member) ? 'توافق مميز' : 'مجاني', 
-                    valueColor: isFeatured(member) ? 'text-amber-600 font-extrabold' : 'text-slate-400' 
+                    value: isFeatured(member) ? 'توافق مميز' : 'مجاني',
+                    valueColor: isFeatured(member) ? 'text-amber-600 font-extrabold' : 'text-slate-400'
                   },
                   { icon: User, iconColor: 'text-purple-500', label: 'الجنس', value: isMale ? 'رجل' : 'امرأة', valueColor: 'text-slate-700' },
                   { icon: Scale, iconColor: 'text-amber-500', label: 'المذهب', value: member.sect, valueColor: 'text-slate-700' },

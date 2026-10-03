@@ -86,7 +86,7 @@ export default function MemberCard({ member }: { member: Member; key?: any }) {
                     </span>
                   )}
                   {isFeatured(member) && <FeaturedBadge />}
-                  
+
                   {member.hasSeriousnessBadge && (
                     <span className="inline-flex items-center gap-0.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-extrabold text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-md font-cairo" title="وسام الجدية المعتمد">
                       🏅 جاد
