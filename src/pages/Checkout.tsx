@@ -49,7 +49,11 @@ export default function Checkout() {
   const [pendingReview, setPendingReview] = useState(false);
 
   // Load selected plan dynamically from state manager
-  const plan = plans.find(p => p.id === normalizePlan(planId)) || plans[1];
+  useEffect(() => {
+    if (!planId || normalizePlan(planId) === 'free') navigate('/plans', { replace: true });
+  }, [planId, navigate]);
+  // Checkout sells only the paid membership; free membership never creates a zero-value upgrade.
+  const plan = plans.find(p => p.id === 'featured') || plans[1];
   const total = plan.price; // Approved final membership price: 99 SAR.
   const vat = Number((total - total / 1.15).toFixed(2));
   const basePrice = Number((total - vat).toFixed(2));
