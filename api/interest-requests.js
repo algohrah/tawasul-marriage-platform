@@ -1,9 +1,9 @@
+import { dailyRequestUsage, reserveDailyRequest, releaseDailyRequest } from './_dailyRequests.js';
 import supabase from './db-client.js';
 import {
   authorizeMemberAction, requireAdmin, getAuthUser, getMemberLink, isAdminEmail,
 } from './_auth.js';
 import { writeAuditLog } from './_audit.js';
-import { checkRateLimit } from './_rateLimit.js';
 
 function setCors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -403,11 +403,19 @@ export default async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(204).end();
 
+  let reservedRequest = null;
+  let requestInserted = false;
   try {
     if (req.method === 'GET') {
       const { id, userId, events } = req.query;
       const viewer = await resolveViewer(req, res);
       if (!viewer) return;
+      if (req.query.usage === '1') {
+        const memberId = viewer.isAdmin ? req.query.userId : viewer.memberId;
+        if (!memberId) return res.status(400).json({ error: 'userId is required' });
+        const { key, day, counter, ...usage } = await dailyRequestUsage(supabase, memberId);
+        return res.status(200).json(usage);
+      }
       if (id && events === '1') {
         const { data: request, error: requestError } = await supabase
           .from('interest_requests')
@@ -450,6 +458,7 @@ export default async function handler(req, res) {
 
     if (req.method === 'POST') {
       const payload = compact(basePayload(req.body || {}));
+      payload.created_at = new Date().toISOString();
       if (!payload.sender_id || !payload.receiver_id) return res.status(400).json({ error: 'senderId and receiverId are required' });
 
       const authz = await authorizeMemberAction(req, res, payload.sender_id);
@@ -458,8 +467,6 @@ export default async function handler(req, res) {
       await ensureMemberExists(payload.sender_id);
       await ensureMemberExists(payload.receiver_id);
 
-      const allowed = await checkRateLimit(`ir_create:${payload.sender_id}`, 20, 3600);
-      if (!allowed) return res.status(429).json({ error: 'لقد تجاوزت الحد المسموح من طلبات التوافق في الساعة، حاول لاحقاً' });
 
       // منع التكرار: التحقق من وجود طلب نشط لنفس الطرفين قبل الإنشاء
       const TERMINAL_STAGES = ['declined', 'cancelled', 'completed'];
@@ -481,6 +488,14 @@ export default async function handler(req, res) {
         });
       }
 
+      reservedRequest = await reserveDailyRequest(supabase, payload.sender_id);
+      if (!reservedRequest.ok) {
+        return res.status(429).json({
+          error: `وصلت إلى الحد اليومي: ${reservedRequest.limit} طلبات توافق. يتجدد الحد عند منتصف الليل.`,
+          code: 'DAILY_REQUEST_LIMIT', limit: reservedRequest.limit, used: reservedRequest.used,
+          remaining: 0, resetAt: reservedRequest.resetAt, upgradeAvailable: reservedRequest.plan === 'free',
+        });
+      }
       let { data, error } = await supabase.from('interest_requests').insert(payload).select().single();
       if (isSchemaCacheError(error)) {
         const fallbackPayload = minimalRequestPayload(payload);
@@ -489,6 +504,7 @@ export default async function handler(req, res) {
         error = fallback.error;
       }
       if (error) throw error;
+      requestInserted = true;
       // الطلب الأساسي تم حفظه بالفعل؛ لا نجعل الخدمات الثانوية الاختيارية
       // (سجل الأحداث/الإشعار/حساب التقدم) تحول النجاح إلى خطأ 500.
       try {
@@ -603,6 +619,9 @@ export default async function handler(req, res) {
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
+    if (reservedRequest?.ok && !requestInserted) {
+      try { await releaseDailyRequest(supabase, reservedRequest.key); } catch (quotaError) { console.error('Quota release failed:', quotaError.message); }
+    }
     console.error('Interest requests API error:', err);
     return res.status(500).json({ error: err.message });
   }

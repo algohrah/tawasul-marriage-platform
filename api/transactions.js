@@ -1,3 +1,4 @@
+import { normalizePlan } from '../shared/membership.js';
 import supabase from './db-client.js';
 import { authorizeMemberAction, requireAdmin } from './_auth.js';
 import { writeAuditLog } from './_audit.js';
@@ -55,7 +56,7 @@ async function grantEntitlement(tx) {
   const meta = tx.metadata || {};
   const memberId = tx.member_id || tx.user_id;
   if (tx.type === 'subscription' && meta.desiredPlan) {
-    await supabase.from('members').update({ plan: meta.desiredPlan, updated_at: new Date().toISOString() }).eq('id', memberId);
+    await supabase.from('members').update({ plan: normalizePlan(meta.desiredPlan), premium: normalizePlan(meta.desiredPlan) === 'featured', updated_at: new Date().toISOString() }).eq('id', memberId);
   }
   if ((tx.type === 'inquiry' || tx.type === 'inquiry_package') && memberId) {
     const credits = Number(meta.credits || 0);

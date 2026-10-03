@@ -39,6 +39,7 @@ export interface IDatabaseAdapter {
   hasUserPaidDepositAnywhere(userId: string): boolean;
 
   // ===== الطلبات والرحلات (Requests & Journeys) =====
+  getDailyRequestUsage?(userId: string): Promise<{ plan: string; used: number; limit: number; remaining: number; resetAt: string }>;
   getRequests(userId?: string): Promise<any[]>;
   getRequest(id: number): Promise<any | null>;
   createRequest(senderId: string, receiverId: string, message: string): Promise<any>;
@@ -77,7 +78,7 @@ export interface IDatabaseAdapter {
   adminBulkUpdateStatus(ids: string[], status: any, reason?: string, by?: string): Promise<boolean>;
   adminBulkSetVerified(ids: string[], value: boolean): Promise<boolean>;
   adminBulkSetPinned(ids: string[], value: boolean): Promise<boolean>;
-  adminBulkSetPlan(ids: string[], plan: 'free' | 'gold' | 'elite'): Promise<boolean>;
+  adminBulkSetPlan(ids: string[], plan: 'free' | 'featured'): Promise<boolean>;
   adminBulkSetSeriousnessBadge(ids: string[], value: boolean): Promise<boolean>;
   adminDeleteMember(id: string): Promise<boolean>;
   adminHardDeleteMember(id: string): Promise<boolean>;

@@ -1,3 +1,4 @@
+import { memberPlan } from '../../shared/membership.js';
 import type { Plan } from './types';
 import { MEMBERS } from './members';
 import type { Member } from './members';
@@ -12,7 +13,7 @@ export interface AdminMember extends Member {
   phone: string;
   password: string;
   status: 'active' | 'suspended' | 'pending' | 'banned';
-  plan: 'free' | 'gold' | 'elite';
+  plan: 'free' | 'featured';
   joinedAt: string;
   requestsCount: number;
   statusReason?: string;
@@ -57,7 +58,7 @@ export const ADMIN_MEMBERS: AdminMember[] = MEMBERS.map((m, i) => ({
   phone: m.phone || [`+966501234501`, `+966501234502`, `+966501234503`, `+966501234504`, `+966501234505`, `+966501234506`, `+966501234507`, `+966501234508`][i] || '+966500000000',
   password: m.password || ['Pass@1234', 'Sara@2024', 'Fahad@2024', 'Noura@2024', 'Majed@2024', 'Reem@2024', 'Sultan@2024', 'Latifa@2024'][i] || 'Pass@1234',
   status: m.status || (i === 7 ? 'pending' : 'active'),
-  plan: m.plan || (m.premium ? (i % 3 === 0 ? 'elite' : 'gold') : 'free'),
+  plan: memberPlan(m),
   joinedAt: m.joinedAt || ['15 يناير 2025', '10 يناير 2025', '5 يناير 2025', '28 ديسمبر 2024', '20 ديسمبر 2024', '15 ديسمبر 2024', '10 ديسمبر 2024', '5 ديسمبر 2024'][i] || 'يناير 2025',
   requestsCount: m.requestsCount ?? ([3, 5, 2, 7, 1, 4, 0, 6][i] || 0),
 }));

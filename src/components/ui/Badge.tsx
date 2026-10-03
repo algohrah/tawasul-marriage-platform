@@ -11,13 +11,13 @@ export function VerifiedBadge({ size = 'sm' }: { size?: 'sm' | 'md' }) {
   );
 }
 
-export function PremiumBadge({ size = 'sm' }: { size?: 'sm' | 'md' }) {
+export function FeaturedBadge({ size = 'sm' }: { size?: 'sm' | 'md' }) {
   const s = size === 'sm' ? 'w-3.5 h-3.5' : 'w-4 h-4';
   const text = size === 'sm' ? 'text-[10px]' : 'text-xs';
 
   return (
     <span className={`inline-flex items-center gap-1 ${text} font-bold text-gold-800 bg-gold-100 px-2.5 py-1 rounded-full ring-1 ring-gold-300/50`}>
-      <Crown className={s} /> ذهبي
+      <Crown className={s} /> توافق مميز
     </span>
   );
 }

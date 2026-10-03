@@ -45,7 +45,7 @@ export interface Member {
   aboutPartner: string;
   matchScore?: number;
   hasSeriousnessBadge?: boolean;
-  plan?: 'free' | 'gold' | 'elite';
+  plan?: 'free' | 'featured';
   pinned?: boolean;
   isManagedByAdmin?: boolean;
   managedByAdminId?: string;
@@ -342,7 +342,7 @@ export interface AdminMemberRow {
   nationalId: string;
   password: string;
   status: MemberStatus;
-  plan: 'free' | 'gold' | 'elite';
+  plan: 'free' | 'featured';
   pinned?: boolean;
   joinedAt: string;
   requestsCount: number;

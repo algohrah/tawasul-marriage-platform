@@ -500,7 +500,7 @@ export default function AdminMemberDetailModal({ member, open, onClose, initialE
       <div className="bg-white rounded-3xl shadow-soft border border-cream-200/60 p-5 space-y-3">
         <div className="flex items-center gap-3 mb-2"><div className="w-10 h-10 rounded-xl bg-gold-300/15 flex items-center justify-center"><Crown className="w-5 h-5 text-gold-600" /></div><h2 className="font-cairo font-bold text-lg text-navy-900">الاشتراك والحالة</h2></div>
         <div className="grid sm:grid-cols-2 gap-4">
-          <Field label="باقة الاشتراك"><SelectInput value={editForm.plan || 'free'} onChange={(v) => { set('plan', v); set('premium', v === 'gold' || v === 'elite'); }} options={['free', 'gold', 'elite']} placeholder="اختر" /></Field>
+          <Field label="باقة الاشتراك"><SelectInput value={editForm.plan || 'free'} onChange={(v) => { set('plan', v); set('premium', v === 'featured'); }} options={['free', 'featured']} placeholder="اختر" /></Field>
           <div className="flex items-center gap-2 pt-5"><input type="checkbox" id="editPinned" checked={!!editForm.pinned} onChange={(e) => set('pinned', e.target.checked)} className="w-4 h-4 rounded accent-amber-500 cursor-pointer" /><label htmlFor="editPinned" className="text-xs font-bold text-slate-700 cursor-pointer select-none flex items-center gap-1"><Pin className="w-3.5 h-3.5 text-amber-500 fill-amber-500 rotate-45" /> تثبيت في صدارة البحث</label></div>
         </div>
         <div className="grid sm:grid-cols-2 gap-4">

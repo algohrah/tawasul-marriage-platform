@@ -182,7 +182,7 @@ export class LocalStorageAdapter implements IDatabaseAdapter {
   adminBulkUpdateStatus = (ids: string[], status: any, reason?: string, by?: string) => localStore.adminBulkUpdateStatus(ids, status, reason, by);
   adminBulkSetVerified = (ids: string[], value: boolean) => localStore.adminBulkSetVerified(ids, value);
   adminBulkSetPinned = (ids: string[], value: boolean) => localStore.adminBulkSetPinned(ids, value);
-  adminBulkSetPlan = (ids: string[], plan: 'free' | 'gold' | 'elite') => localStore.adminBulkSetPlan(ids, plan);
+  adminBulkSetPlan = (ids: string[], plan: 'free' | 'featured') => localStore.adminBulkSetPlan(ids, plan);
   adminBulkSetSeriousnessBadge = (ids: string[], value: boolean) => localStore.adminBulkSetSeriousnessBadge(ids, value);
   adminDeleteMember = (id: string) => localStore.adminDeleteMember(id);
   adminHardDeleteMember = (id: string) => localStore.adminHardDeleteMember(id);
