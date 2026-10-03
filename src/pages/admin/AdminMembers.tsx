@@ -181,11 +181,7 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; d
 };
 const planConfig: Record<string, { label: string; color: string }> = {
   free: { label: 'مجاني', color: 'bg-slate-100 text-slate-600' },
-  gold: { label: 'ذهبي', color: 'bg-amber-100 text-amber-700' },
-  elite: { label: 'نخبة', color: 'bg-purple-100 text-purple-700' },
-  premium: { label: 'ممتاز', color: 'bg-indigo-100 text-indigo-700' },
-  vip: { label: 'VIP', color: 'bg-yellow-100 text-yellow-800' },
-  basic: { label: 'أساسي', color: 'bg-blue-100 text-blue-700' },
+  featured: { label: 'توافق مميز', color: 'bg-amber-100 text-amber-700' },
 };
 
 const defaultStatus = { label: 'نشط', color: 'text-emerald-700', bg: 'bg-emerald-100', dot: 'bg-emerald-500' };
@@ -386,7 +382,7 @@ export default function AdminMembers() {
     if (memberId) setSearch(memberId);
   }, [searchParams]);
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'suspended' | 'pending' | 'banned' | 'deleted'>('all');
-  const [filterPlan, setFilterPlan] = useState<'all' | 'free' | 'gold' | 'elite'>('all');
+  const [filterPlan, setFilterPlan] = useState<'all' | 'free' | 'featured'>('all');
   const [onlyFlagged, setOnlyFlagged] = useState(false);
   // ===== فلاتر الاستيراد =====
   const [filterSource, setFilterSource] = useState<'all' | 'registered' | 'imported'>('all');
@@ -655,7 +651,7 @@ export default function AdminMembers() {
       city: randomCity,
       phone: `055${randNum}`,
       email: `user_${randNum}@twafok.sa`,
-      plan: Math.random() > 0.7 ? 'gold' : 'free',
+      plan: Math.random() > 0.7 ? 'featured' : 'free',
       status: 'active',
       maritalStatus: isFemale ? femaleMarital[Math.floor(Math.random() * femaleMarital.length)] : maleMarital[Math.floor(Math.random() * maleMarital.length)],
       education: 'بكالوريوس',
@@ -736,7 +732,7 @@ export default function AdminMembers() {
   // ===== التحديد المتعدد والإجراءات الجماعية =====
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   // نافذة تأكيد الإجراء الجماعي: {action, label}
-  const [bulkConfirm, setBulkConfirm] = useState<{ action: 'ban' | 'suspend' | 'activate' | 'verify' | 'delete' | 'pin' | 'unpin' | 'plan_elite' | 'plan_gold' | 'plan_free' | 'grant_badge' | 'revoke_badge'; label: string } | null>(null);
+  const [bulkConfirm, setBulkConfirm] = useState<{ action: 'ban' | 'suspend' | 'activate' | 'verify' | 'delete' | 'pin' | 'unpin' | 'plan_featured' | 'plan_free' | 'grant_badge' | 'revoke_badge'; label: string } | null>(null);
   const [bulkReason, setBulkReason] = useState('');
   const [bulkBusy, setBulkBusy] = useState(false);
   // نافذة تغيير حالة فردية بسبب (حظر/تجميد/إيقاف)
@@ -1256,8 +1252,7 @@ export default function AdminMembers() {
       case 'verify': ok = await bulkSetVerified(ids, true); break;
       case 'pin': ok = await bulkSetPinned(ids, true); break;
       case 'unpin': ok = await bulkSetPinned(ids, false); break;
-      case 'plan_elite': ok = await bulkSetPlan(ids, 'elite'); break;
-      case 'plan_gold': ok = await bulkSetPlan(ids, 'gold'); break;
+      case 'plan_featured': ok = await bulkSetPlan(ids, 'featured'); break;
       case 'plan_free': ok = await bulkSetPlan(ids, 'free'); break;
       case 'grant_badge': ok = await bulkSetSeriousnessBadge(ids, true); break;
       case 'revoke_badge': ok = await bulkSetSeriousnessBadge(ids, false); break;
@@ -1396,7 +1391,7 @@ export default function AdminMembers() {
           { label: 'نشط', value: stats.active, icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50/50 border-emerald-100 hover:bg-emerald-50', onClick: () => setFilterStatus('active') },
           { label: 'مراجعة', value: stats.pending, icon: Loader2, color: 'text-amber-600', bg: 'bg-amber-50/50 border-amber-100 hover:bg-amber-50', onClick: () => setFilterStatus('pending') },
           { label: 'موثق', value: stats.verified, icon: BadgeCheck, color: 'text-sky-600', bg: 'bg-sky-50/50 border-sky-100 hover:bg-sky-50', onClick: () => {} },
-          { label: 'مميّز', value: stats.premium, icon: Crown, color: 'text-indigo-600', bg: 'bg-indigo-50/50 border-indigo-100 hover:bg-indigo-50', onClick: () => setFilterPlan('gold') },
+          { label: 'مميّز', value: stats.premium, icon: Crown, color: 'text-indigo-600', bg: 'bg-indigo-50/50 border-indigo-100 hover:bg-indigo-50', onClick: () => setFilterPlan('featured') },
           { label: 'معلّم', value: stats.flagged, icon: Flag, color: 'text-rose-600', bg: 'bg-rose-50/50 border-rose-100 hover:bg-rose-50', onClick: () => setOnlyFlagged(true) },
         ].map((s) => {
           const Icon = s.icon;
@@ -1442,7 +1437,7 @@ export default function AdminMembers() {
               label="الباقة:"
               value={filterPlan}
               onChange={(v) => setFilterPlan(v as typeof filterPlan)}
-              options={(['all', 'free', 'gold', 'elite'] as const).map((p) => ({
+              options={(['all', 'free', 'featured'] as const).map((p) => ({
                 value: p,
                 label: p === 'all' ? 'كل الباقات' : getPlanCfg(p).label,
               }))}
@@ -2115,21 +2110,11 @@ export default function AdminMembers() {
                         onClick={() => {
                           setBulkPlansOpen(false);
                           setBulkReason('');
-                          setBulkConfirm({ action: 'plan_elite', label: 'منح باقة مميز (Elite)' });
+                          setBulkConfirm({ action: 'plan_featured', label: 'منح توافق مميز' });
                         }}
                         className="w-full px-4 py-2 text-xs font-bold text-slate-700 hover:bg-purple-50 flex items-center gap-2 transition-colors text-right"
                       >
-                        <Star className="w-3.5 h-3.5 text-purple-600 fill-purple-600" /> منح باقة مميز (Elite) ⭐
-                      </button>
-                      <button
-                        onClick={() => {
-                          setBulkPlansOpen(false);
-                          setBulkReason('');
-                          setBulkConfirm({ action: 'plan_gold', label: 'منح باقة ذهبية (Gold)' });
-                        }}
-                        className="w-full px-4 py-2 text-xs font-bold text-slate-700 hover:bg-amber-50 flex items-center gap-2 transition-colors text-right"
-                      >
-                        <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-100" /> منح باقة ذهبية (Gold)
+                        <Star className="w-3.5 h-3.5 text-purple-600 fill-purple-600" /> منح توافق مميز ⭐
                       </button>
                       <button
                         onClick={() => {
@@ -2337,12 +2322,12 @@ export default function AdminMembers() {
                           {m.realName && m.realName !== m.nickname && <span className="text-[10px] text-slate-400">({m.realName})</span>}
                           {m.pinned && <Pin className="w-3 h-3 text-amber-500 fill-amber-500 flex-shrink-0 rotate-45" />}
                           {m.verified && <BadgeCheck className="w-3.5 h-3.5 text-blue-500" />}
-                          {m.plan === 'elite' && (
-                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-cairo font-bold bg-purple-50 text-purple-600 border border-purple-200" title="باقة مميّز">
-                              <Star className="w-2.5 h-2.5 fill-purple-500 text-purple-500" /> مميّز
+                          {m.plan === 'featured' && (
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-cairo font-bold bg-purple-50 text-purple-600 border border-purple-200" title="توافق مميز">
+                              <Star className="w-2.5 h-2.5 fill-purple-500 text-purple-500" /> توافق مميز
                             </span>
                           )}
-                          {m.plan === 'gold' && <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-100" />}
+                          {m.plan === 'featured' && <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-100" />}
                           {m.isProfileIncomplete && (
                             <span className="px-1.5 py-0.5 text-[9px] font-cairo font-bold bg-amber-100 text-amber-800 rounded select-none">غير مكتمل</span>
                           )}
@@ -2568,7 +2553,7 @@ export default function AdminMembers() {
                       <span className="font-cairo font-bold text-slate-900 text-xs truncate max-w-[90px]">{m.nickname || m.realName || 'بدون اسم'}</span>
                       {m.pinned && <Pin className="w-2.5 h-2.5 text-amber-500 fill-amber-500 flex-shrink-0 rotate-45" />}
                       {m.verified && <BadgeCheck className="w-3 h-3 text-blue-500 flex-shrink-0" />}
-                      {m.plan === 'gold' && <Crown className="w-3 h-3 text-amber-500 fill-amber-100 flex-shrink-0" />}
+                      {m.plan === 'featured' && <Crown className="w-3 h-3 text-amber-500 fill-amber-100 flex-shrink-0" />}
                     </div>
                     <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                       <span className={`px-1.5 py-0.2 rounded text-[9px] font-cairo font-bold ${getStatusCfg(m.status).color}`}>
@@ -3224,13 +3209,12 @@ export default function AdminMembers() {
                         onChange={(e) => setEditForm(prev => ({ 
                           ...prev, 
                           plan: e.target.value, 
-                          premium: e.target.value === 'gold' || e.target.value === 'elite' 
+                          premium: e.target.value === 'featured'
                         }))}
                         className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:border-amber-400 font-cairo"
                       >
                         <option value="free">المجانية (Free)</option>
-                        <option value="gold">الذهبية (Gold)</option>
-                        <option value="elite">المميز (Elite) ⭐</option>
+                        <option value="featured">توافق مميز</option>
                       </select>
                     </div>
                     <div className="flex items-center gap-2 pt-5">
@@ -4200,8 +4184,7 @@ export default function AdminMembers() {
                 className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 focus:border-amber-400 focus:outline-none font-tajawal text-xs"
               >
                 <option value="free">مجاني</option>
-                <option value="gold">ذهبي</option>
-                <option value="elite">نخبة</option>
+                <option value="featured">توافق مميز</option>
               </select>
             </div>
 

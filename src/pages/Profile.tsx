@@ -1,3 +1,4 @@
+import { memberPlan, isFeatured } from '../../shared/membership.js';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,7 +9,7 @@ import {
   KeyRound, EyeOff, AlertCircle, CheckCircle2, FileText, Zap,
 } from 'lucide-react';
 import { useApp, DEFAULT_PROFILE } from '../lib/AppContext';
-import { VerifiedBadge, PremiumBadge } from '../components/ui/Badge';
+import { VerifiedBadge, FeaturedBadge } from '../components/ui/Badge';
 import { PhoneInputWithCountryCode } from '../components/ui/FormFields';
 import { getAvatar } from '../lib/types';
 import type { Plan } from '../lib/types';
@@ -75,10 +76,10 @@ export default function Profile() {
         <div className="flex items-center gap-1.5 justify-center flex-wrap mt-3">
           <h2 className="font-cairo font-extrabold text-xl text-navy-900">{name}</h2>
           {prof.verified && <VerifiedBadge size="md" />}
-          <PremiumBadge size="md" />
+          {isFeatured({ plan: prof.plan }) && <FeaturedBadge size="md" />}
         </div>
         <p className="text-navy-500 font-tajawal text-sm mt-1">
-          {prof.plan === 'gold' ? 'عضو ذهبي' : prof.plan === 'elite' ? 'عضو نخبة' : 'عضو مجاني'} · {prof.city || 'الرياض'}
+          {prof.plan === 'featured' ? 'توافق مميز' : 'عضو مجاني'} · {prof.city || 'الرياض'}
         </p>
         <div className="mt-2 h-1.5 bg-cream-200 rounded-full overflow-hidden max-w-[160px] mx-auto">
           <div className="h-full bg-gold-gradient rounded-full transition-all duration-500" style={{ width: `${prof.profileCompletion || 85}%` }} />
@@ -167,10 +168,10 @@ export default function Profile() {
               <div className="flex items-center gap-1.5 flex-wrap">
                 <h1 className="font-cairo font-extrabold text-lg text-navy-900 truncate">{name}</h1>
                 {prof.verified && <VerifiedBadge size="sm" />}
-                <PremiumBadge size="sm" />
+                {isFeatured({ plan: prof.plan }) && <FeaturedBadge size="sm" />}
               </div>
               <p className="text-navy-500 font-tajawal text-xs mt-0.5">
-                {prof.plan === 'gold' ? 'عضو ذهبي' : prof.plan === 'elite' ? 'عضو نخبة' : 'عضو مجاني'} · {prof.city || 'الرياض'} · {prof.age || 26} سنة
+                {prof.plan === 'featured' ? 'توافق مميز' : 'عضو مجاني'} · {prof.city || 'الرياض'} · {prof.age || 26} سنة
               </p>
               <div className="mt-1.5 h-1.5 bg-cream-200 rounded-full overflow-hidden max-w-[180px]">
                 <div className="h-full bg-gold-gradient rounded-full transition-all duration-500" style={{ width: `${prof.profileCompletion || 85}%` }} />
@@ -230,10 +231,10 @@ export default function Profile() {
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="font-cairo font-extrabold text-2xl text-navy-900">{name}</h1>
                 {prof.verified && <VerifiedBadge size="md" />}
-                <PremiumBadge size="md" />
+                {isFeatured({ plan: prof.plan }) && <FeaturedBadge size="md" />}
               </div>
               <p className="text-navy-500 font-tajawal mt-1">
-                {prof.plan === 'gold' ? 'عضو ذهبي' : prof.plan === 'elite' ? 'عضو نخبة' : 'عضو مجاني'} · {prof.city || 'الرياض'} · {prof.age || 26} سنة
+                {prof.plan === 'featured' ? 'توافق مميز' : 'عضو مجاني'} · {prof.city || 'الرياض'} · {prof.age || 26} سنة
               </p>
               <div className="mt-2 flex items-center gap-3 max-w-xs">
                 <div className="flex-1 h-2 bg-cream-200 rounded-full overflow-hidden">
@@ -823,8 +824,8 @@ function QuickActionItem({ item }: { key?: any; item: QuickActionItem }) {
 /* ===== Subscription Tab ===== */
 function SubscriptionTab({ currentPlan, plans }: { currentPlan: string; plans: Plan[] }) {
   const { enableProfileBoosting, boostProfile, isBoosted, showToast } = useApp();
-  const plan = plans.find(p => p.id === (currentPlan === 'gold' ? 'premium' : currentPlan === 'elite' ? 'elite' : 'free')) || plans[1];
-  const renewalDate = 'غير منتهية';
+  const plan = plans.find(p => p.id === memberPlan(currentPlan)) || plans[0];
+  const renewalDate = plan.id === 'featured' ? '30 يومًا — مرحلة تجريبية' : 'مجانية';
 
   return (
     <div className="space-y-4">
@@ -849,49 +850,21 @@ function SubscriptionTab({ currentPlan, plans }: { currentPlan: string; plans: P
             </div>
             <div className="flex items-center justify-between">
               <span>السعر</span>
-              <span className="text-white font-semibold">{plan.price} ر.س / شهرياً</span>
+              <span className="text-white font-semibold">{plan.price ? '99 ر.س / 30 يومًا' : 'مجاني'}</span>
             </div>
           </div>
           <div className="mt-5 flex flex-col sm:flex-row gap-2">
-            <Link to="/checkout/gold" className="flex-1 text-center py-2.5 rounded-xl bg-gold-gradient text-navy-900 font-cairo font-bold text-sm no-tap-highlight">
-              تجديد الباقة
+            <Link to="/checkout/featured" className="flex-1 text-center py-2.5 rounded-xl bg-gold-gradient text-navy-900 font-cairo font-bold text-sm no-tap-highlight">
+              {plan.price ? 'تجديد توافق مميز' : 'اشترك في توافق مميز'}
             </Link>
             <Link to="/plans" className="flex-1 text-center py-2.5 rounded-xl bg-white/10 border border-white/20 text-white font-cairo font-bold text-sm hover:bg-white/15 transition-colors no-tap-highlight">
-              ترقية الباقة
+              تفاصيل العضوية
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Payment history */}
-      <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-soft border border-cream-200/60">
-        <h3 className="font-cairo font-bold text-navy-900 mb-4 flex items-center gap-2">
-          <CreditCard className="w-5 h-5 text-gold-600" /> سجل المدفوعات
-        </h3>
-        <div className="space-y-3">
-          {[
-            { desc: 'باقة ذهبية - شهري', amount: 99, date: '15 يناير 2025', status: 'مدفوع' },
-            { desc: 'باقة ذهبية - شهري', amount: 99, date: '15 ديسمبر 2024', status: 'مدفوع' },
-            { desc: 'باقة ذهبية - شهري', amount: 99, date: '15 نوفمبر 2024', status: 'مدفوع' },
-          ].map((p, i) => (
-            <div key={i} className="flex items-center justify-between gap-3 py-2 border-b border-cream-100 last:border-0">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                  <Check className="w-4.5 h-4.5 text-emerald-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-cairo font-semibold text-navy-800 truncate">{p.desc}</p>
-                  <p className="text-xs text-navy-400 font-tajawal">{p.date}</p>
-                </div>
-              </div>
-              <div className="text-left flex-shrink-0">
-                <p className="font-cairo font-bold text-navy-900 text-sm">{p.amount} ر.س</p>
-                <p className="text-[10px] text-emerald-600 font-tajawal">{p.status}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm font-tajawal text-navy-700">الرسائل تُشترى بصورة مستقلة؛ لا يمنح الاشتراك رصيد رسائل. رسوم رحلة التوافق مستقلة عن العضوية.</div>
 
       {/* Profile boosting (show only if enabled by admin) */}
       {enableProfileBoosting && (

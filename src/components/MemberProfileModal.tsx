@@ -1,3 +1,6 @@
+import DailyRequestLimitNotice from './requests/DailyRequestLimitNotice';
+import { FeaturedBadge } from './ui/Badge';
+import { isFeatured } from '../../shared/membership.js';
 import { useState, useMemo, useEffect, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -151,7 +154,7 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
       `✨ الشارات: ${[
         member.verified ? '✓ موثق' : '',
         member.hasSeriousnessBadge ? '🏅 جاد' : '',
-        member.plan === 'gold' ? '👑 ذهبي' : member.plan === 'elite' ? '⭐ مميز' : '',
+        member.plan === 'featured' ? 'توافق مميز' : '',
       ].filter(Boolean).join(' | ') || 'عضو عادي'}`,
       `🔗 رابط الملف الشخصي: ${profileUrl}`,
     ].filter(Boolean).join('\n');
@@ -341,16 +344,8 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
                         🏅 جاد
                       </span>
                     )}
-                    {member.plan === 'gold' && (
-                      <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-lg text-[10px] font-cairo font-bold">
-                        <Crown className="w-3 h-3 text-amber-500 fill-amber-500" /> ذهبي
-                      </span>
-                    )}
-                    {(member.plan === 'elite' || (member.premium && member.plan !== 'gold')) && (
-                      <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-lg text-[10px] font-cairo font-bold">
-                        ⭐ مميز
-                      </span>
-                    )}
+
+                    {isFeatured(member) && <FeaturedBadge />}
                   </div>
 
                 </div>
@@ -783,6 +778,7 @@ export default function MemberProfileModal({ member, open, onClose }: MemberProf
 
               {/* جسم النافذة المنبثقة (Scrollable) */}
               <div className="p-4 sm:p-5 overflow-y-auto space-y-3.5">
+                <DailyRequestLimitNotice />
                 {/* ملخص بطاقة العضو المصغرة */}
                 <div className={`p-3 rounded-2xl border flex items-center gap-3 ${
                   isMale 

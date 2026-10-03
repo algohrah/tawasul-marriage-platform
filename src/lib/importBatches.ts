@@ -1,3 +1,4 @@
+import { normalizePlan } from '../../shared/membership.js';
 import { dataService } from './data/DataService';
 import { normalizeNationality, normalizeCountry, normalizeMarriageType, getMarriageTypeDisplayLabel } from './data/optionNormalizer';
 // ====================================================================
@@ -1830,10 +1831,10 @@ export function preparePlatformExportedMember(
     hasSeriousnessBadge,
     paid,
     paidAt,
-    premium: plan === 'premium' || plan === 'vip',
+    premium: normalizePlan(plan) === 'featured',
     online: false,
     status,
-    plan,
+    plan: normalizePlan(plan),
     lastActive: cleanStr(data.lastActive || data.last_active || new Date().toISOString()),
     aboutPartner: pNotes,
     adminNote: adminNotes,

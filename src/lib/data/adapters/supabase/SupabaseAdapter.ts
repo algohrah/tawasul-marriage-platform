@@ -509,7 +509,7 @@ export class SupabaseAdapter implements IDatabaseAdapter {
         match_score: 95,
         hasSeriousnessBadge: true,
         has_seriousness_badge: true,
-        plan: 'gold',
+        plan: 'featured',
         status: 'active',
         sourceType: 'registered',
         source_type: 'registered'
@@ -605,7 +605,7 @@ export class SupabaseAdapter implements IDatabaseAdapter {
         match_score: 88,
         hasSeriousnessBadge: true,
         has_seriousness_badge: true,
-        plan: 'elite',
+        plan: 'featured',
         status: 'active',
         sourceType: 'registered',
         source_type: 'registered'
@@ -1173,7 +1173,7 @@ export class SupabaseAdapter implements IDatabaseAdapter {
     }
   };
 
-  adminBulkSetPlan = async (ids: string[], plan: 'free' | 'gold' | 'elite'): Promise<boolean> => {
+  adminBulkSetPlan = async (ids: string[], plan: 'free' | 'featured'): Promise<boolean> => {
     try {
       await supabaseClient.from('members').update({ plan }).in('id', ids);
       await this.syncMembersFromCloud();
@@ -1217,7 +1217,7 @@ export class SupabaseAdapter implements IDatabaseAdapter {
   };
 
   adminSetPremium = async (id: string, value: boolean): Promise<boolean> => {
-    return this.adminUpdateMember(id, { premium: value, plan: value ? 'gold' : 'free' });
+    return this.adminUpdateMember(id, { premium: value, plan: value ? 'featured' : 'free' });
   };
 
   adminSetNote = async (id: string, note: string): Promise<boolean> => {
@@ -1305,7 +1305,7 @@ export class SupabaseAdapter implements IDatabaseAdapter {
     const femaleCount = members.filter((m: any) => m.gender === 'female').length;
 
     const verifiedCount = members.filter((m: any) => m.verified).length;
-    const premiumCount = members.filter((m: any) => m.premium || m.plan === 'gold' || m.plan === 'elite').length;
+    const premiumCount = members.filter((m: any) => m.premium || m.plan === 'featured').length;
 
     const pendingRequestsCount = requests.filter((r: any) => (r.journey_stage || r.status) === 'sent' || (r.journey_stage || r.status) === 'pending').length;
     const activeJourneysCount = requests.filter((r: any) =>

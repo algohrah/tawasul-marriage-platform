@@ -331,7 +331,7 @@ export default function Header() {
                                 {user?.profile?.verified && <VerifiedBadge />}
                               </div>
                               <span className="text-xs text-cream-200/70 font-tajawal">
-                                {user?.profile?.plan === 'gold' ? 'عضو ذهبي' : user?.profile?.plan === 'elite' ? 'عضو نخبة' : 'عضو مجاني'}
+                                {user?.profile?.plan === 'featured' ? 'توافق مميز' : 'عضو مجاني'}
                               </span>
                             </div>
                           </div>

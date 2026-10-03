@@ -1,3 +1,6 @@
+import DailyRequestLimitNotice from '../components/requests/DailyRequestLimitNotice';
+import { FeaturedBadge } from '../components/ui/Badge';
+import { isFeatured } from '../../shared/membership.js';
 import { useState, useEffect, useRef, ReactNode, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -256,7 +259,7 @@ export default function MemberProfile() {
       `✨ الشارات: ${[
         member.verified ? '✓ موثق' : '',
         member.hasSeriousnessBadge ? '🏅 جاد' : '',
-        member.plan === 'gold' ? '👑 ذهبي' : member.plan === 'elite' ? '⭐ مميز' : '',
+        member.plan === 'featured' ? 'توافق مميز' : '',
       ].filter(Boolean).join(' | ') || 'عضو عادي'}`,
       `🔗 رابط الملف الشخصي: ${profileUrl}`,
     ].filter(Boolean).join('\n');
@@ -324,17 +327,8 @@ export default function MemberProfile() {
             <div className="flex-1 min-w-0 text-right space-y-1.5">
               <div className="flex items-center gap-2 justify-start mb-1 flex-wrap">
                 <h1 className="font-cairo font-extrabold text-lg sm:text-2xl text-slate-900 leading-none">{member.nickname}</h1>
-                {(member.plan === 'elite' || (member.premium && member.plan !== 'gold')) && (
-                  <span className="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 shadow-sm font-cairo font-extrabold text-[10px] sm:text-xs" title="الباقة المميزة">
-                    <span>⭐ مميز</span>
-                  </span>
-                )}
-                {member.plan === 'gold' && (
-                  <span className="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 shadow-sm font-cairo font-extrabold text-[10px] sm:text-xs" title="الباقة الذهبية">
-                    <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                    <span>ذهبي</span>
-                  </span>
-                )}
+                {isFeatured(member) && <FeaturedBadge />}
+
               </div>
 
               {member.username && (
@@ -718,10 +712,10 @@ export default function MemberProfile() {
                   { icon: ShieldCheck, iconColor: 'text-emerald-500', label: 'التوثيق', value: member.verified ? 'موثّق ✓' : 'غير موثّق', valueColor: member.verified ? 'text-emerald-600' : 'text-slate-400' },
                   { 
                     icon: Crown, 
-                    iconColor: member.plan === 'elite' ? 'text-rose-500' : member.plan === 'gold' ? 'text-amber-500' : 'text-slate-400', 
+                    iconColor: isFeatured(member) ? 'text-amber-500' : 'text-slate-400',
                     label: 'العضوية', 
-                    value: member.plan === 'elite' ? 'باقة مميزة ⭐' : member.plan === 'gold' ? 'باقة ذهبية 👑' : 'باقة مجانية', 
-                    valueColor: member.plan === 'elite' ? 'text-rose-600 font-extrabold' : member.plan === 'gold' ? 'text-amber-600 font-extrabold' : 'text-slate-400' 
+                    value: isFeatured(member) ? 'توافق مميز' : 'مجاني',
+                    valueColor: isFeatured(member) ? 'text-amber-600 font-extrabold' : 'text-slate-400'
                   },
                   { icon: User, iconColor: 'text-purple-500', label: 'الجنس', value: isMale ? 'رجل' : 'امرأة', valueColor: 'text-slate-700' },
                   { icon: Scale, iconColor: 'text-amber-500', label: 'المذهب', value: member.sect, valueColor: 'text-slate-700' },
@@ -982,6 +976,7 @@ export default function MemberProfile() {
       {/* ═══════════ CONTACT MODAL ═══════════ */}
       <Modal open={contactOpen} onClose={() => setContactOpen(false)} title="طلب التنسيق المباشر ودفع رسوم المنصة">
         <div className="space-y-4">
+          <DailyRequestLimitNotice />
           {/* Member preview */}
           <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
             <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${accentGradient} p-[2px] flex-shrink-0`}>

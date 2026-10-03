@@ -1,3 +1,4 @@
+import { isFeatured } from '../shared/membership.js';
 import supabase from './db-client.js';
 import { requireAdmin } from './_auth.js';
 
@@ -61,7 +62,7 @@ export default async function handler(req, res) {
       females: members.filter((m) => m.gender === 'female').length,
       completed: requests.filter((r) => stageOf(r) === 'completed').length,
       verified: members.filter((m) => m.verified).length,
-      premium: members.filter((m) => m.premium || m.plan === 'gold' || m.plan === 'elite').length,
+      premium: members.filter((m) => isFeatured(m)).length,
       revenue,
       totalRevenue: revenue,
       totalTransactions: transactions.length,

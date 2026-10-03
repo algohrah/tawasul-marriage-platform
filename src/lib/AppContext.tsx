@@ -1,3 +1,4 @@
+import { normalizePlan, memberPlan, isFeatured, dailyRequestLimit, requestDay } from '../../shared/membership.js';
 import { dataService } from './data/DataService';
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { pushToast, dismissToastById } from './toastBus';
@@ -77,7 +78,7 @@ interface UserProfile {
   email: string;
   city: string;
   age: number;
-  plan: 'free' | 'gold' | 'elite';
+  plan: 'free' | 'featured';
   verified: boolean;
   profileCompletion: number;
   credits: number;
@@ -179,11 +180,8 @@ interface AppContextType {
   toasts: Toast[];
   showToast: (message: string, type?: Toast['type']) => void;
   dismissToast: (id: number) => void;
-  upgradePlan: (plan: 'gold' | 'elite') => void;
+  upgradePlan: (plan: 'featured') => void;
   plans: Plan[];
-  updatePlan: (updated: Plan) => void;
-  addPlan: (newPlan: Plan) => void;
-  deletePlan: (id: string) => void;
   paypalSettings: PaypalSettings;
   updatePaypalSettings: (settings: PaypalSettings) => void;
   paymentSettings: PaymentSettings;
@@ -310,7 +308,7 @@ export const DEFAULT_PROFILE: UserProfile = {
   email: 'demo@tawasul.sa',
   city: 'الرياض',
   age: 26,
-  plan: 'gold',
+  plan: 'featured',
   verified: true,
   profileCompletion: 85,
   credits: 12,
@@ -466,7 +464,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           if (parsed && typeof parsed === 'object') {
             return {
               ...parsed,
-              profile: { ...DEFAULT_PROFILE, ...(parsed.profile || {}) },
+              profile: { ...DEFAULT_PROFILE, ...(parsed.profile || {}), plan: normalizePlan(parsed.profile?.plan) },
             };
           }
         } catch { /* ignore error */ }
@@ -546,7 +544,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setMembers = useCallback((val: Member[] | ((prev: Member[]) => Member[])) => {
     setMembersRaw((prev) => {
       const next = typeof val === 'function' ? val(prev) : val;
-      return deduplicateById(next);
+      return deduplicateById(next).map(m => ({ ...m, plan: memberPlan(m), premium: isFeatured(m) }));
     });
   }, []);
 
@@ -583,7 +581,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setAdminMembers = useCallback((val: AdminMember[] | ((prev: AdminMember[]) => AdminMember[])) => {
     setAdminMembersRaw((prev) => {
       const next = typeof val === 'function' ? val(prev) : val;
-      return deduplicateById(next);
+      return deduplicateById(next).map(m => ({ ...m, plan: memberPlan(m), premium: isFeatured(m) }));
     });
   }, []);
 
@@ -954,7 +952,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (savedReqs) setInterestRequests(JSON.parse(savedReqs));
 
         const savedPlans = dataService.db.settings.get('saved_plans');
-        if (savedPlans) setPlans(JSON.parse(savedPlans));
+        if (savedPlans) setPlans(DEFAULT_PLANS);
 
         const savedPaypal = dataService.db.settings.get('paypal_settings');
         if (savedPaypal) setPaypalSettings(JSON.parse(savedPaypal));
@@ -1033,19 +1031,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [user, isInitialized]);
 
   // Initialize plans with local storage backup or default
-  const [plans, setPlans] = useState<Plan[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = dataService.db.settings.get('saved_plans');
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch {
-          // fail safe fallback
-        }
-      }
-    }
-    return DEFAULT_PLANS;
-  });
+  const [plans, setPlans] = useState<Plan[]>(DEFAULT_PLANS);
 
   // Initialize PayPal settings from storage or default
   const [paypalSettings, setPaypalSettings] = useState<PaypalSettings>(() => {
@@ -2019,7 +2005,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
         const savedPlans = dataService.db.settings.get('saved_plans');
         if (savedPlans) {
-          try { setPlans(JSON.parse(savedPlans)); } catch {}
+          setPlans(DEFAULT_PLANS);
         }
         const savedPaypal = dataService.db.settings.get('paypal_settings');
         if (savedPaypal) {
@@ -2340,7 +2326,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         phone: matchedAdmin?.phone || (memberId === 'm2' ? '+966501234567' : ''),
         whatsapp: matchedAdmin?.whatsapp || (memberId === 'm2' ? '+966501234567' : ''),
         password: matchedAdmin?.password || 'password123',
-        plan: (matchedAdmin?.plan || (memberId === 'm2' ? 'gold' : 'free')) as any,
+        plan: memberPlan(matchedAdmin || { plan: memberId === 'm2' ? 'featured' : 'free' }),
         verified: matched?.verified || false,
       },
     };
@@ -2369,7 +2355,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         realName: memberRow.real_name || memberRow.realName || memberRow.nickname || '',
         phone: memberRow.phone || '',
         whatsapp: memberRow.whatsapp || '',
-        plan: (memberRow.plan || 'free') as any,
+        plan: memberPlan(memberRow),
         verified: !!memberRow.verified,
       },
     };
@@ -2624,7 +2610,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         whatsapp: member.whatsapp || fullMember.whatsapp || '',
         city: member.city || fullMember.city || DEFAULT_PROFILE.city,
         age: member.age || fullMember.age || DEFAULT_PROFILE.age,
-        plan: (member.plan as UserProfile['plan']) || (fullMember.plan as UserProfile['plan']) || 'free',
+        plan: memberPlan({ ...fullMember, ...member }),
         verified: member.verified !== undefined ? !!member.verified : !!fullMember.verified,
         profileCompletion: 100,
       },
@@ -2719,7 +2705,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         age: Number(member.age) || 0,
         status: member.status || 'active',
         sourceType: member.sourceType || 'imported',
-        plan: member.plan || 'free',
+        plan: memberPlan(member),
         importDate: member.importDate || new Date().toISOString(),
         marriageType: member.marriageType || (member as any).marriage_type || 'announced',
         marriageTypeLabel: (member as any).marriageTypeLabel || (
@@ -2834,7 +2820,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         normalizedNewMembers.forEach(nm => {
           meta[nm.id] = {
             status: nm.status || 'active',
-            plan: nm.premium ? 'gold' : 'free',
+            plan: memberPlan(nm),
             realName: nm.realName || nm.nickname || nm.id,
             email: nm.email || '',
             phone: nm.phone || '',
@@ -2908,15 +2894,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [user.isLoggedIn, user.memberId, isInitialized]);
 
-  const upgradePlan = (plan: 'gold' | 'elite') => {
+  const upgradePlan = (plan: 'featured') => {
     const userId = dataService.db.getCurrentUserId();
     const targetPlan = plans.find((p) => p.id === plan);
     if (userId) {
-      dataService.db.adminUpdateMember(userId, { plan, premium: plan === 'elite' });
-      // Grant free messages package
-      if (targetPlan && targetPlan.messagesLimit) {
-        dataService.db.buyMessagePackageCustom(userId, targetPlan.messagesLimit, 0);
-      }
+      dataService.db.adminUpdateMember(userId, { plan, premium: plan === 'featured' });
+      // Inquiry messages are purchased independently; membership grants no credits.
       // تسجيل المعاملة المالية في جدول transactions الحقيقي
       fetch('/api/transactions', {
         method: 'POST',
@@ -2925,7 +2908,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           user_id: userId,
           amount: targetPlan?.price ?? 0,
           type: 'subscription',
-          description: `ترقية إلى ${targetPlan?.name || (plan === 'gold' ? 'الباقة الذهبية' : 'باقة النخبة')}`,
+          description: `ترقية إلى ${targetPlan?.name || 'توافق مميز'}`,
           status: 'completed',
           metadata: { plan },
         }),
@@ -2937,43 +2920,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }));
     if (userId) {
       setMembers((prev) =>
-        prev.map((m) => (m.id === userId ? { ...m, plan, premium: plan === 'elite' } : m))
+        prev.map((m) => (m.id === userId ? { ...m, plan, premium: plan === 'featured' } : m))
       );
     }
-    showToast(`تم تفعيل باقة ${plan === 'gold' ? 'الذهبية' : 'المميزة'} بنجاح! 🎉`, 'success');
-  };
-
-  const updatePlan = (updated: Plan) => {
-    setPlans((prev) => {
-      const next = prev.map((p) => (p.id === updated.id ? updated : p));
-      if (typeof window !== 'undefined') {
-        dataService.db.settings.set('saved_plans', JSON.stringify(next));
-      }
-      return next;
-    });
-    showToast(`تم تحديث باقة ${updated.name} بنجاح!`, 'success');
-  };
-
-  const addPlan = (newPlan: Plan) => {
-    setPlans((prev) => {
-      const next = [...prev, newPlan];
-      if (typeof window !== 'undefined') {
-        dataService.db.settings.set('saved_plans', JSON.stringify(next));
-      }
-      return next;
-    });
-    showToast(`تم إضافة باقة ${newPlan.name} بنجاح!`, 'success');
-  };
-
-  const deletePlan = (id: string) => {
-    setPlans((prev) => {
-      const next = prev.filter((p) => p.id !== id);
-      if (typeof window !== 'undefined') {
-        dataService.db.settings.set('saved_plans', JSON.stringify(next));
-      }
-      return next;
-    });
-    showToast('تم حذف الباقة بنجاح!', 'success');
+    showToast('تم تفعيل توافق مميز بنجاح!', 'success');
   };
 
   const updatePaypalSettings = (settings: PaypalSettings) => {
@@ -2992,13 +2942,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     showToast('تم حفظ إعدادات التواصل الاجتماعي بنجاح!', 'success');
   };
 
+  const [serverQuota, setServerQuota] = useState<{ memberId: string; used: number; limit: number; resetAt: string } | null>(null);
+  const refreshDailyQuota = useCallback(async () => {
+    if (!user.isLoggedIn || !user.memberId || !dataService.db.getDailyRequestUsage) return;
+    try {
+      const quota = await dataService.db.getDailyRequestUsage(user.memberId);
+      setServerQuota({ ...quota, memberId: user.memberId });
+    } catch (error) { console.warn('Daily request quota unavailable; API still enforces the limit.', error); }
+  }, [user.isLoggedIn, user.memberId]);
+  useEffect(() => {
+    setServerQuota(null);
+    void refreshDailyQuota();
+    const timer = setInterval(() => void refreshDailyQuota(), 60000);
+    return () => clearInterval(timer);
+  }, [refreshDailyQuota, user.profile.plan, interestRequests.length]);
+
   // CHECK LIMIT LOGIC
   const checkLimit = useCallback((action: 'message' | 'search' | 'contact') => {
     const isAdminImpersonating = typeof window !== 'undefined' && dataService.db.settings.get('impersonating') === 'true';
-    if (isAdminImpersonating) {
+    if (isAdminImpersonating && action !== 'message') {
       return {
         allowed: true,
-        current: action === 'message' ? usage.messagesSent : action === 'search' ? usage.searchesDone : usage.contactsViewed,
+        current: action === 'search' ? usage.searchesDone : usage.contactsViewed,
         max: 999,
         error: undefined,
       };
@@ -3011,17 +2976,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     let current = 0;
 
     if (action === 'message') {
-      if (unlimitedInterestsUntil > Date.now()) {
-        return {
-          allowed: true,
-          current: usage.messagesSent,
-          max: 999,
-          error: undefined,
-        };
+      const day = requestDay();
+      max = dailyRequestLimit({ plan: user.profile.plan });
+      current = interestRequests.filter((r: any) =>
+        String(r.senderId || r.sender_id) === String(user.memberId || dataService.db.getCurrentUserId()) &&
+        (r.createdAt || r.created_at) && new Date(r.createdAt || r.created_at).getTime() >= Date.parse(day.start) &&
+        new Date(r.createdAt || r.created_at).getTime() < Date.parse(day.end)
+      ).length;
+      if (serverQuota?.memberId === user.memberId && Date.parse(serverQuota.resetAt) > Date.now()) {
+        current = Math.max(current, serverQuota.used);
+        max = serverQuota.limit;
       }
-      const baseMax = activePlan.requestsLimit !== undefined ? activePlan.requestsLimit : (activePlan.messagesLimit !== undefined ? activePlan.messagesLimit : 3);
-      max = baseMax + extraInterestsCount;
-      current = usage.messagesSent;
     } else if (action === 'search') {
       max = activePlan.searchLimit !== undefined ? activePlan.searchLimit : 2;
       current = usage.searchesDone;
@@ -3038,9 +3003,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       max,
       error: allowed
         ? undefined
-        : `لقد استنفدت حد باقتك لطلبات التوافق المساعدة والربط المباشر (${max}/${max}). يمكنك ترقية باقتك أو شراء باقات طلبات اهتمام إضافية فورياً لمواصلة التواصل مع شريك حياتك المنشود.`,
+        : `وصلت إلى حدك اليومي (${max} طلبات توافق). يتجدد الحد عند منتصف الليل.${normalizePlan(user.profile.plan) === 'free' ? ' ترقّ إلى توافق مميز لإرسال حتى 20 طلبًا يوميًا.' : ''}`,
     };
-  }, [user.profile.plan, plans, usage, extraInterestsCount, unlimitedInterestsUntil]);
+  }, [user.profile.plan, user.memberId, plans, usage, interestRequests, serverQuota]);
 
   // INCREMENT COUNTER ON ACTION SUCCESS
   const incrementUsage = useCallback((action: 'message' | 'search' | 'contact') => {
@@ -3294,7 +3259,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       } else if (audience === 'verified') {
         targetMembers = allMembersList.filter((m) => m.verified);
       } else if (audience === 'premium') {
-        targetMembers = allMembersList.filter((m) => m.premium || m.plan === 'gold' || m.plan === 'elite');
+        targetMembers = allMembersList.filter((m) => isFeatured(m));
       } else if (audience === 'specific') {
         targetMembers = allMembersList.filter((m) => specificIds?.includes(m.id));
       }
@@ -3488,6 +3453,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return { ok: false, error: 'لا يمكنك إرسال طلب توافق لنفسك' };
     }
 
+    const quota = checkLimit('message');
+    if (!quota.allowed) { showToast(quota.error || 'وصلت إلى الحد اليومي', 'error'); return { ok: false, error: quota.error, upgradeAvailable: normalizePlan(user.profile.plan) === 'free' }; }
+
     // 1. التحقق من شرط التوثيق في حال تفعيله من الإدارة
     if (requireVerificationForRequests && !isAdminImpersonating) {
       const activeMember = members.find(m => m.id === activeUserId) || adminMembers.find(m => m.id === activeUserId);
@@ -3520,6 +3488,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     const res = await dataService.db.createRequest(activeUserId, memberId, messageText.trim() || 'طلب توافق مرسل عبر الإدارة');
+    await refreshDailyQuota();
     if (res && res.ok) {
       showToast('تم إرسال طلب الاهتمام بنجاح! 💌', 'success');
       await refreshInterestRequests();
@@ -3537,6 +3506,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     adminMembers,
     showToast,
     refreshInterestRequests,
+    checkLimit,
+    user.profile.plan,
+    refreshDailyQuota,
   ]);
 
   const sendSupportMessage = useCallback((ticketId: string, text: string, sender: 'user' | 'admin') => {
@@ -3618,9 +3590,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         dismissToast,
         upgradePlan,
         plans,
-        updatePlan,
-        addPlan,
-        deletePlan,
         paypalSettings,
         updatePaypalSettings,
         paymentSettings,

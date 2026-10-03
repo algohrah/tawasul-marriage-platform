@@ -1,3 +1,4 @@
+import { memberPlan, isFeatured } from '../../../../../shared/membership.js';
 import { LocalStorageAdapter } from '../../LocalStorageAdapter';
 import { IRepository, ISettingsRepository } from '../../interfaces';
 import type { Member } from '../../../members';
@@ -182,12 +183,12 @@ function normalizeMember(row: any): any {
     pAcceptChildren: row.pAcceptChildren || row.p_accept_children || row.details?.pAcceptChildren || '',
     customLists: row.customLists || row.custom_lists || row.details?.customLists || [],
     verified: !!row.verified,
-    premium: !!row.premium,
+    premium: isFeatured(row),
     online: !!row.online,
     lastActive: row.last_active || row.lastActive || new Date().toISOString(),
     matchScore: Number(row.match_score ?? row.matchScore) || 90,
     hasSeriousnessBadge: !!(row.has_seriousness_badge ?? row.hasSeriousnessBadge),
-    plan: row.plan || 'free',
+    plan: memberPlan(row),
     pinned: !!row.pinned,
     status: row.status || 'active',
     statusReason: row.status_reason || row.statusReason || '',
@@ -670,6 +671,8 @@ export class ApiAdapter extends LocalStorageAdapter {
   };
 
   // ===== الطلبات والرحلات =====
+  getDailyRequestUsage = (userId: string): Promise<{ plan: string; used: number; limit: number; remaining: number; resetAt: string }> => apiFetch(`/api/interest-requests?usage=1&userId=${encodeURIComponent(userId)}`);
+
   getRequests = async (userId?: string): Promise<any[]> => {
     try {
       const query = userId && userId.trim() ? `?userId=${encodeURIComponent(userId.trim())}` : '';
@@ -925,7 +928,7 @@ export class ApiAdapter extends LocalStorageAdapter {
     return true;
   };
 
-  adminBulkSetPlan = async (ids: string[], plan: 'free' | 'gold' | 'elite'): Promise<boolean> => {
+  adminBulkSetPlan = async (ids: string[], plan: 'free' | 'featured'): Promise<boolean> => {
     await Promise.all(ids.map((id) => this.adminUpdateMember(id, { plan, premium: plan !== 'free' })));
     return true;
   };
@@ -945,7 +948,7 @@ export class ApiAdapter extends LocalStorageAdapter {
   };
 
   adminToggleVerified = (id: string, value: boolean): Promise<boolean> => this.adminUpdateMember(id, { verified: value });
-  adminSetPremium = (id: string, value: boolean): Promise<boolean> => this.adminUpdateMember(id, { premium: value, plan: value ? 'gold' : 'free' });
+  adminSetPremium = (id: string, value: boolean): Promise<boolean> => this.adminUpdateMember(id, { premium: value, plan: value ? 'featured' : 'free' });
   adminSetNote = (id: string, note: string): Promise<boolean> => this.adminUpdateMember(id, { adminNote: note, notes: note });
   adminToggleFlag = (id: string, value: boolean): Promise<boolean> => this.adminUpdateMember(id, { flagged: value });
 

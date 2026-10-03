@@ -1,3 +1,6 @@
+import { Link } from 'react-router-dom';
+import { isFeatured, compareMemberPriority } from '../../shared/membership.js';
+import { calculateCompatibility } from '../lib/compatibility';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,8 +28,13 @@ const PAGE_SIZE = 16;
 export default function Search() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { checkLimit, incrementUsage, showToast, members, membersLoading, membersError, retryLoadMembers, blockedMembers, currentUser, user } = useApp();
+  const { checkLimit, incrementUsage, showToast, members, membersLoading, membersError, retryLoadMembers, blockedMembers, user, profileData } = useApp();
+  const currentUser = members.find(member => String(member.id) === String(user.memberId));
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const featuredAccess = user.isLoggedIn && isFeatured({ plan: user.profile.plan });
+  const [upgradePrompt, setUpgradePrompt] = useState(false);
+  const requireFeatured = () => { setUpgradePrompt(true); showToast('هذا الفلتر متاح لأعضاء توافق مميز', 'info'); };
+  useEffect(() => { if (!featuredAccess) { setShowAdvanced(false); setSearchQuery(''); setNationality(''); setEducation(''); setJob(''); setMaritalStatus(''); setSect(''); setHasChildren(''); setChildrenCount(''); setMarriageType(''); setAcceptForeigner(''); } }, [featuredAccess]);
 
   // ===== الفلاتر الأساسية (مع دعم التهيئة من معايير الرابط) =====
   const paramGender = searchParams.get('gender') as GenderFilter | null;
@@ -122,7 +130,7 @@ export default function Search() {
       seen.add(key);
 
     // البحث بالكلمة المفتاحية / الرمز / كود العضو
-    if (searchQuery.trim()) {
+    if (featuredAccess && searchQuery.trim()) {
       const rawQ = searchQuery.trim().toLowerCase();
       const cleanQ = rawQ.replace('#', '').replace('tw-', '').replace('imp-', '').trim();
       const rawId = (m.id || '').toLowerCase();
@@ -158,7 +166,7 @@ export default function Search() {
     }
 
     // تصفية الجنسية (مطابقة مرنة تشمل الدولة والمسمى الوظيفي والنسبة)
-    if (nationality) {
+    if (featuredAccess && nationality) {
       const normFilter = nationality.replace('/ة', '').replace('ة', '').replace('ال', '').trim().toLowerCase();
       const normNat = (m.nationality || '').replace('/ة', '').replace('ة', '').replace('ال', '').trim().toLowerCase();
       const normCountry = (m.country || '').replace('ال', '').trim().toLowerCase();
@@ -171,9 +179,9 @@ export default function Search() {
       if (!isNatMatch) return false;
     }
 
-    if (education && m.education !== education) return false;
+    if (featuredAccess && education && m.education !== education) return false;
     
-    if (job) {
+    if (featuredAccess && job) {
       const j = job.trim().toLowerCase();
       const wType = (m.workType || '').toLowerCase();
       const jTitle = (m.jobTitle || '').toLowerCase();
@@ -183,7 +191,7 @@ export default function Search() {
       if (!matchesWork && !matchesTitle) return false;
     }
 
-    if (maritalStatus) {
+    if (featuredAccess && maritalStatus) {
       const mStatus = m.maritalStatus || '';
       const mLabel = m.maritalLabel || '';
       const isWidowMatch = (maritalStatus === 'widower' || maritalStatus === 'widow') && (mStatus === 'widower' || mStatus === 'widow');
@@ -193,7 +201,7 @@ export default function Search() {
     }
 
     // تصفية المذهب (مطابقة مرنة مثل سني / مسلم سني / سلفي)
-    if (sect) {
+    if (featuredAccess && sect) {
       const normFilter = sect.replace('مسلم ', '').trim();
       const normSect = (m.sect || '').replace('مسلم ', '').trim();
 
@@ -204,11 +212,11 @@ export default function Search() {
 
       if (!isSectMatch) return false;
     }
-    if (hasChildren && ((hasChildren === 'true' && !m.hasChildren) || (hasChildren === 'false' && m.hasChildren))) return false;
-    if (childrenCount && m.childrenCount !== childrenCount) return false;
+    if (featuredAccess && hasChildren && ((hasChildren === 'true' && !m.hasChildren) || (hasChildren === 'false' && m.hasChildren))) return false;
+    if (featuredAccess && childrenCount && m.childrenCount !== childrenCount) return false;
 
     // تصفية نوع الزواج (معلن / مسيار) — من اختار "لا مانع" يظهر في كلا الخيارين
-    if (marriageType) {
+    if (featuredAccess && marriageType) {
       const mTypeRaw = ((m as any).marriageType || (m as any).marriage_type || '').toString().toLowerCase().trim();
       const isBoth = ['both', 'معلن أو مسيار', 'معلن او مسيار', 'لا مانع', 'الاثنين', 'كلاهما', 'معلن ومسيار'].some(k => mTypeRaw.includes(k));
       if (marriageType === 'announced') {
@@ -221,7 +229,7 @@ export default function Search() {
     }
 
     // تصفية قبول غير المواطن / الأجنبي
-    if (acceptForeigner) {
+    if (featuredAccess && acceptForeigner) {
       const mAccRaw = ((m as any).acceptForeigner || (m as any).accept_foreigner || (m as any).pNationality || '').toString().toLowerCase().trim();
       const accepts = ['نعم', 'yes', 'true', 'لا مانع', 'اقبل اجنبي', 'أقبل أجنبي', 'أية جنسية', 'اي جنسية'].some(k => mAccRaw.includes(k));
       if (acceptForeigner === 'yes' && !accepts) return false;
@@ -230,27 +238,10 @@ export default function Search() {
 
     return true;
   }).sort((a, b) => {
-    // 0. Priority: Pinned members first
-    const pinA = a.pinned ? 1 : 0;
-    const pinB = b.pinned ? 1 : 0;
-    if (pinA !== pinB) {
-      return pinB - pinA; // pinned first
-    }
-
-    // Priority: Premium Package (Elite) > Gold Package > Free Package
-    const getPlanScore = (member: any) => {
-      const plan = member.plan || (member.premium ? 'elite' : 'free');
-      if (plan === 'elite') return 100;
-      if (plan === 'gold') return 50;
-      return 10;
-    };
-
-    const scoreA = getPlanScore(a) + (a.hasSeriousnessBadge ? 5 : 0);
-    const scoreB = getPlanScore(b) + (b.hasSeriousnessBadge ? 5 : 0);
-
-    if (scoreA !== scoreB) {
-      return scoreB - scoreA; // higher score first
-    }
+    const scoreFor = (member: any) => currentUser && profileData
+      ? calculateCompatibility(currentUser, member, profileData).score : 0;
+    const priority = compareMemberPriority(a, b, scoreFor(a), scoreFor(b));
+    if (priority) return priority;
 
     // Secondary: Sort by latest creation/registration date (newest first)
     const timeA = getMemberTimestamp(a);
@@ -268,7 +259,7 @@ export default function Search() {
 
     return (b.id || '').localeCompare(a.id || '');
   });
-  }, [members, blockedMembers, searchQuery, gender, ageRange, country, city, nationality, education, job, maritalStatus, sect, hasChildren, childrenCount, marriageType, acceptForeigner]);
+  }, [featuredAccess, currentUser, profileData, members, blockedMembers, searchQuery, gender, ageRange, country, city, nationality, education, job, maritalStatus, sect, hasChildren, childrenCount, marriageType, acceptForeigner]);
 
   // إعادة الترقيم للصفحة الأولى عند تغيير أي فلتر لتجنّب صفحة فارغة
   React.useEffect(() => {
@@ -348,7 +339,9 @@ export default function Search() {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                readOnly={!featuredAccess}
+                onFocus={() => { if (!featuredAccess) requireFeatured(); }}
+                onChange={(e) => { if (featuredAccess) setSearchQuery(e.target.value); else requireFeatured(); }}
                 placeholder="ابحث بكود العضو (مثل m1)، أو المسمى الوظيفي، أو الاسم المستعار..."
                 className="w-full h-11 px-3.5 pl-9 rounded-xl sm:rounded-2xl bg-cream-50 dark:bg-navy-950 border border-cream-200 dark:border-navy-800 focus:border-gold-500 focus:outline-none font-tajawal text-[13px] sm:text-sm text-navy-900 dark:text-cream-100 placeholder:text-navy-400"
               />
@@ -356,6 +349,12 @@ export default function Search() {
             </div>
           </div>
 
+          {!featuredAccess && <button type="button" onClick={requireFeatured} className="text-xs font-cairo font-bold text-gold-700">البحث بالرمز أو الاسم وبقية الفلاتر متاحة في توافق مميز</button>}
+          {upgradePrompt && !featuredAccess && <div role="alert" className="rounded-2xl border border-amber-200 bg-amber-50 p-4 font-cairo">
+            <p className="font-bold text-sm text-navy-900">هذا الفلتر متاح لأعضاء توافق مميز</p>
+            <p className="mt-1 text-xs text-navy-600">يمكنك استخدام الجنس والدولة والعمر والمدينة مجانًا.</p>
+            <div className="mt-3 flex gap-3"><Link to="/plans" className="rounded-xl bg-navy-900 px-4 py-2 text-xs font-bold text-white">الترقية إلى توافق مميز</Link><button type="button" onClick={() => setUpgradePrompt(false)} className="text-xs text-navy-600">متابعة البحث المجاني</button></div>
+          </div>}
           {/* ===== الخطوة 1: الجنس (أول خيار) ===== */}
           <FilterSection icon={Users} title="أبحث عن" step={1}>
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -418,7 +417,7 @@ export default function Search() {
           {/* ===== زر المزيد من الخيارات ===== */}
           {gender !== 'all' && (
             <button
-              onClick={() => setShowAdvanced(!showAdvanced)}
+              onClick={() => { if (featuredAccess) setShowAdvanced(!showAdvanced); else requireFeatured(); }}
               aria-expanded={showAdvanced}
               aria-controls="advanced-search-filters"
               className="w-full min-h-11 flex items-center justify-between px-3 py-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-navy-gradient text-white font-cairo font-bold transition-all hover:shadow-luxe relative overflow-hidden"
@@ -441,7 +440,7 @@ export default function Search() {
 
           {/* ===== الخيارات المتقدمة ===== */}
           <AnimatePresence>
-            {showAdvanced && gender !== 'all' && (
+            {featuredAccess && showAdvanced && gender !== 'all' && (
               <motion.div
                 id="advanced-search-filters"
                 initial={{ height: 0, opacity: 0 }}

@@ -1,3 +1,4 @@
+import { isFeatured } from '../../shared/membership.js';
 import { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -73,8 +74,8 @@ const securityPoints = [
 
 export default function Home() {
   const navigate = useNavigate();
-  const { members, membersLoading, currentUser, user } = useApp();
-  const isLoggedIn = !!(currentUser || user?.isLoggedIn);
+  const { members, membersLoading, user } = useApp();
+  const isLoggedIn = !!user?.isLoggedIn;
 
   // ===== الفلتر السريع في الـ Hero =====
   const [quickGender, setQuickGender] = useState<'female' | 'male' | 'all'>('female');
@@ -128,64 +129,10 @@ export default function Home() {
     return !!(member.nickname || member.realName || member.id);
   };
 
-  const featuredMembers = useMemo(() => {
-    return [...activeMembersOnly]
-      .filter(canShowOnHome)
-      .sort((a, b) => {
-        const pinA = a.pinned ? 1 : 0;
-        const pinB = b.pinned ? 1 : 0;
-        if (pinA !== pinB) return pinB - pinA;
+  const featuredMembers = useMemo(() => [...activeMembersOnly].filter(m => canShowOnHome(m) && isFeatured(m)).sort((a,b) => getMemberTimestamp(b)-getMemberTimestamp(a)).slice(0,12), [activeMembersOnly]);
+  const newMembers = useMemo(() => [...activeMembersOnly].filter(canShowOnHome).sort((a,b) => getMemberTimestamp(b)-getMemberTimestamp(a)).slice(0,12), [activeMembersOnly]);
 
-        const getPlanScore = (member: any) => {
-          const plan = member.plan || (member.premium ? 'elite' : 'free');
-          if (plan === 'elite') return 100;
-          if (plan === 'gold') return 50;
-          if (member.hasSeriousnessBadge) return 30;
-          if (member.verified) return 20;
-          if (member.sourceType === 'imported') return 15;
-          return 5;
-        };
-        const scoreA = getPlanScore(a);
-        const scoreB = getPlanScore(b);
-        if (scoreA !== scoreB) return scoreB - scoreA;
-
-        const timeA = getMemberTimestamp(a);
-        const timeB = getMemberTimestamp(b);
-        if (timeA !== timeB) return timeB - timeA;
-
-        return b.id.localeCompare(a.id);
-      })
-      .slice(0, 12);
-  }, [activeMembersOnly]);
-
-  const newMembers = useMemo(() => {
-    return [...activeMembersOnly]
-      .filter(canShowOnHome)
-      .sort((a, b) => {
-        const pinA = a.pinned ? 1 : 0;
-        const pinB = b.pinned ? 1 : 0;
-        if (pinA !== pinB) return pinB - pinA;
-
-        const timeA = getMemberTimestamp(a);
-        const timeB = getMemberTimestamp(b);
-        if (timeA !== timeB) return timeB - timeA;
-
-        const getPlanScore = (member: any) => {
-          const plan = member.plan || (member.premium ? 'elite' : 'free');
-          if (plan === 'elite') return 100;
-          if (plan === 'gold') return 50;
-          return 10;
-        };
-        const scoreA = getPlanScore(a);
-        const scoreB = getPlanScore(b);
-        if (scoreA !== scoreB) return scoreB - scoreA;
-
-        return b.id.localeCompare(a.id);
-      })
-      .slice(0, 12);
-  }, [activeMembersOnly]);
-
-  const activeMembers = membersTab === 'featured' ? featuredMembers : newMembers;
+  const activeMembers = newMembers;
 
   const nextTestimonial = () => setTestimonialIdx((prev) => (prev + 1) % TESTIMONIALS.length);
   const prevTestimonial = () => setTestimonialIdx((prev) => (prev - 1 + TESTIMONIALS.length) % TESTIMONIALS.length);
@@ -374,6 +321,17 @@ export default function Home() {
         </div>
       </section>
 
+      <section id="featured-members" className="py-8 sm:py-12 bg-cream-50 dark:bg-navy-950 border-b border-cream-200" aria-labelledby="featured-members-heading">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div><h2 id="featured-members-heading" className="text-2xl sm:text-3xl font-cairo font-extrabold text-navy-900 dark:text-cream-50">الأعضاء المميزون</h2><p className="mt-2 text-sm font-tajawal text-navy-600 dark:text-slate-300">أعضاء توافق مميز — اختر الملف الأنسب لك وابدأ طلب توافق.</p></div>
+            <Link to="/plans" className="rounded-xl bg-gold-gradient px-4 py-2.5 text-xs sm:text-sm font-cairo font-bold text-navy-900">تعرّف على توافق مميز</Link>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">{membersLoading && !featuredMembers.length ? <MemberGridSkeleton count={4}/> : featuredMembers.slice(0,8).map(m => <MemberCard key={`featured-${m.id}`} member={m}/>)}</div>
+          {!membersLoading && !featuredMembers.length && <p className="rounded-2xl bg-white dark:bg-navy-900 p-6 text-center text-sm text-navy-600 dark:text-cream-100">لا توجد ملفات مميزة متاحة حاليًا. يمكنك تصفّح بقية الأعضاء.</p>}
+        </div>
+      </section>
+
       {/* ===== 1. MEMBERS IN THE FOREFRONT (الأعضاء في المقدمة مباشرة) ===== */}
       <section className="py-6 sm:py-12 lg:py-16 bg-white dark:bg-navy-950 border-b border-cream-200/50 dark:border-navy-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -384,42 +342,14 @@ export default function Home() {
                 ملفات متجددة باستمرار
               </span>
               <h2 className="font-cairo font-extrabold text-xl sm:text-3xl lg:text-4xl text-navy-900 dark:text-cream-50">
-                أعضاء مميزون <span className="text-amber-600 font-extrabold">يبحثون عن شريك الحياة</span>
+                أحدث الأعضاء <span className="text-amber-600 font-extrabold">الباحثين عن شريك الحياة</span>
               </h2>
               <p className="mt-1.5 text-xs sm:text-sm text-navy-600 dark:text-slate-300 font-tajawal max-w-xl">
                 تصفّح نخبة من الأعضاء المسجلين والمتابعين من قبل الإدارة والخطابات وفق المعايير والضوابط الشرعية.
               </p>
             </div>
 
-            {/* تبويب الأعضاء وأزرار العرض */}
-            <div className="flex items-center gap-3">
-              <div className="inline-flex bg-cream-100 dark:bg-navy-900 rounded-2xl p-1 border border-cream-200/60 dark:border-navy-800">
-                {[
-                  { key: 'featured', label: '⭐ مميزون', count: featuredMembers.length },
-                  { key: 'new', label: '✨ أحدث المنضمين', count: newMembers.length },
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setMembersTab(tab.key as typeof membersTab)}
-                    className={`px-3 sm:px-5 py-2 rounded-xl font-cairo font-bold text-xs sm:text-sm transition-all duration-300 ${
-                      membersTab === tab.key
-                        ? 'bg-white dark:bg-navy-950 text-gold-700 dark:text-gold-400 shadow-soft'
-                        : 'text-navy-500 hover:text-navy-700 dark:text-cream-200/70 dark:hover:text-cream-50'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              <Link
-                to="/search"
-                className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gold-500/10 hover:bg-gold-500/20 text-gold-700 dark:text-gold-300 font-cairo font-bold text-xs sm:text-sm transition-colors"
-              >
-                تصفح الكل
-                <ArrowLeft className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+            <Link to="/search" className="inline-flex gap-2 text-sm font-cairo font-bold text-gold-700">تصفح الكل <ArrowLeft className="w-4 h-4"/></Link>
           </div>
 
           {/* شبكة الأعضاء */}

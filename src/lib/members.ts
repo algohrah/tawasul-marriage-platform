@@ -43,7 +43,7 @@ export interface Member {
   lastActive: string;      // آخر ظهور
   matchScore?: number;     // نسبة التوافق
   hasSeriousnessBadge?: boolean; // وسام الجدية المعتمد
-  plan?: 'free' | 'gold' | 'elite'; // باقة العضو الحالية
+  plan?: 'free' | 'featured'; // باقة العضو الحالية
   pinned?: boolean; // هل العضو مثبت من الإدارة؟
   isManagedByAdmin?: boolean;
   managedByAdminId?: string;
@@ -260,7 +260,7 @@ export const MEMBERS: Member[] = [
     birthDate: '1991-05-14',
     password: 'Salman@2026Password',
     status: 'active',
-    plan: 'elite',
+    plan: 'featured',
     verified: true,
     premium: true,
     online: true,
@@ -327,7 +327,7 @@ export const MEMBERS: Member[] = [
     birthDate: '1996-09-22',
     password: 'Jawhara@2026Password',
     status: 'active',
-    plan: 'elite',
+    plan: 'featured',
     verified: true,
     premium: true,
     online: true,
@@ -393,7 +393,7 @@ export const MEMBERS: Member[] = [
     importBatchId: 'batch-khataaba-01',
     importDate: '2026-09-10',
     status: 'active',
-    plan: 'gold',
+    plan: 'featured',
     verified: false,
     premium: true,
     online: false,
@@ -459,7 +459,7 @@ export const MEMBERS: Member[] = [
     importBatchId: 'batch-khataaba-01',
     importDate: '2026-09-10',
     status: 'active',
-    plan: 'elite',
+    plan: 'featured',
     verified: true,
     premium: true,
     online: true,

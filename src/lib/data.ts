@@ -6,70 +6,16 @@ export { MEMBERS, getMemberById };
 export type { Member } from './members';
 
 export const PLANS: Plan[] = [
-  {
-    id: 'free',
-    name: 'الباقة المجانية',
-    price: 0,
-    period: 'للأبد',
-    description: 'ابدأ رحلتك واكتشف المنصة واهتماماتك الأساسية',
-    features: [
-      'تصفّح الملفات الشخصية للأعضاء',
-      'إرسال حتى 3 طلبات اهتمام يومياً كحد أقصى',
-      'استقبال ردود الإدارة والوسيطة مجانًا',
-      'البحث الأساسي السريع',
-    ],
-    color: 'navy',
-    messagesLimit: 0, // No free inquiry messages included
-    requestsLimit: 3, // 3 interest requests/day
-    searchLimit: 2,
-    showContactLimit: 0,
-    durationDays: 30,
-    advancedFilters: false,
-  },
-  {
-    id: 'gold',
-    name: 'الباقة الذهبية',
-    price: 100,
-    period: 'شهريًا',
-    description: 'التجربة المثالية مع تاج ذهبي وأولوية تواصل عالية',
-    features: [
-      'إرسال حتى 10 طلبات اهتمام يومياً لتسريع المطابقة',
-      'رصيد 5 رسائل استفسار مجانية إضافية في غرفة التوافق',
-      'شارة التاج الذهبي المميز على ملفك الشخصي',
-      'أولوية تواصل وتنسيق من الإدارة والوسيطة',
-      'إمكانية شراء باقات رسائل إضافية عند الحاجة',
-    ],
-    popular: true,
-    color: 'gold',
-    messagesLimit: 5, // 5 free messages in inquiry balance
-    requestsLimit: 10, // 10 interest requests/day
-    searchLimit: 15,
-    showContactLimit: 5,
-    durationDays: 30,
-    advancedFilters: true,
-  },
-  {
-    id: 'elite',
-    name: 'الباقة المميرة',
-    price: 200,
-    period: 'شهريًا',
-    description: 'أرقى ميزات المنصة مع شارة نجمة مميز وظهور أول بالبحث',
-    features: [
-      'إرسال حتى 20 طلب توافق يومياً لتوافق فوري وجاد',
-      'رصيد 10 رسائل استفسار مجانية إضافية في غرفة التوافق',
-      'شارة نجمة مميز لزيادة الثقة والجدية',
-      'أولوية الظهور كملف أول في نتائج البحث',
-      'ميزة البحث المتقدم بكافة الفلاتر المتاحة',
-      'دعم وتنسيق مباشر على مدار الساعة',
-    ],
-    color: 'rose',
-    messagesLimit: 10, // 10 free messages in inquiry balance
-    requestsLimit: 20, // 20 interest requests/day
-    searchLimit: 999,
-    showContactLimit: 20,
-    durationDays: 30,
-    advancedFilters: true,
-  },
+  { id: 'free', name: 'مجاني', price: 0, period: 'للأبد',
+    description: 'ابدأ بالبحث الأساسي وأرسل طلبات التوافق عبر المنصة.',
+    features: ['5 طلبات توافق يوميًا', 'فلاتر الجنس والدولة والعمر والمدينة', 'المفضلة واستقبال الطلبات والإشعارات', 'رسائل الاستفسار تُشترى بصورة مستقلة'],
+    color: 'navy', messagesLimit: 0, requestsLimit: 5, searchLimit: 999,
+    showContactLimit: 0, durationDays: 30, advancedFilters: false },
+  { id: 'featured', name: 'توافق مميز', price: 99, period: '30 يومًا',
+    description: 'فلاتر كاملة وطلبات أكثر وتمييز واضح لملفك.',
+    features: ['20 طلب توافق يوميًا', 'جميع فلاتر البحث، بما فيها البحث بالرمز أو الاسم', 'شارة توافق مميز وقسم الأعضاء المميزون', 'أولوية ظهور بين الملفات المتقاربة في التوافق', 'رسائل الاستفسار تُشترى بصورة مستقلة ولا يشملها الاشتراك'],
+    popular: true, color: 'gold', messagesLimit: 0, requestsLimit: 20, searchLimit: 999,
+    showContactLimit: 0, durationDays: 30, advancedFilters: true },
 ];
 
 export const DEFAULT_MESSAGE_PACKAGES: MessagePackage[] = [
@@ -82,14 +28,14 @@ export const DEFAULT_MESSAGE_PACKAGES: MessagePackage[] = [
 export const SUPPORT_TICKETS: SupportTicket[] = [
   {
     id: 't1',
-    subject: 'استفسار عن باقة النخبة',
+    subject: 'استفسار عن توافق مميز',
     category: 'طلب ترقية',
     status: 'resolved',
     priority: 'normal',
     updatedAt: 'قبل ساعتين',
     messages: [
-      { id: '1', sender: 'user', text: 'السلام عليكم، أود الاستفسار عن مزايا باقة النخبة بالتفصيل', time: '10:00 ص' },
-      { id: '2', sender: 'admin', text: 'وعليكم السلام، أهلًا بك. باقة النخبة تشمل مستشار علاقات شخصي، ترقية الملف، فلاتر حصرية، وتنسيق مباشر من فريقنا. هل ترغب بالترقية الآن؟', time: '10:15 ص' },
+      { id: '1', sender: 'user', text: 'السلام عليكم، أود الاستفسار عن مزايا توافق مميز بالتفصيل', time: '10:00 ص' },
+      { id: '2', sender: 'admin', text: 'وعليكم السلام، أهلًا بك. توافق مميز يمنحك 20 طلب توافق يوميًا وفلاتر متقدمة وشارة مميزة وأولوية ظهور تراعي التوافق. الرسائل ورسوم الرحلة مستقلة. هل ترغب بالترقية الآن؟', time: '10:15 ص' },
       { id: '3', sender: 'user', text: 'شكرًا لكم على الشرح الوافي 🌹', time: '10:20 ص' },
     ],
   },

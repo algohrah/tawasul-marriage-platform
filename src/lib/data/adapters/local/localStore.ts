@@ -1,3 +1,4 @@
+import { memberPlan, dailyRequestLimit, requestDay } from '../../../../../shared/membership.js';
 // ============================================================
 //  مخزن بيانات محلي — يحاكي قاعدة البيانات بالكامل (للتجربة فقط)
 //  كل شيء في localStorage — لا اتصال بأي خادم أو Supabase
@@ -850,6 +851,11 @@ export async function createRequest(senderId: string, receiverId: string, messag
 
   const liveMembers = getLiveMembers(true);
   const sender = liveMembers.find((m) => m.id === senderId);
+  const quotaDay = requestDay();
+  const sentToday = d.requests.filter(r => r.sender_id === senderId && Date.parse(r.created_at) >= Date.parse(quotaDay.start) && Date.parse(r.created_at) < Date.parse(quotaDay.end)).length;
+  const quotaLimit = dailyRequestLimit(sender);
+  if (sentToday >= quotaLimit) return { ok: false, error: `وصلت إلى الحد اليومي (${quotaLimit} طلبات توافق). يتجدد عند منتصف الليل.`, code: 'DAILY_REQUEST_LIMIT', upgradeAvailable: quotaLimit === 5 };
+
   const receiver = liveMembers.find((m) => m.id === receiverId);
   const isImported = (explicitSourceType === 'imported') ||
     (sender && (sender.sourceType === 'imported' || (sender as any).importBatchId || (sender as any).importOfficeName)) ||
@@ -1705,7 +1711,7 @@ export type MemberStatus = 'active' | 'pending' | 'suspended' | 'banned';
 
 interface AdminMemberMeta {
   status: MemberStatus;
-  plan: 'free' | 'gold' | 'elite';
+  plan: 'free' | 'featured';
   realName: string;
   email: string;
   phone: string;
@@ -1741,7 +1747,7 @@ function writeAdminMeta(meta: Record<string, AdminMemberMeta>) {
 }
 
 function defaultMeta(m: Member): AdminMemberMeta {
-  const plan: AdminMemberMeta['plan'] = (m as any).plan || (m.premium ? (m.hasSeriousnessBadge ? 'elite' : 'gold') : 'free');
+  const plan: AdminMemberMeta['plan'] = memberPlan(m);
   const num = parseInt(m.id.replace(/\D/g, '') || '0', 10);
   const phoneTail = String(1000000 + (num * 13579) % 8999999);
   const pwSeed = String(100000 + (num * 246813) % 899999);
@@ -1808,7 +1814,7 @@ export interface AdminMemberRowLocal {
   nationalId: string;
   password: string;
   status: MemberStatus;
-  plan: 'free' | 'gold' | 'elite';
+  plan: 'free' | 'featured';
   pinned?: boolean;
   joinedAt: string;
   requestsCount: number;
@@ -1992,7 +1998,7 @@ export async function adminUpdateMember(
       if (fields.status) mergedPayload.status = fields.status;
       if (fields.plan !== undefined) {
         mergedPayload.plan = fields.plan;
-        mergedPayload.premium = fields.plan === 'gold' || fields.plan === 'elite';
+        mergedPayload.premium = fields.plan === 'featured';
       }
       if (fields.pinned !== undefined) {
         mergedPayload.pinned = fields.pinned;
@@ -2225,7 +2231,7 @@ export async function adminBulkSetPinned(ids: string[], value: boolean): Promise
   return true;
 }
 
-export async function adminBulkSetPlan(ids: string[], plan: 'free' | 'gold' | 'elite'): Promise<boolean> {
+export async function adminBulkSetPlan(ids: string[], plan: 'free' | 'featured'): Promise<boolean> {
   await delay(80);
   const all = readAdminMeta();
   ids.forEach((id) => {
@@ -2423,7 +2429,7 @@ export async function adminToggleVerified(id: string, value: boolean): Promise<b
 }
 
 export async function adminSetPremium(id: string, value: boolean): Promise<boolean> {
-  return adminUpdateMember(id, { premium: value });
+  return adminUpdateMember(id, { premium: value, plan: value ? 'featured' : 'free' });
 }
 
 export async function adminSetNote(id: string, note: string): Promise<boolean> {

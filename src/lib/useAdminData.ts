@@ -163,7 +163,7 @@ export function useAdminMembers() {
     return ok;
   }, [fetchMembers, setAppAdminMembers, setAppMembers]);
 
-  const bulkSetPlan = useCallback(async (ids: string[], plan: 'free' | 'gold' | 'elite') => {
+  const bulkSetPlan = useCallback(async (ids: string[], plan: 'free' | 'featured') => {
     const premium = plan !== 'free';
     const updater = (m: any) => (ids.includes(m.id) ? { ...m, plan, premium } : m);
     setMembers((prev) => prev.map(updater));
@@ -223,7 +223,7 @@ export function useAdminMembers() {
   }, [updateMember]);
 
   const setPremium = useCallback(async (id: string, v: boolean) => {
-    return updateMember(id, { premium: v, plan: v ? 'gold' : 'free' });
+    return updateMember(id, { premium: v, plan: v ? 'featured' : 'free' });
   }, [updateMember]);
 
   const setNote = useCallback(async (id: string, note: string) => {
@@ -294,8 +294,8 @@ export function useAdminStats() {
           activeJourneys: activeJ,
           completed: completedJ,
           verified: membersToUse.filter((m: any) => m.verified).length,
-          premium: membersToUse.filter((m: any) => m.premium || m.plan === 'gold' || m.plan === 'elite').length,
-          revenue: membersToUse.filter((m: any) => m.plan === 'gold').length * 200 + membersToUse.filter((m: any) => m.plan === 'elite').length * 500,
+          premium: membersToUse.filter((m: any) => m.premium || m.plan === 'featured').length,
+          revenue: 0 /* No inferred revenue: only recorded transactions count. */,
           depositsPaid: reqs.filter((r) => (r as any).senderPaid || (r as any).receiverPaid).length,
           stageBreakdown: breakdown,
           seriousnessBadges: membersToUse.filter((m: any) => m.hasSeriousnessBadge || m.has_seriousness_badge).length,

@@ -1,3 +1,4 @@
+import { memberPlan, isFeatured, normalizePlan } from '../shared/membership.js';
 import supabase from './db-client.js';
 import { getAuthUser, isAdminEmail, getMemberLink, authorizeMemberAction, requireAdmin } from './_auth.js';
 import { writeAuditLog } from './_audit.js';
@@ -90,12 +91,12 @@ function toDb(m = {}) {
     bio: m.bio || '',
     about_partner: m.aboutPartner || m.about_partner || m.pNotes || m.p_notes || m.partner_notes || '',
     verified: !!m.verified,
-    premium: !!m.premium,
+    premium: isFeatured(m),
     online: !!m.online,
     last_active: m.lastActive || m.last_active || new Date().toISOString(),
     match_score: Number(m.matchScore ?? m.match_score) || 90,
     has_seriousness_badge: !!(m.hasSeriousnessBadge ?? m.has_seriousness_badge),
-    plan: m.plan || 'free',
+    plan: memberPlan(m),
     pinned: !!m.pinned,
     status: m.status || 'active',
     status_reason: m.statusReason || m.status_reason || '',
@@ -154,6 +155,7 @@ function toDbPartial(fields = {}, restrictToSelfEditable = false) {
   }
   if (Object.keys(detailsPatch).length) out.__details = detailsPatch;
   out.updated_at = new Date().toISOString();
+  if (out.plan !== undefined) { out.plan = normalizePlan(out.plan); out.premium = out.plan === 'featured'; }
   return out;
 }
 
@@ -225,6 +227,8 @@ function fromDb(r, canSeeSensitive = false) {
     }
   }
   // إزالة كلمة المرور دائماً بلا استثناء (لا تُخزَّن نصياً أصلاً، لكن كإجراء دفاعي إضافي)
+  base.plan = memberPlan(r);
+  base.premium = isFeatured(r);
   delete base.password;
   if (canSeeSensitive) return base;
   for (const key of SENSITIVE_KEYS) delete base[key];

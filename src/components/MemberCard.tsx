@@ -1,3 +1,5 @@
+import { FeaturedBadge } from './ui/Badge';
+import { isFeatured } from '../../shared/membership.js';
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -83,18 +85,8 @@ export default function MemberCard({ member }: { member: Member; key?: any }) {
                       <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                     </span>
                   )}
-                  {(member.plan === 'elite' || (member.premium && member.plan !== 'gold')) && (
-                    <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-600 border border-rose-200/50 px-1.5 py-0.5 rounded-md font-cairo font-extrabold text-[9px] sm:text-[10px]" title="الباقة المميزة">
-                      <span>⭐</span>
-                      <span>مميز</span>
-                    </span>
-                  )}
-                  {member.plan === 'gold' && (
-                    <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-600 border border-amber-200/50 px-1.5 py-0.5 rounded-md font-cairo font-extrabold text-[9px] sm:text-[10px]" title="الباقة الذهبية">
-                      <Crown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-500" />
-                      <span>ذهبي</span>
-                    </span>
-                  )}
+                  {isFeatured(member) && <FeaturedBadge />}
+
                   {member.hasSeriousnessBadge && (
                     <span className="inline-flex items-center gap-0.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-extrabold text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-md font-cairo" title="وسام الجدية المعتمد">
                       🏅 جاد

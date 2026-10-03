@@ -481,7 +481,7 @@ export default function AdminKhataabaDirectory() {
 
   const handleBulkVIPSelected = () => {
     if (selectedMemberIds.length === 0) return;
-    const res = batchUpdateMembers(selectedMemberIds, { premium: true, plan: 'elite', hasSeriousnessBadge: true });
+    const res = batchUpdateMembers(selectedMemberIds, { premium: true, plan: 'featured', hasSeriousnessBadge: true });
     alert(`تم تحويل ${res.updatedCount} عضواً إلى عضوية مميزة (VIP) بنجاح ⭐`);
     setSelectedMemberIds([]);
     refreshAdminMembers();
