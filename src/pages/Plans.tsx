@@ -1,121 +1,32 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Check, Crown, Sparkles, ShieldCheck, Star, Zap } from 'lucide-react';
-import { useApp } from '../lib/AppContext';
-
-const colorMap = {
-  gold: { ring: 'ring-gold-500', bg: 'bg-gold-gradient', text: 'text-gold-700', icon: Crown },
-  navy: { ring: 'ring-navy-700', bg: 'bg-navy-900', text: 'text-navy-700', icon: ShieldCheck },
-  rose: { ring: 'ring-rose-deep', bg: 'bg-rose-deep', text: 'text-rose-deep', icon: Sparkles },
-};
+import { Check, ShieldCheck, Star, MessageSquare, ArrowLeft } from 'lucide-react';
+import { PLANS } from '../lib/data';
 
 export default function Plans() {
-  const [period, setPeriod] = useState<'monthly' | 'yearly'>('monthly');
-  const { plans } = useApp();
-
-  return (
-    <div className="bg-cream-50 min-h-screen">
-      {/* Header */}
-      <div className="bg-navy-gradient relative overflow-hidden">
-        <div className="absolute inset-0 pattern-arabesque opacity-30" />
-        <div className="absolute -top-20 -left-20 w-72 h-72 bg-gold-500/20 rounded-full blur-3xl" />
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14 text-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gold-300/15 mb-4">
-              <Crown className="w-6 h-6 sm:w-7 sm:h-7 text-gold-300" />
-            </div>
-            <h1 className="font-cairo font-extrabold text-2xl sm:text-3xl md:text-4xl text-white">اختر باقتك</h1>
-            <p className="mt-3 text-cream-200/80 font-tajawal max-w-xl mx-auto text-sm sm:text-base">استثمر في رحلتك نحو شريك الحياة. باقات مرنة تناسب احتياجاتك.</p>
-          </motion.div>
-
-          {/* Period toggle */}
-          <div className="mt-6 sm:mt-8 inline-flex items-center bg-white/10 rounded-full p-1 border border-white/15">
-            <button
-              onClick={() => setPeriod('monthly')}
-              className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-cairo font-semibold text-xs sm:text-sm transition-all ${period === 'monthly' ? 'bg-gold-gradient text-navy-900' : 'text-cream-200/80'}`}
-            >شهري</button>
-            <button
-              onClick={() => setPeriod('yearly')}
-              className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-cairo font-semibold text-xs sm:text-sm transition-all flex items-center gap-1.5 sm:gap-2 ${period === 'yearly' ? 'bg-gold-gradient text-navy-900' : 'text-cream-200/80'}`}
-            >سنوي <span className="text-[9px] sm:text-[10px] bg-emerald-400/20 text-emerald-300 px-1.5 py-0.5 rounded-full">وفّر 20%</span></button>
-          </div>
-        </div>
+  return <div className="min-h-screen bg-cream-50" dir="rtl">
+    <header className="bg-navy-gradient px-4 py-12 text-center text-white">
+      <span className="inline-flex rounded-full bg-white/10 px-4 py-1.5 text-sm font-cairo">عضوية تناسب استخدامك</span>
+      <h1 className="mt-4 text-3xl sm:text-4xl font-cairo font-extrabold">مجاني أو توافق مميز</h1>
+      <p className="mt-3 text-cream-200 font-tajawal">خياران واضحان، والرسائل ورسوم رحلة التوافق مستقلة عن العضوية.</p>
+    </header>
+    <main className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
+      <div className="grid gap-6 md:grid-cols-2">
+        {PLANS.map(plan => <section key={plan.id} className={`relative rounded-3xl bg-white p-6 sm:p-8 border shadow-soft ${plan.id === 'featured' ? 'border-gold-400 ring-1 ring-gold-300' : 'border-cream-200'}`}>
+          {plan.id === 'featured' ? <Star className="h-9 w-9 text-amber-600" /> : <ShieldCheck className="h-9 w-9 text-navy-700" />}
+          <h2 className="mt-4 font-cairo font-extrabold text-2xl text-navy-900">{plan.name}</h2>
+          <p className="mt-2 text-sm text-navy-600 font-tajawal min-h-10">{plan.description}</p>
+          <div className="mt-6 font-cairo text-navy-900"><strong className="text-4xl">{plan.price || 'مجانًا'}</strong>{plan.price > 0 && <span className="mr-2 text-sm">ريال / 30 يومًا</span>}</div>
+          {plan.price > 0 && <p className="mt-1 text-xs text-navy-500">السعر النهائي للعضوية: 99 ريال</p>}
+          <Link to={plan.price ? '/checkout/featured' : '/register'} className={`mt-6 block rounded-2xl py-3.5 text-center font-cairo font-bold ${plan.price ? 'bg-gold-gradient text-navy-900' : 'bg-navy-900 text-white'}`}>{plan.price ? 'اشترك في توافق مميز' : 'ابدأ مجانًا'}</Link>
+          <ul className="mt-6 space-y-3">{plan.features.map(feature => <li key={feature} className="flex gap-2.5 text-sm font-tajawal text-navy-700"><Check className="h-4 w-4 mt-0.5 shrink-0 text-emerald-600"/>{feature}</li>)}</ul>
+        </section>)}
       </div>
-
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        <div className="grid md:grid-cols-2 gap-5 sm:gap-6 max-w-4xl mx-auto">
-          {plans.filter(plan => !plan.hidden).map((plan, i) => {
-            const c = colorMap[plan.color];
-            const price = period === 'yearly' ? Math.round(plan.price * 12 * 0.8) : plan.price;
-            const periodLabel = period === 'yearly' && plan.price > 0 ? 'سنويًا' : plan.period;
-            return (
-              <motion.div
-                key={plan.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className={`relative bg-white rounded-3xl p-5 sm:p-8 ${plan.popular ? 'ring-2 ring-gold-500 shadow-luxe lg:-mt-4 lg:mb-4' : 'shadow-soft border border-cream-200/60'}`}
-              >
-                {plan.popular && (
-                  <span className="absolute -top-3 right-1/2 translate-x-1/2 bg-gold-gradient text-navy-900 text-[11px] sm:text-xs font-cairo font-bold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-gold whitespace-nowrap">
-                    الأكثر شعبية ⭐
-                  </span>
-                )}
-                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl ${c.bg} flex items-center justify-center mb-4 ${plan.popular ? 'bg-gold-gradient' : ''}`}>
-                  <c.icon className={`w-6 h-6 sm:w-7 sm:h-7 ${plan.popular ? 'text-navy-900' : 'text-white'}`} />
-                </div>
-                <h3 className="font-cairo font-extrabold text-lg sm:text-xl text-navy-900">{plan.name}</h3>
-                <p className="text-sm text-navy-500 font-tajawal mt-1 mb-5">{plan.description}</p>
-
-                <div className="flex items-end gap-1 mb-1">
-                  <span className="font-cairo font-extrabold text-3xl sm:text-4xl text-navy-900">{price === 0 ? 'مجانًا' : price}</span>
-                  {price > 0 && <span className="text-navy-500 font-tajawal mb-1 text-sm sm:text-base">ر.س / {periodLabel}</span>}
-                </div>
-
-                <Link
-                  to={price === 0 ? '/register' : `/checkout/${plan.id}`}
-                  className={`w-full mt-5 py-3 sm:py-3.5 rounded-2xl font-cairo font-bold transition-all inline-block text-center ${
-                    plan.popular ? 'bg-gold-gradient text-navy-900 shadow-gold hover:-translate-y-0.5' : 'bg-navy-900 text-white hover:bg-navy-800'
-                  }`}
-                >
-                  {price === 0 ? 'ابدأ مجانًا' : 'اشترك الآن'}
-                </Link>
-
-                <ul className="mt-6 space-y-3">
-                  {plan.features.map((f, fIdx) => (
-                    <li key={`${plan.id}-feat-${fIdx}`} className="flex items-start gap-3">
-                      <div className={`w-5 h-5 rounded-full ${c.bg} flex items-center justify-center flex-shrink-0 mt-0.5 ${plan.popular ? 'bg-gold-gradient' : ''}`}>
-                        <Check className={`w-3 h-3 ${plan.popular ? 'text-navy-900' : 'text-white'}`} />
-                      </div>
-                      <span className="text-sm text-navy-700 font-tajawal">{f}</span>
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* Trust */}
-        <div className="mt-8 sm:mt-12 bg-white rounded-3xl shadow-soft border border-cream-200/60 p-5 sm:p-8">
-          <div className="grid sm:grid-cols-3 gap-5 sm:gap-6 text-center">
-            {[
-              { icon: ShieldCheck, title: 'دفع آمن', desc: 'تشفير SSL وحماية كاملة' },
-              { icon: Zap, title: 'تفعيل فوري', desc: 'استمتع بالمزايا مباشرة' },
-              { icon: Star, title: 'إلفاء مرن', desc: 'ألِِــت من أي وقت دون رسوم' },
-            ].map((t, tIdx) => (
-              <div key={`trust-item-${t.title}-${tIdx}`}>
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gold-300/15 flex items-center justify-center mx-auto mb-3">
-                  <t.icon className="w-5 h-5 sm:w-6 sm:h-6 text-gold-600" />
-                </div>
-                <h4 className="font-cairo font-bold text-navy-900">{t.title}</h4>
-                <p className="text-sm text-navy-500 font-tajawal mt-1">{t.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+      <section className="mt-6 rounded-2xl border border-sky-200 bg-sky-50 p-5">
+        <h2 className="flex items-center gap-2 font-cairo font-bold text-navy-900"><MessageSquare className="h-5 w-5"/> الرسائل ليست ضمن العضوية</h2>
+        <p className="mt-2 text-sm font-tajawal text-navy-700">رسائل الاستفسار تُشترى من داخل غرفة التوافق. اشتراك توافق مميز لا يمنح رسائل مجانية ولا يغيّر رصيدك الحالي.</p>
+      </section>
+      <p className="mt-5 text-sm font-tajawal text-navy-600">رسوم رحلة التوافق منفصلة تمامًا؛ العضوية لا تعفي منها ولا تخصم منها.</p>
+      <Link to="/search" className="mt-5 inline-flex gap-2 items-center text-sm font-cairo font-bold text-gold-700">تصفّح الأعضاء <ArrowLeft className="h-4 w-4"/></Link>
+    </main>
+  </div>;
 }

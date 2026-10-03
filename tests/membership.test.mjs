@@ -26,3 +26,19 @@ test('featured ranks above comparable free profiles, not stronger matches', () =
   assert.ok(compareMemberPriority({plan:'featured'}, {plan:'free'}, 80, 80) < 0);
   assert.ok(compareMemberPriority({plan:'featured'}, {plan:'free'}, 50, 90) > 0);
 });
+
+// Contract regressions: no membership included inquiry balance; Boost and
+// independent paid inquiry purchase remain in their original components.
+import { readFileSync } from 'node:fs';
+test('two fixed plans, no annual offers or included inquiry credit',()=> {
+  const source=readFileSync(new URL('../src/lib/data.ts',import.meta.url),'utf8').split('export const PLANS')[1].split('export const')[0];
+  assert.equal((source.match(/id: '/g)||[]).length,2);
+  assert.ok(source.includes("id: 'free'"));assert.ok(source.includes("id: 'featured'"));
+  assert.equal((source.match(/messagesLimit: 0/g)||[]).length,2);
+  const ctx=readFileSync(new URL('../src/lib/AppContext.tsx',import.meta.url),'utf8');
+  const grant=ctx.split('const upgradePlan =')[1].split('const updatePaypalSettings')[0];
+  assert.ok(!grant.includes('buyInquiryPackage'));
+  const profile=readFileSync(new URL('../src/pages/Profile.tsx',import.meta.url),'utf8');
+  assert.ok(profile.includes('profile-boosting-card'));assert.ok(profile.includes('boostProfile'));
+  assert.ok(readFileSync(new URL('../src/pages/JourneyPage.tsx',import.meta.url),'utf8').includes('buyInquiryPackage'));
+});

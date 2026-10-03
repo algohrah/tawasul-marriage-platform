@@ -67,7 +67,7 @@ export default function Login() {
             nickname: matchedModerator?.name || 'المدير العام',
             email: cleanEmail,
             verified: true,
-            plan: 'elite',
+            plan: 'featured',
           } as any, cleanEmail);
           showToast('تم تسجيل الدخول بصلاحية الإدارة', 'success');
           navigate('/admin');
@@ -106,7 +106,7 @@ export default function Login() {
           nickname: matchedModerator?.name || 'المدير العام',
           email: cleanEmail,
           verified: true,
-          plan: 'elite',
+          plan: 'featured',
         } as any, cleanEmail);
         showToast('تم تسجيل الدخول بصلاحية الإدارة', 'success');
         navigate('/admin');

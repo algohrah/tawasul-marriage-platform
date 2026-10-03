@@ -1,3 +1,4 @@
+import { normalizePlan } from '../../shared/membership.js';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -48,11 +49,13 @@ export default function Checkout() {
   const [pendingReview, setPendingReview] = useState(false);
 
   // Load selected plan dynamically from state manager
-  const plan = plans.find(p => p.id === planId) || plans.find(p => p.id === 'premium') || plans[1];
-  const vat = Math.round(plan.price * 0.15);
-  const total = plan.price + vat;
+  const plan = plans.find(p => p.id === normalizePlan(planId)) || plans[1];
+  const total = plan.price; // Approved final membership price: 99 SAR.
+  const vat = Number((total - total / 1.15).toFixed(2));
+  const basePrice = Number((total - vat).toFixed(2));
 
   const handlePay = useCallback((via: string) => {
+    if (!plan.price) { navigate('/plans'); return; }
     // Validate fields if direct card checkout
     if (via === 'direct_card' || (via === 'paypal_guest_card' && !cardNumber)) {
       if (!via.includes('paypal_acc') && (!cardNumber || !cardExpiry || !cardCvv)) {
@@ -76,9 +79,9 @@ export default function Checkout() {
         description: `اشتراك باقة ${plan.name}`,
         amount: total,
         status: 'completed',
-        metadata: { desiredPlan: plan.id === 'elite' ? 'elite' : 'gold' },
+        metadata: { desiredPlan: 'featured' },
       });
-      upgradePlan(plan.id === 'elite' ? 'elite' : 'gold');
+      upgradePlan('featured');
       setTimeout(() => navigate('/profile'), 2500);
     }, 2000);
   }, [cardNumber, cardExpiry, cardCvv, plan.id, plan.name, total, upgradePlan, navigate, showToast, user.memberId]);
@@ -120,7 +123,7 @@ export default function Checkout() {
         description: `اشتراك باقة ${plan.name} (${paymentMethod === 'crypto' ? 'عملات رقمية' : 'تحويل بنكي'})`,
         amount: total,
         status: 'pending',
-        metadata: { desiredPlan: plan.id === 'elite' ? 'elite' : 'gold', method: paymentMethod, senderName, transferredBank, cryptoTxid },
+        metadata: { desiredPlan: 'featured', method: paymentMethod, senderName, transferredBank, cryptoTxid },
       });
       showToast('تم إرسال إثبات الدفع بنجاح! سيتم مراجعة الطلب من الإدارة وتفعيل اشتراكك خلال دقائق. ⏰✨', 'success');
       setTimeout(() => navigate('/profile'), 3500);
@@ -635,8 +638,8 @@ export default function Checkout() {
               {/* Limits and inclusions preview */}
               <div className="bg-slate-50 rounded-xl p-3 mb-4 border border-slate-100 space-y-2 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">حد الرسائل الشهرية:</span>
-                  <span className="font-bold text-slate-800">{plan.messagesLimit ? `${plan.messagesLimit} رسالة` : 'غير محدود'}</span>
+                  <span className="text-slate-500">رسائل الاستفسار:</span>
+                  <span className="font-bold text-slate-800">الرسائل تُشترى مستقلة — لا رصيد مضمّن</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">طلبات التوافق المتاحة:</span>
@@ -645,7 +648,7 @@ export default function Checkout() {
                 <div className="flex justify-between">
                   <span className="text-slate-500">فلاتر البحث والمطابقة:</span>
                   <span className={`font-bold ${plan.advancedFilters ? 'text-emerald-700' : 'text-slate-400'}`}>
-                    {plan.advancedFilters ? 'بريميوم متقدمة ✓' : 'رئيسية فقط'}
+                    {plan.advancedFilters ? 'جميع الفلاتر ✓' : 'رئيسية فقط'}
                   </span>
                 </div>
               </div>
@@ -665,7 +668,7 @@ export default function Checkout() {
 
               {/* Price breakdown */}
               <div className="space-y-2 py-4 border-t border-cream-200">
-                <div className="flex justify-between text-xs"><span className="text-navy-500 font-tajawal">سعر الباقة الرئيسي</span><span className="font-cairo font-semibold text-navy-900">{plan.price} ر.س</span></div>
+                <div className="flex justify-between text-xs"><span className="text-navy-500 font-tajawal">سعر العضوية قبل الضريبة</span><span className="font-cairo font-semibold text-navy-900">{basePrice} ر.س</span></div>
                 <div className="flex justify-between text-xs"><span className="text-navy-500 font-tajawal">ضريبة القيمة المضافة لخدمات الإنترنت (15%)</span><span className="font-cairo font-semibold text-navy-900">{vat} ر.س</span></div>
                 <div className="flex justify-between pt-2.5 border-t border-cream-200">
                   <span className="font-cairo font-bold text-navy-900 text-sm">المجموع الكلي المطلوب سداده</span>
