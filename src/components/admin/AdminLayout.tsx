@@ -198,6 +198,7 @@ export default function AdminLayout() {
       items: [
         { to: '/admin', label: 'لوحة المعلومات والنشاط', icon: LayoutDashboard, end: true },
         { to: '/admin/overview?tab=analytics', label: 'التحليلات المتقدمة والتقارير', icon: BarChart3, end: false },
+        { to: '/admin/visitor-analytics', label: 'إحصائيات الزوار', icon: Globe, end: true },
       ],
     },
     ...(currentAdminPermissions.manage_members

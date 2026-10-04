@@ -1,0 +1,12 @@
+export const ANALYTICS_TIMEZONE: string;
+export const SOURCES: string[];
+export const DEVICES: string[];
+export const UNKNOWN_LOCATION: string;
+export const PRESENCE_MS: number;
+export function analyticsDay(now?: Date | string | number): string;
+export function analyticsRange(days?: number, now?: Date | string | number): { startDay:string; endDay:string; days:number };
+export function deviceCategory(userAgent?:string): string;
+export function normalizeSource(value?:unknown): string;
+export function visitSource(search?:string, referrer?:string, siteOrigin?:string): string;
+export function activePresence(lastActivity:string, now?:Date | string | number): boolean;
+export function summarizeDaily(rows:any[], days?:number, now?:Date | string | number): any;
