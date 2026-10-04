@@ -139,5 +139,27 @@ export async function readVisitorAnalytics(scope, days=1, db=supabase, now=new D
     db.from('visitor_analytics_presence').select('session_id',{count:'exact',head:true}).eq('scope',scope).gt('last_activity',new Date(new Date(now).getTime()-PRESENCE_MS).toISOString()),
   ]);
   if(daily.error || active.error)throw daily.error || active.error;
-  return {...summarizeDaily(daily.data || [],days,now),activeNow:Number(active.count || 0),scope,timeZone:'Asia/Riyadh',uniqueVisitorsAvailable:false,retentionDays:30,cleanupMode:'on_collection_and_admin_read',generatedAt:new Date(now).toISOString()};
+  return {...summarizeDaily(daily.data || [],days,now),activeNow:Number(active.count || 0),scope,timeZone:'Asia/Riyadh',uniqueVisitorsAvailable:false,retentionDays:30,cleanupMode:'scheduled_every_5_minutes_and_on_activity',generatedAt:new Date(now).toISOString()};
+}
+
+// Manual deletion is restricted to this server-derived environment scope and
+// these two tables. No table name, scope, date or SQL is accepted from a client.
+export async function deleteVisitorAnalytics(scope, period, db=supabase, now=new Date()) {
+  if(![1,7,30,'all'].includes(period))throw Object.assign(new Error('اختر اليوم أو آخر 7 أيام أو آخر 30 يومًا أو الكل'),{status:400});
+  ensureAnalyticsDatabase(db);
+  let daily=db.from('visitor_analytics_daily').delete({count:'exact'}).eq('scope',scope);
+  let presence=db.from('visitor_analytics_presence').delete({count:'exact'}).eq('scope',scope);
+  let range=null;
+  if(period!=='all') {
+    range=analyticsRange(period,now);
+    const startAt=new Date(`${range.startDay}T00:00:00+03:00`).toISOString();
+    const endExclusive=new Date(new Date(`${range.endDay}T00:00:00+03:00`).getTime()+86400000).toISOString();
+    daily=daily.gte('day',range.startDay).lte('day',range.endDay);
+    presence=presence.gte('last_activity',startAt).lt('last_activity',endExclusive);
+  }
+  // Separate REST operations, not a cross-table SQL transaction. Never report
+  // success if either table fails; partial deletion is explicitly disclosed.
+  const [dailyResult,presenceResult]=await Promise.all([daily,presence]);
+  if(dailyResult.error || presenceResult.error)throw Object.assign(new Error('تعذر إتمام الحذف بالكامل. قد تكون بعض الإحصائيات حُذفت؛ حدّث اللوحة ثم أعد المحاولة.'),{status:503});
+  return {ok:true,scope,period,startDay:range?.startDay || null,endDay:range?.endDay || null,deletedDailyRows:Number(dailyResult.count || 0),deletedPresenceRows:Number(presenceResult.count || 0)};
 }

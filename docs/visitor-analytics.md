@@ -26,13 +26,21 @@ RLS is enabled and all table privileges are revoked from PUBLIC/anon/authenticat
 
 Netlify's existing API dispatcher adds the two routes and passes native geo metadata. No Netlify settings, `netlify.toml`, payment gateway or existing schema/data change is required. The build embeds only the non-secret deployment scope to protect internal deployment-permalink visits as well as the PR alias. Preview counts are separated from Production by server-derived scope (`preview:PR`, production). The database is shared, but aggregate rows do not mix.
 
-The migration is additive and must be applied only with owner approval. It was approved for these two tables; no extension, new SQL function or scheduled job is included.
+Both migrations are additive and were applied with owner approval: the first creates only the two analytics tables; the second enables pg_cron and schedules analytics-only cleanup. No application SQL function or unrelated scheduled job is added.
 
-## Retention limitation / approval still needed
+## Automatic retention and approved scheduler
 
-On every collection event, successful registration metric and admin read, delete aggregate rows before the earliest retained calendar day and presence rows with last activity at or before the five-minute cutoff. Queries independently exclude expired data. This cleans both tables automatically while the app is used.
+The owner approved enabling `pg_cron` explicitly. The additive second migration enables the extension and schedules one named job (`visitor-analytics-retention`) every five minutes, deleting ONLY expired rows in the two analytics tables. Aggregate retention uses UTC+3 calendar day minus 29 (inclusive 30-day window); presence expires at last activity <= now minus five minutes. No unrelated cron job or application table is modified. Standard cron scheduling metadata is managed by the extension, not visitor telemetry.
 
-**Without any traffic or admin reads, physical deletion cannot be guaranteed on a timer.** Strict deletion during complete inactivity requires a separately approved scheduler. Do not enable `pg_cron` or change hosting settings silently. If approved later, the simplest periodic job should delete ONLY the two analytics tables' expired rows; it must not touch member, journey, payment or rate-limit data.
+Event/admin-read cleanup remains as a fallback and queries independently exclude expired data. With no traffic, the scheduled cleanup still runs; physical deletion can lag the expiry by up to one schedule interval. Presence is excluded from active counts at exactly five minutes regardless of deletion timing.
+
+## Manual deletion
+
+The admin page offers today, last 7 days, last 30 days, or all visitor analytics. Every operation requires a confirmation dialog. All additionally requires typing `حذف الكل`, checked again by the API. Cancel/Escape performs no deletion; controls are locked while deletion is in progress. A success message and immediate fresh read follow successful deletion.
+
+`DELETE /api/visitor-analytics` verifies the actual Supabase bearer session and existing admin authorization before any deletion. It accepts only the four allowlisted periods and required confirmation, rejects cross-origin requests and ignores client scope/table/date overrides. It deletes only `visitor_analytics_daily` and `visitor_analytics_presence` in the server-derived current environment. **All means all history in that environment; preview cannot delete Production.** Daily rows are filtered by day; presence by last activity in the corresponding UTC+3 calendar range. New activity can appear again after a reset. Both REST deletes must succeed before reporting success; a partial failure is disclosed and the UI refreshes for retry, rather than falsely reporting success. These operations are not a cross-table SQL transaction.
+
+No direct Supabase delete is issued by the browser. Auth/admin verification may read the existing role directory, but no other application table is written or deleted.
 
 ## Reliability limitations
 
@@ -40,6 +48,6 @@ Optimistic revision checks prevent lost concurrent aggregate updates, and random
 
 ## Verification
 
-`npm test` exercises UTC+3 day/retention boundaries, source/device/geo classification, ignored forged geo, scopes, concurrent counts/deduplication, the exact five-minute cutoff and idle heartbeat, duration samples, percentages, registration success/failure, admin denial, API payload/origin checks, retention and preservation of existing tables. Auth/account tests are isolated in-memory fixtures: no real accounts are created.
+`npm test` exercises UTC+3 day/retention boundaries, source/device/geo classification, ignored forged geo, scopes, concurrent counts/deduplication, the exact five-minute cutoff and idle heartbeat, duration samples, percentages, registration success/failure, admin denial, API payload/origin checks, retention and preservation of existing tables, all manual deletion periods/confirmations, scope isolation, ordinary-member deletion denial and authorized-admin deletion. Auth/account tests are isolated in-memory fixtures: no real accounts are created.
 
 `npm run build` and `npm run lint` are required. Browser preview tests must distinguish real anonymous API writes/Supabase verification from any mocked admin-session UI tests. A real administrator session is needed for a complete live authenticated admin read; do not claim fixture auth is a real login.

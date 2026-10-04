@@ -4,7 +4,7 @@ import {randomUUID} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import {analyticsDb,apiResponse} from './visitor-db-fixture.mjs';
 import {analyticsDay,analyticsRange,deviceCategory,visitSource,normalizeSource,activePresence,summarizeDaily,SOURCES} from '../shared/visitorAnalytics.js';
-import {analyticsScope,coarseGeo,recordVisitorEvent,readVisitorAnalytics,incrementDaily,cleanupVisitorAnalytics,recordSuccessfulRegistration,requireAnalyticsAdmin,touchPresence} from '../api/_visitorAnalytics.js';
+import {analyticsScope,coarseGeo,recordVisitorEvent,readVisitorAnalytics,incrementDaily,cleanupVisitorAnalytics,recordSuccessfulRegistration,requireAnalyticsAdmin,touchPresence,deleteVisitorAnalytics} from '../api/_visitorAnalytics.js';
 import dbClient from '../api/db-client.js';
 import eventsHandler from '../api/visitor-events.js';
 import statsHandler from '../api/visitor-analytics.js';
@@ -131,4 +131,70 @@ test('build scope isolates internal deploy URLs even when runtime build env is u
  assert.equal(buildAnalyticsScope({CONTEXT:'production'}),'production');assert.equal(buildAnalyticsScope({}),null);
  assert.equal(analyticsScope({headers:{host:'6ac19c821f02f40008c2e04a--tawafok.netlify.app'}},{}),'deployment:6ac19c821f02f40008c2e04a');
  assert.equal(analyticsScope({headers:{host:'feat-visitor-analytics--tawafok.netlify.app'}},{}),'branch-preview');
+});
+
+function deletionSeed(clock=now) {
+ const day=analyticsDay(clock);
+ const dates=[analyticsRange(30,clock).startDay,analyticsRange(7,clock).startDay,day];
+ const before30=analyticsDay(new Date(new Date(clock).getTime()-30*86400000));
+ const tomorrow=analyticsDay(new Date(new Date(clock).getTime()+86400000));
+ const days=[before30,...dates,tomorrow];
+ const original={members:[{id:'do-not-touch'}],interest_requests:[{id:'do-not-touch'}],journeys:[{id:'do-not-touch'}],transactions:[{id:'do-not-touch'}],settings:[{key:'do-not-touch'}],rate_limits:[{key:'do-not-touch'}]};
+ return {...original,visitor_analytics_daily:[...days.map(day=>({scope:'preview:18',day,visits:10})),{scope:'production',day,visits:9}],visitor_analytics_presence:[...days.map(day=>({scope:'preview:18',session_id:randomUUID(),last_activity:new Date(`${day}T12:00:00+03:00`).toISOString()})),{scope:'production',session_id:randomUUID(),last_activity:new Date(clock).toISOString()}]};
+}
+for(const [period,expected]of [[1,1],[7,2],[30,3],['all',5]])test(`authorized deletion helper ${period}: exact UTC+3 range and current environment only`,async()=>{
+ const seed=deletionSeed(),db=analyticsDb(seed);const result=await deleteVisitorAnalytics('preview:18',period,db,now);
+ assert.equal(result.deletedDailyRows,expected);assert.equal(result.deletedPresenceRows,expected);
+ assert.equal(db.tables.visitor_analytics_daily.filter(r=>r.scope==='preview:18').length,5-expected);
+ assert.equal(db.tables.visitor_analytics_daily.find(r=>r.scope==='production').visits,9);assert.equal(db.tables.visitor_analytics_presence.filter(r=>r.scope==='production').length,1);
+ for(const table of ['members','interest_requests','journeys','transactions','settings','rate_limits'])assert.deepEqual(db.tables[table],seed[table]);
+ assert.ok(db.calls.every(c=>['visitor_analytics_daily','visitor_analytics_presence'].includes(c.table)));
+});
+test('manual presence deletion uses UTC+3 midnight rather than UTC midnight',async()=>{
+ const db=analyticsDb({visitor_analytics_presence:[{scope:'preview:18',session_id:randomUUID(),last_activity:'2026-10-03T20:59:59Z'},{scope:'preview:18',session_id:randomUUID(),last_activity:'2026-10-03T21:00:00Z'},{scope:'preview:18',session_id:randomUUID(),last_activity:'2026-10-04T20:59:59Z'},{scope:'preview:18',session_id:randomUUID(),last_activity:'2026-10-04T21:00:00Z'}]});
+ const result=await deleteVisitorAnalytics('preview:18',1,db,now);assert.equal(result.deletedPresenceRows,2);assert.deepEqual(db.tables.visitor_analytics_presence.map(r=>r.last_activity),['2026-10-03T20:59:59Z','2026-10-04T21:00:00Z']);
+});
+test('unauthenticated, invalid, demo and ordinary members cannot delete anything',async()=>{
+ for(const [token,status]of [['',401],['invalid',401],['local-token-123',401],['demo-admin-token',401],['member-session',403]]){
+  const seed=deletionSeed(),db=analyticsDb(seed);const result=await invoke(statsHandler,{method:'DELETE',headers:{host:req().headers.host,authorization:token?`Bearer ${token}`:''},body:{period:'all',confirmation:'حذف الكل'}},db);
+  assert.equal(result.statusCode,status);assert.deepEqual(db.tables.visitor_analytics_daily,seed.visitor_analytics_daily);assert.deepEqual(db.tables.visitor_analytics_presence,seed.visitor_analytics_presence);assert.ok(!db.calls.some(c=>c.action==='delete'));
+ }
+});
+test('authorized admin API deletion and subsequent read show updated totals',async()=>{
+ const db=analyticsDb(deletionSeed(new Date()));
+ const request={method:'DELETE',headers:{host:req().headers.host,authorization:'Bearer admin-session'},body:{period:1,confirmation:'CONFIRM_VISITOR_ANALYTICS_DELETE',scope:'production',table:'members'}};
+ const deleted=await invoke(statsHandler,request,db);assert.equal(deleted.statusCode,200);assert.equal(deleted.body.scope,'preview:18');assert.equal(deleted.body.deletedDailyRows,1);
+ const fresh=await invoke(statsHandler,{method:'GET',headers:request.headers,query:{days:'1'}},db);assert.equal(fresh.statusCode,200);assert.equal(fresh.body.visits,0);assert.equal(db.tables.visitor_analytics_daily.find(r=>r.scope==='production').visits,9);assert.equal(db.tables.members[0].id,'do-not-touch');
+});
+test('all deletion requires its stronger explicit confirmation and is repeat-safe',async()=>{
+ const db=analyticsDb(deletionSeed(new Date()));const request={method:'DELETE',headers:{host:req().headers.host,authorization:'Bearer admin-session'},body:{period:'all',confirmation:'CONFIRM_VISITOR_ANALYTICS_DELETE'}};
+ assert.equal((await invoke(statsHandler,request,db)).statusCode,400);assert.ok(!db.calls.some(c=>c.action==='delete'));
+ request.body.confirmation='حذف الكل';let result=await invoke(statsHandler,request,db);assert.equal(result.statusCode,200);assert.equal(result.body.deletedDailyRows,5);assert.equal(result.body.deletedPresenceRows,5);
+ result=await invoke(statsHandler,request,db);assert.equal(result.statusCode,200);assert.equal(result.body.deletedDailyRows,0);assert.equal(result.body.deletedPresenceRows,0);
+});
+test('missing confirmation or invalid period never executes deletion',async()=>{
+ for(const body of [{period:1},{period:7,confirmation:'no'},{period:90,confirmation:'حذف الكل'},{period:'30',confirmation:'CONFIRM_VISITOR_ANALYTICS_DELETE'},{period:{},confirmation:'حذف الكل'}]){
+  const db=analyticsDb(deletionSeed());const result=await invoke(statsHandler,{method:'DELETE',headers:{host:req().headers.host,authorization:'Bearer admin-session'},body},db);assert.equal(result.statusCode,400);assert.ok(!db.calls.some(c=>c.action==='delete'));
+ }
+ const db=analyticsDb();await assert.rejects(deleteVisitorAnalytics('preview:18',0,db,now));assert.equal(db.calls.length,0);
+});
+test('cross-origin admin delete and oversized body are rejected before writes',async()=>{
+ for(const [extra,body,status]of [[{origin:'https://other.example'},{period:'all',confirmation:'حذف الكل'},403],[{}, {period:'all',confirmation:'حذف الكل',extra:'x'.repeat(600)},413]]){
+  const db=analyticsDb(deletionSeed());const result=await invoke(statsHandler,{method:'DELETE',headers:{host:req().headers.host,authorization:'Bearer admin-session',...extra},body},db);assert.equal(result.statusCode,status);assert.ok(!db.calls.some(c=>c.action==='delete'));
+ }
+});
+test('partial database delete failure never reports success or exposes DB details',async()=>{
+ const db=analyticsDb(deletionSeed());db.failTable='visitor_analytics_presence';
+ const result=await invoke(statsHandler,{method:'DELETE',headers:{host:req().headers.host,authorization:'Bearer admin-session'},body:{period:'all',confirmation:'حذف الكل'}},db);
+ assert.equal(result.statusCode,503);assert.match(result.body.error,/قد تكون/);assert.ok(!JSON.stringify(result.body).includes('Controlled'));assert.ok(db.tables.visitor_analytics_presence.length>1);assert.equal(db.tables.members[0].id,'do-not-touch');
+});
+test('Netlify dispatcher passes authenticated DELETE body to stats handler',async()=>{
+ const {createRequire}=await import('node:module');const dispatcher=createRequire(import.meta.url)('../netlify/functions/api-classic.cjs');const db=analyticsDb(deletionSeed(new Date()));patch(db);
+ const result=await dispatcher.handler({path:'/api/visitor-analytics',httpMethod:'DELETE',headers:{host:req().headers.host,authorization:'Bearer admin-session'},body:JSON.stringify({period:'all',confirmation:'حذف الكل'})});
+ assert.equal(result.statusCode,200);assert.equal(JSON.parse(result.body).deletedDailyRows,5);assert.equal(db.tables.visitor_analytics_daily.length,1);
+});
+test('approved scheduler command targets only the two analytics tables every five minutes',()=>{
+ const sql=readFileSync(new URL('../supabase/migrations/202610040002_visitor_analytics_cron.sql',import.meta.url),'utf8');
+ assert.match(sql,/CREATE EXTENSION IF NOT EXISTS pg_cron/);assert.match(sql,/\*\/5 \* \* \* \*/);assert.match(sql,/Asia\/Riyadh/);assert.match(sql,/date - 29/);assert.match(sql,/interval '5 minutes'/);
+ assert.deepEqual([...sql.matchAll(/DELETE FROM (\S+)/g)].map(m=>m[1]),['public.visitor_analytics_daily','public.visitor_analytics_presence']);assert.doesNotMatch(sql,/UPDATE |DROP |ALTER TABLE|cron\.unschedule|CREATE FUNCTION/);
 });
