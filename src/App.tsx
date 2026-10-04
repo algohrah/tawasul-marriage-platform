@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './lib/AppContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import VisitorTracker from './components/analytics/VisitorTracker';
 
 const routeLoaders = {
   Layout: () => import('./components/layout/Layout'),
@@ -40,6 +41,7 @@ const routeLoaders = {
   AdminNotifications: () => import('./pages/admin/AdminNotifications'),
   AdminCities: () => import('./pages/admin/AdminCities'),
   AdminAnalytics: () => import('./pages/admin/AdminAnalytics'),
+  AdminVisitorAnalytics: () => import('./pages/admin/AdminVisitorAnalytics'),
   AdminImportMembers: () => import('./pages/admin/AdminImportMembers'),
   AdminExemptions: () => import('./pages/admin/AdminExemptions'),
   AdminFeatureSettings: () => import('./pages/admin/AdminFeatureSettings'),
@@ -131,6 +133,7 @@ const AdminSecuritySettings = lazyWithPreload(routeLoaders.AdminSecuritySettings
 const AdminNotifications = lazyWithPreload(routeLoaders.AdminNotifications);
 const AdminCities = lazyWithPreload(routeLoaders.AdminCities);
 const AdminAnalytics = lazyWithPreload(routeLoaders.AdminAnalytics);
+const AdminVisitorAnalytics = lazyWithPreload(routeLoaders.AdminVisitorAnalytics);
 const AdminImportMembers = lazyWithPreload(routeLoaders.AdminImportMembers);
 const AdminExemptions = lazyWithPreload(routeLoaders.AdminExemptions);
 const AdminFeatureSettings = lazyWithPreload(routeLoaders.AdminFeatureSettings);
@@ -155,6 +158,7 @@ function preloadRoute(pathname: string) {
   if (path.startsWith('/admin')) {
     add('AdminLayout');
     if (path === '/admin') add('AdminDashboard');
+    else if (path.startsWith('/admin/visitor-analytics')) add('AdminVisitorAnalytics');
     else if (path.startsWith('/admin/analytics')) add('AdminAnalytics');
     else if (path.startsWith('/admin/members')) add('AdminMembers');
     else if (path.startsWith('/admin/import-members')) add('AdminImportMembers');
@@ -275,6 +279,7 @@ export default function App() {
       <AppProvider>
         <BrowserRouter>
           <RoutePrefetcher />
+          <VisitorTracker />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* User facing layout */}
@@ -312,6 +317,7 @@ export default function App() {
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminOverviewHub />} />
                 <Route path="overview" element={<AdminOverviewHub />} />
+                <Route path="visitor-analytics" element={<AdminVisitorAnalytics />} />
                 <Route path="analytics" element={<Navigate to="/admin/overview?tab=analytics" replace />} />
                 
                 <Route path="members" element={<AdminMembersHub />} />

@@ -1,3 +1,4 @@
+import { recordSuccessfulRegistration } from './_visitorAnalytics.js';
 import supabase from './db-client.js';
 import { checkRateLimit } from './_rateLimit.js';
 
@@ -67,6 +68,12 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'تعذّر إنشاء الحساب. تحقق من البريد وكلمة المرور ثم حاول مرة أخرى.' });
     }
 
+    // Count only a successful account creation. No identity or signup rate-limit
+    // key is passed to the analytics helper; telemetry failure cannot break signup.
+    if (data?.user?.id) {
+      try { await recordSuccessfulRegistration(req); }
+      catch { console.warn('Visitor registration counter unavailable'); }
+    }
     return res.status(201).json({ ok: true, userId: data?.user?.id || null });
   } catch (error) {
     console.error('Register auth API error:', error);

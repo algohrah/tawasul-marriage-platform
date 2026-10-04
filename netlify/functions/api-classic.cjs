@@ -56,6 +56,8 @@ async function loadRouteHandler(route) {
     case 'notifications': return (await import('../../api/notifications.js')).default;
     case 'register-auth': return (await import('../../api/register-auth.js')).default;
     case 'settings': return (await import('../../api/settings.js')).default;
+    case 'visitor-events': return (await import('../../api/visitor-events.js')).default;
+    case 'visitor-analytics': return (await import('../../api/visitor-analytics.js')).default;
     case 'stats': return (await import('../../api/stats.js')).default;
     case 'support-tickets': return (await import('../../api/support-tickets.js')).default;
     case 'transactions': return (await import('../../api/transactions.js')).default;
@@ -65,7 +67,7 @@ async function loadRouteHandler(route) {
   }
 }
 
-exports.handler = async function handler(event) {
+exports.handler = async function handler(event, context) {
   const route = getRoute(event);
 
   if (route === 'health') {
@@ -83,6 +85,9 @@ exports.handler = async function handler(event) {
       headers: event.headers || {},
       query: event.queryStringParameters || {},
       body: parseBody(event),
+      // Only the analytics helper reads this native provider metadata.
+      platform: 'netlify',
+      platformGeo: context?.geo || event.geo || null,
     };
 
     await routeHandler(req, res);
