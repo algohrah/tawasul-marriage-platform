@@ -123,3 +123,12 @@ test('actual Netlify dispatcher routes analytics with native context and without
  result=await dispatcher.handler({path:'/api/visitor-analytics',httpMethod:'GET',headers:{host:event.headers.host,authorization:'Bearer admin-session'},queryStringParameters:{days:'1'}});assert.equal(result.statusCode,200);assert.equal(JSON.parse(result.body).visits,2);
  result=await dispatcher.handler({path:'/api/settings',httpMethod:'OPTIONS',headers:{}});assert.equal(result.statusCode,204);
 });
+
+test('build scope isolates internal deploy URLs even when runtime build env is unavailable',async()=>{
+ const {buildAnalyticsScope}=await import('../scripts/write-analytics-scope.mjs');
+ assert.equal(buildAnalyticsScope({CONTEXT:'deploy-preview',REVIEW_ID:'18'}),'preview:18');
+ assert.equal(buildAnalyticsScope({DEPLOY_PRIME_URL:'https://deploy-preview-18--tawafok.netlify.app'}),'preview:18');
+ assert.equal(buildAnalyticsScope({CONTEXT:'production'}),'production');assert.equal(buildAnalyticsScope({}),null);
+ assert.equal(analyticsScope({headers:{host:'6ac19c821f02f40008c2e04a--tawafok.netlify.app'}},{}),'deployment:6ac19c821f02f40008c2e04a');
+ assert.equal(analyticsScope({headers:{host:'feat-visitor-analytics--tawafok.netlify.app'}},{}),'branch-preview');
+});

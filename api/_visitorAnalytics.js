@@ -1,13 +1,19 @@
 import supabase from './db-client.js';
+import buildScope from './_visitorAnalyticsScope.js';
 import { isAdminEmail } from './_auth.js';
 import { analyticsDay, analyticsRange, deviceCategory, normalizeSource, summarizeDaily, UNKNOWN_LOCATION, PRESENCE_MS } from '../shared/visitorAnalytics.js';
 
 export function analyticsScope(req = {}, env = process.env) {
+  if(buildScope)return buildScope;
   const host = String(req.headers?.host || '').split(':')[0].toLowerCase();
   const preview = host.match(/^deploy-preview-(\d+)--/);
   if (preview) return `preview:${preview[1]}`;
   if (env.CONTEXT === 'deploy-preview') return `preview:${env.REVIEW_ID || 'current'}`;
   if (env.CONTEXT === 'branch-deploy') return 'branch-preview';
+  // Internal deployment permalinks must never fall through into production.
+  const deployment=host.match(/^([a-f0-9]{24})--/);
+  if(deployment)return `deployment:${deployment[1]}`;
+  if(host.includes('--') && host.endsWith('.netlify.app'))return 'branch-preview';
   if (host === 'localhost' || host === '127.0.0.1' || !host) return 'local';
   return 'production';
 }

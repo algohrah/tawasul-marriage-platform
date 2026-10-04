@@ -24,7 +24,7 @@ No IP, email/name, raw User-Agent, full referrer/URL, GPS, fingerprint or per-vi
 
 RLS is enabled and all table privileges are revoked from PUBLIC/anon/authenticated. Access is server-side through the service role. The read API verifies the actual Supabase bearer session and existing admin role/email resolver; local/demo impersonation tokens are rejected. If real server database configuration is missing, analytics fails closed instead of using the application's dummy database/admin fallback. Responses never contain presence IDs or raw database failures. Public collection cannot submit a registration event.
 
-Netlify's existing API dispatcher adds the two routes and passes native geo metadata. No Netlify settings, `netlify.toml`, payment gateway or existing schema/data change is required. Preview counts are separated from Production by server-derived scope (`preview:PR`, production). The database is shared, but aggregate rows do not mix.
+Netlify's existing API dispatcher adds the two routes and passes native geo metadata. No Netlify settings, `netlify.toml`, payment gateway or existing schema/data change is required. The build embeds only the non-secret deployment scope to protect internal deployment-permalink visits as well as the PR alias. Preview counts are separated from Production by server-derived scope (`preview:PR`, production). The database is shared, but aggregate rows do not mix.
 
 The migration is additive and must be applied only with owner approval. It was approved for these two tables; no extension, new SQL function or scheduled job is included.
 
