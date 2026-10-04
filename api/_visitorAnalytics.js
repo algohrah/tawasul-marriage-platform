@@ -1,4 +1,4 @@
-import supabase from './db-client.js';
+import supabase from './_visitorAnalyticsDb.js';
 import buildScope from './_visitorAnalyticsScope.js';
 import { isAdminEmail } from './_auth.js';
 import { analyticsDay, analyticsRange, deviceCategory, normalizeSource, summarizeDaily, UNKNOWN_LOCATION, PRESENCE_MS } from '../shared/visitorAnalytics.js';
@@ -40,7 +40,7 @@ export async function requireAnalyticsAdmin(req, res, db = supabase) {
   ensureAnalyticsDatabase(db);
   const {data,error} = await db.auth.getUser(token);
   if (error || !data?.user) {res.status(401).json({error:'جلسة الدخول غير صالحة'});return false;}
-  if (!(await isAdminEmail(data.user.email))) {res.status(403).json({error:'إحصائيات الزوار متاحة للإدارة فقط'});return false;}
+  if (!(await isAdminEmail(data.user.email,db))) {res.status(403).json({error:'إحصائيات الزوار متاحة للإدارة فقط'});return false;}
   return true;
 }
 export async function cleanupVisitorAnalytics(db = supabase, now = new Date()) {

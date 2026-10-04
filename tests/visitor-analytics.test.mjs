@@ -5,13 +5,14 @@ import {readFileSync} from 'node:fs';
 import {analyticsDb,apiResponse} from './visitor-db-fixture.mjs';
 import {analyticsDay,analyticsRange,deviceCategory,visitSource,normalizeSource,activePresence,summarizeDaily,SOURCES} from '../shared/visitorAnalytics.js';
 import {analyticsScope,coarseGeo,recordVisitorEvent,readVisitorAnalytics,incrementDaily,cleanupVisitorAnalytics,recordSuccessfulRegistration,requireAnalyticsAdmin,touchPresence,deleteVisitorAnalytics} from '../api/_visitorAnalytics.js';
-import dbClient from '../api/db-client.js';
+import dbClient from '../api/_visitorAnalyticsDb.js';
+import legacyDbClient from '../api/db-client.js';
 import eventsHandler from '../api/visitor-events.js';
 import statsHandler from '../api/visitor-analytics.js';
 import registerHandler from '../api/register-auth.js';
 const now=new Date('2026-10-04T08:00:00Z');
 const req=(event='visit',extra={},id=randomUUID())=>({headers:{host:'deploy-preview-18--tawafok.netlify.app','user-agent':'Android'},platformGeo:{country:{code:'SA'},city:'Riyadh'},body:{event,sessionId:id,source:'WhatsApp',lastActivityAt:now.getTime(),...extra}});
-function patch(db){dbClient.from=db.from;dbClient.auth=db.auth;process.env.VITE_SUPABASE_URL='https://test.invalid';process.env.SUPABASE_SERVICE_ROLE_KEY='isolated-fixture';}
+function patch(db){dbClient.from=db.from;dbClient.auth=db.auth;legacyDbClient.from=db.from;legacyDbClient.auth=db.auth;process.env.VITE_SUPABASE_URL='https://test.invalid';process.env.SUPABASE_SERVICE_ROLE_KEY='isolated-fixture';}
 async function invoke(handler,request,db){patch(db);const res=apiResponse();await handler(request,res);return res;}
 test('UTC+3 midnight and inclusive calendar retention boundary',()=>{
  assert.equal(analyticsDay('2026-10-03T20:59:59Z'),'2026-10-03');assert.equal(analyticsDay('2026-10-03T21:00:00Z'),'2026-10-04');

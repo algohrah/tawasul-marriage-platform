@@ -38,7 +38,7 @@ export async function getAuthUser(req) {
 }
 
 /** هل هذا البريد مسجّل في جدول المشرفين admin_users أو بريد مشرف معتمد؟ */
-export async function isAdminEmail(email) {
+export async function isAdminEmail(email, db = supabase) {
   if (!email) return false;
   const clean = String(email).toLowerCase().trim();
   if (
@@ -47,7 +47,7 @@ export async function isAdminEmail(email) {
     clean === 'algohrah4u@gmail.com'
   ) return true;
   try {
-    const { data } = await supabase.from('admin_users').select('id').eq('email', clean).maybeSingle();
+    const { data } = await db.from('admin_users').select('id').eq('email', clean).maybeSingle();
     return !!data;
   } catch {
     return false;
