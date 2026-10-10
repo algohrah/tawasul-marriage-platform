@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow"><meta name="color-scheme" content="light dark">
+  <title>معاينة رحلة التوافق | توافق</title>
+  <link rel="stylesheet" href="./journey-preview.css">
+  <script type="module" src="./journey-preview.js"></script>
+</head>
+<body>
+  <header class="topbar"><div class="wrap topbar-inner"><div class="brand"><span class="brand-icon" aria-hidden="true">♥</span><div><strong>توافق</strong><small>معاينة رحلة التوافق</small></div></div><span class="tag">نسخة للمراجعة فقط</span></div></header>
+  <main class="wrap">
+    <section class="intro"><div><p class="eyebrow">رحلة واحدة · متابعة بإدارة توافق</p><h1>من الاهتمام إلى التوافق</h1><p>نفس المراحل لجميع الملفات، وحساب واضح للمدفوع والمتبقي لكل طرف.</p></div><div class="request-code">طلب تجريبي<strong>TW-DEMO-001</strong></div></section>
+    <aside class="notice"><strong>هذه معاينة تفاعلية وليست نظام تحصيل.</strong> جميع الأسماء والردود والسداد تجريبية، ولا تُحفظ في Supabase أو المتصفح. تحديث الصفحة يعيد التجربة من البداية.</aside>
+    <section class="controls panel" aria-label="إعداد سيناريو التجربة">
+      <div><label for="view-role">عرض التجربة بصفتك</label><select id="view-role"><option value="admin">الإدارة المخوّلة — محاكاة</option><option value="member">العضو — محاكاة</option><option value="moderator">المشرف — محاكاة</option></select></div>
+      <div id="member-select"><label for="view-party">الطرف المعروض</label><select id="view-party"><option value="sender">المرسِل</option><option value="receiver">المستقبِل</option></select></div>
+      <button id="jump-fees" class="button secondary" type="button">جرّب مبلغ السداد</button>
+      <button id="reset" class="button secondary" type="button">إعادة التجربة</button>
+    </section>
+    <section class="panel progress-panel"><ol class="steps" id="steps" aria-label="مراحل رحلة التوافق"></ol><div class="stage-head"><span id="stage-count" class="eyebrow"></span><h2 id="stage-title"></h2><p id="stage-description"></p></div><div id="stage-actions" class="actions"></div><div id="stage-hint" class="muted"></div></section>
+    <section class="parties" id="parties" aria-label="أطراف الطلب"></section>
+    <section class="content-grid">
+      <section class="panel" aria-labelledby="fees-heading"><div class="section-heading"><div><p class="eyebrow">الرسوم مستقلة عن نتيجة الرحلة</p><h2 id="fees-heading">المدفوع والمتبقي</h2></div><span class="tag">2500 ريال لكل طرف</span></div><div id="fee-cards"></div><p class="footnote">500 ريال رسوم بدء الخدمة تُدفع مرة واحدة للشخص؛ يُراعى السداد السابق المعتمد. رسوم الاشتراك والرسائل منفصلة. هذه المعاينة لا تثبت أي سداد تاريخي حقيقي.</p></section>
+      <section class="panel admin-panel" id="admin-panel" aria-labelledby="admin-heading"><p class="eyebrow">إجراءات الإدارة المخوّلة — محاكاة</p><h2 id="admin-heading">تسجيل إجمالي المسدد</h2><p class="muted">أدخل إجمالي ما تم سداده لهذا الطرف، وليس قيمة دفعة إضافية. الحفظ المتكرر لا يضاعف المبلغ.</p>
+        <form id="payment-form" novalidate>
+          <label for="payment-party">الطرف</label><select id="payment-party"><option value="sender">المرسِل — عضو تجريبي 1</option><option value="receiver">المستقبِل — عضو تجريبي 2</option></select>
+          <label for="paid-amount">إجمالي المسدد بالريال</label><div class="amount-input"><input id="paid-amount" name="paid" type="text" inputmode="decimal" value="500" autocomplete="off" aria-describedby="amount-hint amount-error"><span>ريال</span></div>
+          <p id="amount-hint" class="footnote">من 0 إلى 2500، ويُقبل مبلغ مثل 250 أو 1750 أو 2500.</p><p id="amount-error" class="error" role="alert"></p>
+          <div id="live-calculation" class="calculation" aria-live="polite"></div>
+          <div class="presets" aria-label="مبالغ سريعة"><button type="button" data-amount="0">0</button><button type="button" data-amount="250">250</button><button type="button" data-amount="500">500</button><button type="button" data-amount="2500">2500 — كامل الرسوم</button></div>
+          <label class="check-row"><input id="defer" type="checkbox"><span>السماح ببدء التنسيق مع تأجيل الجزء غير المسدد من رسوم البداية. <small>تأجيل السداد لا يعني أن المبلغ مدفوع أو معفى منه.</small></span></label>
+          <label for="payment-note">ملاحظة الاعتماد أو سبب التصحيح</label><textarea id="payment-note" rows="2" placeholder="مثال تجريبي: اعتماد سداد جزئي، أو تأجيل بموافقة الإدارة"></textarea>
+          <button id="save-payment" type="submit" class="button primary full">مراجعة واعتماد المبلغ التجريبي</button>
+        </form>
+        <hr><h3>التحكم في الرحلة</h3><label for="admin-stage">المرحلة المطلوبة</label><select id="admin-stage"><option value="0">الاهتمام</option><option value="1">بدء الخدمة</option><option value="2">التنسيق</option><option value="3">النتيجة</option><option value="4">إغلاق الرحلة</option></select>
+        <label for="stage-note">سبب تحديث المرحلة</label><input id="stage-note" type="text" placeholder="توضيح إداري مختصر"><button id="apply-stage" type="button" class="button secondary full">تحديث المرحلة التجريبية</button>
+        <label for="result">نتيجة المتابعة</label><select id="result"><option value="">لم تُحدد</option><option value="continuing">رغبة في الاستمرار</option><option value="no-match">لم يحصل توافق</option><option value="withdrawn">انسحاب</option></select>
+        <label class="check-row"><input id="mahr" type="checkbox"><span>تأكيد تجريبي لتسليم المهر.<small>لا يُطلب المتبقي النهائي قبل تحقق الاستحقاق وفق الاتفاق.</small></span></label>
+        <button id="close-early" class="button secondary full" type="button">إغلاق مبكر بعد رفض أو انسحاب</button>
+      </section>
+    </section>
+    <section class="panel" id="member-followup" hidden><h2>المتابعة مع الإدارة</h2><p>التواصل يكون مع إدارة توافق فقط، وليس مع الطرف الآخر.</p><button id="whatsapp-preview" class="button primary" type="button">عرض رسالة واتساب للإدارة</button><p class="footnote">للمراجعة فقط: لا تفتح المعاينة محادثة حقيقية ولا ترسل رسائل.</p></section>
+    <section class="panel" id="audit-panel"><h2>سجل التجربة</h2><p class="muted">يوضح التغييرات السابقة والجديدة في هذه الجلسة فقط.</p><ul id="audit" class="audit"></ul></section>
+    <footer>التأجيل والاسترداد وتعريف تسليم المهر الجزئي تحتاج اعتمادًا قبل الربط الفعلي. لا تغيير في بوابة الدفع أو قاعدة البيانات.</footer>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <dialog id="confirmation"><form method="dialog"><div class="dialog-head"><h2>تأكيد اعتماد المبلغ التجريبي</h2><button class="icon-button" aria-label="إغلاق" value="cancel">×</button></div><div id="confirmation-body"></div><p class="footnote">هذا تغيير داخل المعاينة فقط، وليس إثبات تحصيل أو تعديلًا لنتيجة التوافق.</p><div class="actions"><button id="confirm-payment" class="button primary" value="confirm">اعتماد المبلغ التجريبي</button><button class="button secondary" value="cancel">إلغاء</button></div></form></dialog>
+  <dialog id="message-dialog"><form method="dialog"><h2>رسالة التنسيق مع الإدارة</h2><p id="whatsapp-message" class="message"></p><p class="footnote">مرجع الطلب لا يثبت هوية المرسل. لا تتضمن الرسالة بيانات الطرف الآخر.</p><button class="button primary" value="close">إغلاق</button></form></dialog>
+</body>
+</html>
