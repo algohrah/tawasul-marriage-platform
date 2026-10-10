@@ -1,0 +1,33 @@
+name: Publish isolated journey fee preview
+on:
+  push:
+    branches: [feat/journey-flexible-service-fees]
+    paths:
+      - 'public/preview/journey/**'
+      - 'tests/journey-fee-preview.test.mjs'
+      - '.github/workflows/journey-fee-preview.yml'
+permissions:
+  contents: write
+concurrency:
+  group: isolated-journey-fee-preview
+  cancel-in-progress: true
+jobs:
+  publish-preview:
+    if: github.repository == 'algohrah/tawasul-marriage-platform'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Test preview calculations
+        run: node --test tests/journey-fee-preview.test.mjs
+      - name: Publish only the isolated preview directory
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./public/preview/journey
+          destination_dir: previews/journey-fees
+          keep_files: true
+          commit_message: Publish isolated journey fee preview (not production)
